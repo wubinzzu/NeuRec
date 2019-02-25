@@ -1,0 +1,145 @@
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '8', 'reg_mf': '0.1', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'verbose': '1'}
+INFO:root:FPMC: [Test HR = 0.2481, NDCG = 0.1429,AUC = 0.9300] [1.2s]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'true', 'num_neg': '4', 'loss_function': 'bpr', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'true', 'num_neg': '4', 'loss_function': 'bpr', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 88.669802, time: 1.104718]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'true', 'num_neg': '4', 'loss_function': 'bpr', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 88.669802, time: 1.118626]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.01', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'true', 'num_neg': '4', 'loss_function': 'bpr', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 88.669802, time: 1.141822]
+INFO:root:[iter 2 : loss : 88.699992, time: 1.038087]
+INFO:root:[iter 3 : loss : 88.713249, time: 1.051934]
+INFO:root:[iter 4 : loss : 88.719163, time: 1.036673]
+INFO:root:[iter 5 : loss : 88.721388, time: 1.061626]
+INFO:root:[iter 6 : loss : 88.722624, time: 1.057421]
+INFO:root:[iter 7 : loss : 88.728517, time: 1.038796]
+INFO:root:[iter 8 : loss : 88.725247, time: 1.052418]
+INFO:root:[iter 9 : loss : 88.729148, time: 1.047847]
+INFO:root:[iter 10 : loss : 88.728613, time: 1.051917]
+INFO:root:[iter 11 : loss : 88.728341, time: 1.067044]
+INFO:root:[iter 12 : loss : 88.726912, time: 1.064618]
+INFO:root:[iter 13 : loss : 88.728543, time: 1.055925]
+INFO:root:[iter 14 : loss : 88.725231, time: 1.056593]
+INFO:root:[iter 15 : loss : 88.727108, time: 1.061705]
+INFO:root:[iter 16 : loss : 88.727550, time: 1.058014]
+INFO:root:[iter 17 : loss : 88.729040, time: 1.074321]
+INFO:root:[iter 18 : loss : 88.726667, time: 1.066481]
+INFO:root:[iter 19 : loss : 88.727949, time: 1.059495]
+INFO:root:[iter 20 : loss : 88.731137, time: 1.064679]
+INFO:root:[iter 21 : loss : 88.726502, time: 1.069674]
+INFO:root:[iter 22 : loss : 88.725515, time: 1.164120]
+INFO:root:[iter 23 : loss : 88.728101, time: 1.082574]
+INFO:root:[iter 24 : loss : 88.730697, time: 1.159524]
+INFO:root:[iter 25 : loss : 88.725447, time: 1.080412]
+INFO:root:[iter 26 : loss : 88.726977, time: 1.076976]
+INFO:root:[iter 27 : loss : 88.729124, time: 1.079029]
+INFO:root:[iter 28 : loss : 88.728986, time: 1.091364]
+INFO:root:[iter 29 : loss : 88.725097, time: 1.109061]
+INFO:root:[iter 30 : loss : 88.728314, time: 1.096212]
+INFO:root:[iter 31 : loss : 88.726020, time: 1.066013]
+INFO:root:[iter 32 : loss : 88.727481, time: 1.075159]
+INFO:root:[iter 33 : loss : 88.728755, time: 1.078049]
+INFO:root:[iter 34 : loss : 88.728007, time: 1.091999]
+INFO:root:[iter 35 : loss : 88.729665, time: 1.078702]
+INFO:root:[iter 36 : loss : 88.728715, time: 1.074586]
+INFO:root:[iter 37 : loss : 88.730295, time: 1.073784]
+INFO:root:[iter 38 : loss : 88.727158, time: 1.073685]
+INFO:root:[iter 39 : loss : 88.729964, time: 1.081363]
+INFO:root:[iter 40 : loss : 88.729835, time: 1.088470]
+INFO:root:[iter 41 : loss : 88.726929, time: 1.079525]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.1', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 77.346938, time: 4.573366]
+INFO:root:[iter 2 : loss : 74.299425, time: 5.067182]
+INFO:root:[iter 3 : loss : 74.293068, time: 5.428340]
+INFO:root:[iter 4 : loss : 74.286361, time: 5.509669]
+INFO:root:[iter 5 : loss : 74.247179, time: 5.510983]
+INFO:root:[iter 6 : loss : 74.272291, time: 5.717180]
+INFO:root:[iter 7 : loss : 74.271293, time: 5.575673]
+INFO:root:[iter 8 : loss : 74.271530, time: 5.681438]
+INFO:root:[iter 9 : loss : 74.263702, time: 5.777516]
+INFO:root:[iter 10 : loss : 74.198525, time: 5.775913]
+INFO:root:[iter 11 : loss : 74.279270, time: 5.759691]
+INFO:root:[iter 12 : loss : 74.225326, time: 5.648392]
+INFO:root:[iter 13 : loss : 74.306300, time: 5.785971]
+INFO:root:[iter 14 : loss : 74.263717, time: 6.178943]
+INFO:root:[iter 15 : loss : 74.237592, time: 5.628892]
+INFO:root:[iter 16 : loss : 74.231998, time: 5.894967]
+INFO:root:[iter 17 : loss : 74.273459, time: 5.922160]
+INFO:root:[iter 18 : loss : 74.258937, time: 5.685001]
+INFO:root:[iter 19 : loss : 74.281007, time: 5.733295]
+INFO:root:[iter 20 : loss : 74.242529, time: 5.666548]
+INFO:root:[iter 21 : loss : 74.287831, time: 5.726094]
+INFO:root:[iter 22 : loss : 74.288453, time: 5.928682]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '128', 'embedding_size': '16', 'reg_mf': '0.1', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'true', 'num_neg': '4', 'loss_function': 'bpr', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 88.651687, time: 1.150804]
+INFO:root:[iter 2 : loss : 88.654348, time: 1.022751]
+INFO:root:[iter 3 : loss : 88.652274, time: 1.025294]
+INFO:root:[iter 4 : loss : 88.651249, time: 1.038382]
+INFO:root:[iter 5 : loss : 88.653440, time: 1.030031]
+INFO:root:[iter 6 : loss : 88.652280, time: 1.026378]
+INFO:root:[iter 7 : loss : 88.651795, time: 1.034723]
+INFO:root:[iter 8 : loss : 88.653623, time: 1.057757]
+INFO:root:[iter 9 : loss : 88.651642, time: 1.044017]
+INFO:root:[iter 10 : loss : 88.652389, time: 1.045027]
+INFO:root:[iter 11 : loss : 88.653041, time: 1.039849]
+INFO:root:[iter 12 : loss : 88.651589, time: 1.052293]
+INFO:root:[iter 13 : loss : 88.652757, time: 1.074973]
+INFO:root:[iter 14 : loss : 88.652605, time: 1.065233]
+INFO:root:[iter 15 : loss : 88.652146, time: 1.050025]
+INFO:root:[iter 16 : loss : 88.652192, time: 1.052823]
+INFO:root:[iter 17 : loss : 88.652802, time: 1.059460]
+INFO:root:[iter 18 : loss : 88.652377, time: 1.076926]
+INFO:root:[iter 19 : loss : 88.651860, time: 1.075843]
+INFO:root:[iter 20 : loss : 88.653268, time: 1.071796]
+INFO:root:[iter 21 : loss : 88.652144, time: 1.074193]
+INFO:root:[iter 22 : loss : 88.652258, time: 1.077129]
+INFO:root:[iter 23 : loss : 88.652617, time: 1.074196]
+INFO:root:[iter 24 : loss : 88.652717, time: 1.100492]
+INFO:root:[iter 25 : loss : 88.652072, time: 1.098459]
+INFO:root:[iter 26 : loss : 88.652000, time: 1.081430]
+INFO:root:[iter 27 : loss : 88.652966, time: 1.070433]
+INFO:root:[iter 28 : loss : 88.652258, time: 1.062274]
+INFO:root:[iter 29 : loss : 88.652136, time: 1.059548]
+INFO:root:[iter 30 : loss : 88.652602, time: 1.065657]
+INFO:root:[iter 31 : loss : 88.652339, time: 1.079618]
+INFO:root:[iter 32 : loss : 88.652779, time: 1.116449]
+INFO:root:[iter 33 : loss : 88.652358, time: 1.104910]
+INFO:root:[iter 34 : loss : 88.651820, time: 1.094357]
+INFO:root:[iter 35 : loss : 88.652917, time: 1.087140]
+INFO:root:[iter 36 : loss : 88.652528, time: 1.076532]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 0.408346, time: 3.796146]
+INFO:root:[iter 2 : loss : 0.310382, time: 3.477666]
+INFO:root:[iter 3 : loss : 0.278279, time: 3.484679]
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
+INFO:root:[iter 1 : loss : 0.426783, time: 2.807293]
+INFO:root:[iter 2 : loss : 0.306740, time: 2.522109]
+INFO:root:[iter 3 : loss : 0.279267, time: 2.575671]
+INFO:root:[iter 4 : loss : 0.260172, time: 2.568674]
+INFO:root:[iter 5 : loss : 0.245312, time: 2.652305]
+INFO:root:[iter 6 : loss : 0.237142, time: 2.515176]

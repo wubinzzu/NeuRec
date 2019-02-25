@@ -1,0 +1,3 @@
+INFO:root:begin training FPMC model ......
+INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0.1', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'verbose': '1'}
+INFO:root:FPMC: [Test HR = 0.7373, NDCG = 0.4698,AUC = 0.9121] [6.9s]

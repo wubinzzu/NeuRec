@@ -138,18 +138,11 @@ class FPMC(AbstractRecommender):
             logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
-                Evaluate.valid_model(self,self.dataset,epoch)
+                Evaluate.test_model(self,self.dataset)
                 #Evaluate.test_model(self,self.dataset)
-    def predict(self, user_id, items,isvalid):
-        if isvalid == True:
-            item_recent = np.full(len(items), self.dataset.trainDict[user_id][-1], dtype='int32')
-        else :
-            cand_items = deepcopy(self.dataset.trainDict[user_id])
-            if type(self.dataset.validDict[user_id]) == int:
-                cand_items.append(self.dataset.validDict[user_id]) 
-            else :
-                cand_items.extend(self.dataset.validDict[user_id])
-            item_recent = np.full(len(items), cand_items[-1], dtype='int32')
+    def predict(self, user_id, items):
+        cand_items = deepcopy(self.dataset.trainDict[user_id])
+        item_recent = np.full(len(items), cand_items[-1], dtype='int32')
 
         users = np.full(len(items), user_id, dtype='int32')
         return self.sess.run((self.output), feed_dict={self.user_input: users,\

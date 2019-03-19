@@ -333,9 +333,7 @@ class DeepICF(AbstractRecommender):
             features[i] = features[i] + [feature_mask] * (num_max+1 - len(features[i]))
         return features
     
-    def predict(self, user_id,target_item,evaluateNegatives):
-        items = [target_item]
-        items.extend(evaluateNegatives)
+    def predict(self, user_id,items):
         cand_items = self.dataset.trainDict[user_id]
         num_idx = len(cand_items)
         # Get prediction scores

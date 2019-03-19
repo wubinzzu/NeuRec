@@ -17,7 +17,7 @@ class Dataset(object):
         testNegatives: sample the items not rated by user
     '''
 
-    def __init__(self,path,splitter,separator,evaluate_neg,dataset_name,isgivenTest=False,splitterRatio=[0.7,0.1,0.2]):
+    def __init__(self,path,splitter,separator,evaluate_neg,dataset_name,isgivenTest=False,splitterRatio=[0.8,0.2]):
         '''
         Constructor
         '''
@@ -31,8 +31,6 @@ class Dataset(object):
         self.num_items = 0
         self.trainMatrix = None
         self.trainDict =  None
-        self.validDict =  None
-        self.validMatrix =  None
         self.testMatrix =  None
         self.testNegatives =  None
         self.timeMatrix = None 
@@ -44,7 +42,6 @@ class Dataset(object):
             if isgivenTest.lower() == "true":
                 self.trainMatrix = loo.load_training_file_as_matrix()
                 self.trainDict = loo.load_training_file_as_list()
-                self.validMatrix = loo.load_validrating_file_as_Matrix()
                 self.testMatrix = loo.load_testrating_file_as_Matrix()
                 self.num_users = self.trainMatrix.shape[0]
                 self.num_items = self.trainMatrix.shape[1]
@@ -53,7 +50,7 @@ class Dataset(object):
                 else :
                     self.testNegatives = self.get_negatives()
             else :
-                self.trainMatrix,self.trainDict,self.validDict,self.validMatrix,self.testMatrix,\
+                self.trainMatrix,self.trainDict,self.testMatrix,\
                 self.userseq,self.userids,self.itemids,self.timeMatrix = loo.load_data_by_user_time()
                 self.num_users = self.trainMatrix.shape[0]
                 self.num_items = self.trainMatrix.shape[1]
@@ -62,7 +59,6 @@ class Dataset(object):
             hold_out = HoldOutDataSplitter(self.path,self.separator,self.splitterRatio)
             if isgivenTest.lower() == "true":
                 self.trainMatrix = hold_out.load_training_file_as_matrix()
-                self.validMatrix = hold_out.load_validrating_file_as_matrix()
                 self.testMatrix = hold_out.load_testrating_file_as_matrix()
                 self.num_users = self.trainMatrix.shape[0]
                 self.num_items = self.trainMatrix.shape[1]
@@ -71,7 +67,7 @@ class Dataset(object):
                 else :
                     self.testNegatives = self.get_negatives()
             else :
-                self.trainMatrix,self.trainDict,self.validDict,self.validMatrix,self.testMatrix,\
+                self.trainMatrix,self.trainDict,self.testMatrix,\
                 self.userseq,self.userids,self.itemids,self.timeMatrix =\
                 hold_out.load_data_by_user_time()
                 self.num_users = self.trainMatrix.shape[0]
@@ -91,7 +87,7 @@ class Dataset(object):
                 for _ in np.arange(self.evaluate_neg): #.....................
                     neg_item_id = np.random.randint(0,self.num_items)
                     while (u,neg_item_id) in self.trainMatrix.keys() or  (u,neg_item_id) in self.testMatrix.keys() \
-                          or (u,neg_item_id) in self.validMatrix.keys() or neg_item_id in negative_per_user:
+                          or neg_item_id in negative_per_user:
                         neg_item_id = np.random.randint(0, self.num_items)
                     negative_per_user.append(neg_item_id)
                 negatives[u] = negative_per_user

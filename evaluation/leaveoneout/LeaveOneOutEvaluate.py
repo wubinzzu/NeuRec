@@ -6,7 +6,7 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor  # xxxxxxxxxxxxxxxxxx
 
 
-def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives,isvalid):
+def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives):
     """
     Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
     Return: score of each test rating.
@@ -16,13 +16,11 @@ def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives,isvalid):
     global _evaluateMatrix
     global _evaluateNegatives
     global _K
-    global _isvalid
     _model = model
     _trainMatrix = _model.dataset.trainMatrix.tocsr()
     _evaluateMatrix = evaluateMatrix.tocsr()
     _evaluateNegatives = evaluateNegatives
     _K = _model.topK
-    _isvalid = isvalid
     num_thread = 20  # xxxxxxxxxxxxxxxxxx
     hits, ndcgs,aucs = [], [],[]
     if(num_thread > 1): # Multi-thread
@@ -56,7 +54,7 @@ def eval_by_loo_user(u):  # xxxxxxxxxxxxxxxxxx
     eval_items.append(target_item)
     # Get prediction scores
     map_item_score = {}
-    predictions = _model.predict(u,eval_items,_isvalid)
+    predictions = _model.predict(u,eval_items)
     for i in np.arange(len(eval_items)):
         item = eval_items[i]
         map_item_score[item] = predictions[i]

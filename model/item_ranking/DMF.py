@@ -30,6 +30,7 @@ class DMF(AbstractRecommender):
         self.batch_size= int(self.conf["batch_size"])
         self.verbose= int(self.conf["verbose"])
         self.layers = list(eval(self.conf["layers"]))
+        self.loss_function = self.conf["loss_function"]
         self.fist_layer_size = self.layers[0]
         self.last_layer_size = self.layers[1]
         self.neg_sample_size = self.num_negatives
@@ -126,7 +127,7 @@ class DMF(AbstractRecommender):
             logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
-                Evaluate.valid_model(self,self.dataset,epoch)
+                Evaluate.test_model(self,self.dataset)
     def _get_input_all_data(self):
         user_input,item_input,lables = [],[],[]
         for u in range(self.num_users):
@@ -157,7 +158,7 @@ class DMF(AbstractRecommender):
         item_input=item_input[shuffle_index]
         lables = lables[shuffle_index]
         return user_input,item_input,lables            
-    def predict(self, user_id, items, isvalid):
+    def predict(self, user_id, items):
         user_input,item_input = [],[]
         u_vector = np.reshape(self.user_matrix.getrow(user_id).toarray(),[self.num_items])
         for i in items:

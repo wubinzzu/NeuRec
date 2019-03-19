@@ -1,8 +1,0 @@
-INFO:root:begin training TransRec model ......
-INFO:root:{'epochs': '100', 'batch_size': '256', 'embedding_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
-INFO:root:[iter 1 : loss : 0.427989, time: 2.558803]
-INFO:root:[iter 2 : loss : 0.394120, time: 2.300586]
-INFO:root:[iter 3 : loss : 0.392914, time: 2.224425]
-INFO:root:[iter 4 : loss : 0.392577, time: 2.211853]
-INFO:root:[iter 5 : loss : 0.391232, time: 2.228431]
-INFO:root:[iter 6 : loss : 0.391404, time: 2.232339]

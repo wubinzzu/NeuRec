@@ -204,19 +204,11 @@ class NAIS(AbstractRecommender):
                 total_loss+=loss
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
-                Evaluate.valid_model(self,self.dataset,epoch)
+                Evaluate.test_model(self,self.dataset)
 
-    def predict(self, user_id,items,isvalid):
-        if isvalid == True:
-            cand_items = self.dataset.trainDict[user_id]
-            num_idx = len(cand_items)
-        else :
-            cand_items = self.dataset.trainDict[user_id]
-            if type(self.dataset.validDict[user_id]) == int:
-                cand_items.append(self.dataset.validDict[user_id]) 
-            else :
-                cand_items.extend(self.dataset.validDict[user_id])
-            num_idx = len(cand_items)
+    def predict(self, user_id,items):
+        cand_items = self.dataset.trainDict[user_id]
+        num_idx = len(cand_items)
         # Get prediction scores
         item_idx = np.full(len(items), num_idx, dtype=np.int32)
         user_input = []

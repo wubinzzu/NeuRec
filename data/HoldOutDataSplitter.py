@@ -45,35 +45,22 @@ class HoldOutDataSplitter(object):
         print("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
         userseq = deepcopy(pos_per_user)
         train_dict = {}
-        valid_dict = {}
         train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
-        valid_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         test_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         for u in range(num_users):
             num_ratings_by_user = len(pos_per_user[u])
-            num_valid_ratings = math.floor(float(self.splitterRatio[1])*num_ratings_by_user)
             num_test_ratings = math.floor(float(self.splitterRatio[2])*num_ratings_by_user)
-            if len(pos_per_user[u]) > 3 and  num_valid_ratings>1 and num_test_ratings >1:
+            if len(pos_per_user[u]) > 3 and num_test_ratings >1:
                 for _ in range(num_test_ratings):
                     test_item=pos_per_user[u][-1]
                     pos_per_user[u].pop() 
                     test_matrix[u,test_item[0]] = test_item[1] 
                     time_matrix[u,test_item[0]] = test_item[2]
-                    
-                items = []    
-                for _ in range(num_valid_ratings):
-                    valid_item=pos_per_user[u][-1]
-                    pos_per_user[u].pop() 
-                    valid_matrix[u,valid_item[0]] = valid_item[1]
-                    time_matrix[u,valid_item[0]] = valid_item[2] 
-                    items.append(valid_item[0]) 
-                items.reverse()
-                valid_dict[u] =  items
             items = []
             for enlement in pos_per_user[u]:
                 items.append(enlement[0])
                 train_matrix[u,enlement[0]]=enlement[1]
                 time_matrix[u,enlement[0]] = enlement[2]
             train_dict[u]=items
-        return train_matrix,train_dict,valid_dict,valid_matrix,test_matrix,userseq,userids,itemids,time_matrix
+        return train_matrix,train_dict,test_matrix,userseq,userids,itemids,time_matrix

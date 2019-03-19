@@ -8,7 +8,7 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor  # xxxxxxxxxxxxxxxxxx
 
 
-def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,isvalid):
+def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives):
     """
     Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
     Return: score of each test rating.
@@ -19,14 +19,12 @@ def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,isvalid):
     global _evaluateMatrix
     global _evaluateNegatives
     global _K
-    global _isvalid
     global _evaluateusers
     _model = model
     _trainMatrix = _model.dataset.trainMatrix.tocsr()
     _testMatrix = _model.dataset.testMatrix.tocsr()
     _evaluateMatrix = evaluateMatrix.tocsr()
     _evaluateNegatives = evaluateNegatives
-    _isvalid = isvalid
     _evaluateusers = []
     _K = _model.topK
     num_thread = 10  # xxxxxxxxxxxxxxxxxx
@@ -70,7 +68,7 @@ def eval_by_foldout_user(u):  # xxxxxxxxxxxxxxxxxx
     eval_items.extend(target_items)
     # Get prediction scores
     map_item_score = {}
-    predictions = _model.predict(u,eval_items,_isvalid)
+    predictions = _model.predict(u,eval_items)
     for i in np.arange(len(eval_items)):
         item = eval_items[i]
         map_item_score[item] = predictions[i]

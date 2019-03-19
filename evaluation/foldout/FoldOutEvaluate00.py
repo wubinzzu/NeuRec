@@ -6,7 +6,7 @@ from evaluation.foldout import NDCG
 import multiprocessing
 import heapq  # for retrieval topK
 import numpy as np
-def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,isvalid):
+def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives):
     """
     Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
     Return: score of each test rating.
@@ -16,12 +16,10 @@ def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,isvalid):
     global _evaluateMatrix
     global _evaluateNegatives
     global _K
-    global _isvalid
     _model = model
     _trainMatrix = _model.dataset.trainMatrix.tocsr()
     _evaluateMatrix = evaluateMatrix.tocsr()
     _evaluateNegatives = evaluateNegatives
-    _isvalid = isvalid
     _K = _model.topK
     num_thread = 1
     Pres, Recs,MAPs,NDCGs,MRRs = [],[],[],[],[]
@@ -41,14 +39,14 @@ def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,isvalid):
         # Single thread
         for u in range(_model.num_users):
             if len(_evaluateMatrix[u].indices) !=0:
-                (Pre,Rec,MAP,NDCG,MRR) = eval_by_foldout_user(u,_isvalid)
+                (Pre,Rec,MAP,NDCG,MRR) = eval_by_foldout_user(u)
                 Pres.append(Pre) 
                 Recs.append(Rec)
                 MAPs.append(MAP)
                 NDCGs.append(NDCG)
                 MRRs.append(MRR)
     return (Pres,Recs,MAPs,NDCGs,MRRs)
-def eval_by_foldout_user(u,_isvalid):
+def eval_by_foldout_user(u):
     target_items= _evaluateMatrix[u].indices
     eval_items =[]
     if _evaluateNegatives != None:
@@ -59,7 +57,7 @@ def eval_by_foldout_user(u,_isvalid):
     eval_items.extend(target_items)
     # Get prediction scores
     map_item_score = {}
-    predictions = _model.predict(u,eval_items,_isvalid)
+    predictions = _model.predict(u,eval_items)
     for i in np.arange(len(eval_items)):
         item = eval_items[i]
         map_item_score[item] = predictions[i]

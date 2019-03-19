@@ -1,3 +1,0 @@
-INFO:root:begin training FPMCplus model ......
-INFO:root:{'epochs': '1', 'batch_size': '2566', 'embedding_size': '16', 'weight_size': '16', 'reg_mf': '0', 'topk': '10', 'learning_rate': '0.001', 'learner': 'adam', 'high_order': '2', 'ispairwise': 'false', 'num_neg': '4', 'loss_function': 'cross_entropy', 'verbose': '1'}
-INFO:root:[iter 1 : loss : 0.604134, time: 0.654825]

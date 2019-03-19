@@ -131,16 +131,9 @@ class HRM(AbstractRecommender):
             logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
-                Evaluate.valid_model(self,self.dataset,epoch)
-    def predict(self, user_id, items,isvalid):
-        if isvalid == True:
-            cand_items = self.dataset.trainDict[user_id]
-        else :
-            cand_items = deepcopy(self.dataset.trainDict[user_id])
-            if type(self.dataset.validDict[user_id]) == int:
-                cand_items.append(self.dataset.validDict[user_id]) 
-            else :
-                cand_items.extend(self.dataset.validDict[user_id])
+                Evaluate.test_model(self,self.dataset)
+    def predict(self, user_id, items):
+        cand_items = deepcopy(self.dataset.trainDict[user_id])
         item_recents = []
         for _ in range(len(items)):
             item_recents.append( cand_items[len(cand_items)-self.high_order:])

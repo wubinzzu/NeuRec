@@ -17,31 +17,11 @@ _testNegatives = None
 _evaluateMatrix=None
 _K = None
 
-
-
-def valid_model(model,dataset,epoch):
-    valid_time=time()
-    if dataset.splitter == "loo":
-        (hits, ndcgs,aucs) = evaluate_by_loo(model,dataset.validMatrix,dataset.testNegatives,True)
-        hr = np.array(hits).mean()
-        ndcg = np.array(ndcgs).mean()
-        auc = np.array(aucs).mean()
-        print('iter %d [%.1fs]: [Valid HR = %.4f, NDCG = %.4f,AUC = %.4f]'
-            % (epoch+1, time() - valid_time, hr, ndcg,auc))  
-    else :
-        (pres,recs,maps,ndcgs,mrrs) = evaluate_by_foldout(model,dataset.validMatrix,dataset.testNegatives,True)
-        Precision = np.array(pres).mean()
-        Recall = np.array(recs).mean()
-        MAP = np.array(maps).mean()
-        NDCG = np.array(ndcgs).mean()
-        MRR = np.array(mrrs).mean()
-        print("iter %d [%.1fs]: [Valid Precision = %.4f, Recall= %.4f, MAP= %.4f, NDCG= %.4f, MRR= %.4f][topk=%.4s]"
-        % (epoch+1, time() - valid_time, Precision, Recall,MAP,NDCG,MRR,model.topK))  
 def test_model(model,dataset):
     eval_begin = time()
     model_name=str(model.__class__).split(sep=".")[-1].replace("\'>","")
     if dataset.splitter == "loo":
-        (hits, ndcgs,aucs) = evaluate_by_loo(model,dataset.validMatrix,dataset.testNegatives,False)
+        (hits, ndcgs,aucs) = evaluate_by_loo(model,dataset.testMatrix,dataset.testNegatives)
         hr = np.array(hits).mean()
         ndcg = np.array(ndcgs).mean()
         auc = np.array(aucs).mean()
@@ -52,7 +32,7 @@ def test_model(model,dataset):
             hr, ndcg,auc, time() - eval_begin))
         
     else:
-        (pres,recs,maps,ndcgs,mrrs) = evaluate_by_foldout(model,dataset.validMatrix,dataset.testNegatives,False)
+        (pres,recs,maps,ndcgs,mrrs) = evaluate_by_foldout(model,dataset.testMatrix,dataset.testNegatives)
         Precision = np.array(pres).mean()
         Recall = np.array(recs).mean()
         MAP = np.array(maps).mean()

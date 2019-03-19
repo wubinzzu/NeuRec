@@ -65,17 +65,6 @@ class LeaveOneOutDataSplitter(object):
                 ratingList.append([user, item])
                 line = f.readline()
         return ratingList
-    
-    def load_validrating_file_as_list(self):
-        ratingList = []
-        with open(self.path+".valid.rating", "r") as f:
-            line = f.readline()
-            while line != None and line != "":
-                arr = line.split(self.separator)
-                user, item = int(arr[0]), int(arr[1])
-                ratingList.append([user, item])
-                line = f.readline()
-        return ratingList
     def load_negative_file(self):
         negativeList = []
         with open(self.path+".negative", "r") as f:
@@ -124,27 +113,17 @@ class LeaveOneOutDataSplitter(object):
             print("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
             userseq = deepcopy(pos_per_user)
             train_dict = {}
-            valid_dict = {}
             train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
-            valid_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
             test_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
             time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
             for u in np.arange(num_users):
                 if len(pos_per_user[u])<3:
                     test_item=-1
-                    valid_item=-1
                     continue
                 
                 test_item=pos_per_user[u][-1]
                 pos_per_user[u].pop()
                 
-                valid_item=pos_per_user[u][-1]
-                pos_per_user[u].pop()
-
-                
-                valid_matrix[u,valid_item[0]] = valid_item[1]
-                valid_dict[u] = valid_item[0]
-                time_matrix[u,valid_item[0]] = valid_item[2]
                 test_matrix[u,test_item[0]] = test_item[1]
                 time_matrix[u,test_item[0]] = test_item[2]
                 items = []
@@ -153,4 +132,4 @@ class LeaveOneOutDataSplitter(object):
                     train_matrix[u,enlement[0]]=enlement[1]
                     time_matrix[u,enlement[0]] = enlement[2]
                 train_dict[u]=items  
-        return train_matrix,train_dict,valid_dict,valid_matrix,test_matrix,userseq,userids,itemids,time_matrix
+        return train_matrix,train_dict,test_matrix,userseq,userids,itemids,time_matrix

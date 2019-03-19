@@ -66,7 +66,6 @@ if __name__ == "__main__":
             
         elif recommender.lower() == "neumf":
             model = NeuMF(sess,dataset) 
-        
                
         elif recommender.lower() == "convncf":
             model = ConvNCF(sess,dataset) 

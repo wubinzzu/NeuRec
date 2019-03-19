@@ -34,6 +34,7 @@ class ConvNCF(AbstractRecommender):
         self.lr_embed=float(self.conf["lr_embed"])
         self.lr_net=float(self.conf["lr_net"])
         self.verbose= int(self.conf["verbose"])
+        self.loss_function = self.conf["loss_function"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items 
         self.dataset = dataset 
@@ -182,8 +183,8 @@ class ConvNCF(AbstractRecommender):
             logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
-                Evaluate.valid_model(self,self.dataset,epoch)
+                Evaluate.test_model(self,self.dataset,epoch)
                 
-    def predict(self, user_id, items, isvalid):
+    def predict(self, user_id, items):
         users = np.full(len(items), user_id, dtype=np.int32)
         return self.sess.run(self.output, feed_dict={self.user_input: users, self.item_input_pos: items,self.keep_prob:1.0})

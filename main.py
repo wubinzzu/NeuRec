@@ -30,8 +30,7 @@ if __name__ == "__main__":
     recommender = str(conf["recommender"])
     evaluate_neg = int(conf["rec.evaluate.neg"])
     isgivenTest = str(conf["isgiventest"])
-    #splitterRatio=list(eval(conf["data.splitterratio"]))
-    splitterRatio= [0.7,0.1,0.2]
+    splitterRatio=list(eval(conf["data.splitterratio"]))
     dataset = Dataset(data_input_path+dataset_name,splitter,separator,evaluate_neg,dataset_name,isgivenTest,splitterRatio) 
 
     config = tf.ConfigProto()

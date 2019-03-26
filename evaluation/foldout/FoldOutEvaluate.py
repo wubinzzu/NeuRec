@@ -5,12 +5,12 @@ from evaluation.foldout import MRR
 from evaluation.foldout import NDCG
 import heapq  # for retrieval topK
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor  # xxxxxxxxxxxxxxxxxx
+from concurrent.futures import ThreadPoolExecutor
 
 
-def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives):
+def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives,num_thread):
     """
-    Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
+    Evaluate the performance (precision, recall, MAP,NDCG,MRR) of top-K recommendation
     Return: score of each test rating.
     """
     global _model
@@ -27,19 +27,18 @@ def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives):
     _evaluateNegatives = evaluateNegatives
     _evaluateusers = []
     _K = _model.topK
-    num_thread = 10  # xxxxxxxxxxxxxxxxxx
     Pres, Recs,MAPs,NDCGs,MRRs = [],[],[],[],[]
     for u in range(_model.num_users):
         items_test = _testMatrix[u].indices
         if len(items_test) >0:
             _evaluateusers.append(u)
     if(num_thread > 1): # Multi-thread
-        with ThreadPoolExecutor() as executor:  # xxxxxxxxxxxxxxxxxx
-            res = executor.map(eval_by_foldout_user, _evaluateusers)  # xxxxxxxxxxxxxxxxxx
+        with ThreadPoolExecutor() as executor:
+            res = executor.map(eval_by_foldout_user, _evaluateusers)
         #res = pool.map(eval_by_foldout_user, range(len(_evaluateMatrix)))
         #pool.close()
         #pool.join()
-        res = list(res)  # xxxxxxxxxxxxxxxxxx
+        res = list(res)
         Pres = [r[0] for r in res]
         Recs = [r[1] for r in res]
         MAPs = [r[2] for r in res]
@@ -50,14 +49,14 @@ def evaluate_by_foldout(model,evaluateMatrix,evaluateNegatives):
         # Single thread
         for u in _evaluateusers:
             if len(_evaluateMatrix[u].indices) !=0:
-                (Pre,Rec,MAP,NDCG,MRR) = eval_by_foldout_user(u)  # xxxxxxxxxxxxxxxxxx
+                (Pre,Rec,MAP,NDCG,MRR) = eval_by_foldout_user(u)  
                 Pres.append(Pre) 
                 Recs.append(Rec)
                 MAPs.append(MAP)
                 NDCGs.append(NDCG)
                 MRRs.append(MRR)
     return (Pres,Recs,MAPs,NDCGs,MRRs)
-def eval_by_foldout_user(u):  # xxxxxxxxxxxxxxxxxx
+def eval_by_foldout_user(u):
     target_items= _evaluateMatrix[u].indices
     eval_items =[]
     if _evaluateNegatives != None:
@@ -81,4 +80,3 @@ def eval_by_foldout_user(u):  # xxxxxxxxxxxxxxxxxx
     dcg = NDCG.getNDCG(rank_list, target_items)
     rr = MRR.getMRR(rank_list, target_items)
     return (Pre,Rec,ap,dcg,rr)
-

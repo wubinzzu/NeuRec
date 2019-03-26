@@ -2,10 +2,9 @@ import scipy.sparse as sp
 import numpy as np
 from copy import deepcopy
 class LeaveOneOutDataSplitter(object):
-    def __init__(self,path,separator, threshold):
+    def __init__(self,path,separator):
         self.path =path
         self.separator = separator
-        self.threshold = threshold
     def load_data_by_user_time(self):
         print("Loading interaction records from %s "%(self.path))
         pos_per_user = {}

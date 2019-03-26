@@ -11,17 +11,12 @@ from time import time
 import logging
 from evaluation.leaveoneout.LeaveOneOutEvaluate import evaluate_by_loo
 from evaluation.foldout.FoldOutEvaluate import evaluate_by_foldout
-_trainMatrix = None
-_model = None
-_testNegatives = None
-_evaluateMatrix=None
-_K = None
 
-def test_model(model,dataset):
+def test_model(model,dataset,num_thread=10):
     eval_begin = time()
     model_name=str(model.__class__).split(sep=".")[-1].replace("\'>","")
     if dataset.splitter == "loo":
-        (hits, ndcgs,aucs) = evaluate_by_loo(model,dataset.testMatrix,dataset.testNegatives)
+        (hits, ndcgs,aucs) = evaluate_by_loo(model,dataset.testMatrix,dataset.testNegatives,num_thread)
         hr = np.array(hits).mean()
         ndcg = np.array(ndcgs).mean()
         auc = np.array(aucs).mean()
@@ -32,7 +27,7 @@ def test_model(model,dataset):
             hr, ndcg,auc, time() - eval_begin))
         
     else:
-        (pres,recs,maps,ndcgs,mrrs) = evaluate_by_foldout(model,dataset.testMatrix,dataset.testNegatives)
+        (pres,recs,maps,ndcgs,mrrs) = evaluate_by_foldout(model,dataset.testMatrix,dataset.testNegatives,num_thread)
         Precision = np.array(pres).mean()
         Recall = np.array(recs).mean()
         MAP = np.array(maps).mean()

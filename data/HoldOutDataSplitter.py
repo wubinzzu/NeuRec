@@ -3,11 +3,11 @@ import numpy as np
 import math
 from copy import deepcopy
 class HoldOutDataSplitter(object):
-    def __init__(self,path,separator,splitterRatio=[0.7,0.1,0.2]):
+    def __init__(self,path,separator,splitterRatio=[0.8,0.2]):
         self.path =path +".rating"
         self.separator = separator
         self.splitterRatio = splitterRatio
-        if float(splitterRatio[0])+ float(splitterRatio[1]) + float(splitterRatio[2]) != 1.0:
+        if float(splitterRatio[0])+ float(splitterRatio[1]) != 1.0:
             raise ValueError("please given a correct splitterRatio")
     def load_data_by_user_time(self):
         print("Loading interaction records from %s "%(self.path))
@@ -23,8 +23,7 @@ class HoldOutDataSplitter(object):
         iditems={}
         with open(self.path, 'r') as f:
             for line in f.readlines():
-                useridx, itemidx,rating, time= line.strip().split(self.separator)
-                
+                useridx, itemidx,rating, time= line.strip().split(self.separator) 
                 num_ratings+=1
                 if  itemidx not in itemids:
                     iditems[num_items]=itemidx
@@ -50,7 +49,7 @@ class HoldOutDataSplitter(object):
         time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         for u in range(num_users):
             num_ratings_by_user = len(pos_per_user[u])
-            num_test_ratings = math.floor(float(self.splitterRatio[2])*num_ratings_by_user)
+            num_test_ratings = math.floor(float(self.splitterRatio[1])*num_ratings_by_user)
             if len(pos_per_user[u]) > 3 and num_test_ratings >1:
                 for _ in range(num_test_ratings):
                     test_item=pos_per_user[u][-1]

@@ -2,78 +2,77 @@ import scipy.sparse as sp
 import numpy as np
 class GivenData(object):
     def __init__(self,path,separator):
-        self.path =path +".rating"
+        self.path =path
         self.separator = separator
-    def load_training_file_as_matrix(self):
-        '''
-        Read .rating file and Return dok matrix.
-        The first line of .rating file is: num_users\t num_items
-        '''
+        global num_items,num_users,userids,itemids,idusers,iditems
+    
+    def load_pre_splitter_data(self):
+        pos_per_user={}
+        num_items,num_users = 0,0
+        userids,itemids,idusers,iditems = {},{},{},{}
         # Get number of users and items
-        num_users, num_items = 0, 0
-        with open(self.path+".train.rating", "r") as f:
-            line = f.readline()
-            while line != None and line != "":
-                arr = line.split(self.separator)
-                u, i = int(arr[0]), int(arr[1])
-                num_users = max(num_users, u)
-                num_items = max(num_items, i)
-                line = f.readline()
-        # Construct matrix
-        mat = sp.dok_matrix((num_users+1, num_items+1), dtype=np.float32)
+        with open(self.path+".train.rating", 'r') as f:
+            for line in f.readlines():
+                useridx, itemidx, rating, time= line.strip().split(self.separator) 
+                    
+                if  itemidx not in itemids:
+                    iditems[num_items]=itemidx
+                    itemids[itemidx] = num_items
+                    num_items+=1
+    
+                if useridx not in userids:
+                    idusers[num_users]=useridx
+                    userids[useridx]=num_users
+                    num_users+=1
+                    pos_per_user[userids[useridx]]=[]
+                pos_per_user[userids[useridx]].append([itemids[itemidx],rating,int(time)])
+            
+            train_dict = {}
+            for u in range(num_users):
+                pos_per_user[u] =sorted(pos_per_user[u], key=lambda d: d[2])
+                items = []
+                for enlement in pos_per_user[u]:
+                    items.append(enlement[0])
+                train_dict[u] = items
+            
+        with open(self.path+".test.rating", 'r') as f:
+            for line in f.readlines():
+                useridx, itemidx,rating, time= line.strip().split(self.separator)
+                if  itemidx not in itemids:
+                    iditems[num_items]=itemidx
+                    itemids[itemidx] = num_items
+                    num_items+=1
+
+                if useridx not in userids:
+                    idusers[num_users]=useridx
+                    userids[useridx]=num_users
+                    num_users+=1
+                    pos_per_user[userids[useridx]]=[]
+                pos_per_user[userids[useridx]].append([itemids[itemidx],rating,int(time)])
+        for u in range(num_users):
+            pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
+        
+        train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
+        time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         with open(self.path+".train.rating", "r") as f:
             line = f.readline()
             while line != None and line != "":
                 arr = line.split("\t")
-                user, item, rating = int(arr[0]), int(arr[1]), float(arr[2])
-                if (rating > 0):
-                    mat[user, item] = 1.0
+                user, item, rating,time = userids[arr[0]], itemids[arr[1]], float(arr[2]), float(arr[3]), 
+                train_matrix[user, item] = rating
+                time_matrix[user, item] = time            
                 line = f.readline()
-        print ("already load the trainMatrix...")
-        return mat
-
-    def load_training_file_as_list(self):
-        # Get number of users and items
-        u_ = 0
-        lists, items = [], []
-        with open(self.path+".train.rating", "r") as f:
-            line = f.readline()
-            index = 0
-            while line != None and line != "":
-                arr = line.split(self.separator)
-                u, i = int(arr[0]), int(arr[1])
-                if u_ < u:
-                    index = 0
-                    lists.append(items)
-                    items = []
-                    u_ += 1
-                index += 1
-                items.append(i)
-                line = f.readline()
-        lists.append(items)
-        print ("already load the trainList...")
-        return lists
-
-    def load_testrating_file_as_list(self):
-        ratingList = []
+        print ("already load the trainMatrix...")  
+        
+        test_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         with open(self.path+".test.rating", "r") as f:
             line = f.readline()
             while line != None and line != "":
-                arr = line.split(self.separator)
-                user, item = int(arr[0]), int(arr[1])
-                ratingList.append([user, item])
+                arr = line.split("\t")
+                user, item, rating, time = userids[arr[0]], itemids[arr[1]], float(arr[2]), float(arr[3]), 
+                test_matrix[user, item] = rating
+                time_matrix[user, item] = time            
                 line = f.readline()
-        return ratingList
-    
-    def load_negative_file(self):
-        negativeList = []
-        with open(self.path+".negative", "r") as f:
-            line = f.readline()
-            while line != None and line != "":
-                arr = line.split(self.separator)
-                negatives = []
-                for x in arr[1: ]:
-                    negatives.append(int(x))
-                negativeList.append(negatives)
-                line = f.readline()
-        return negativeList
+        print ("already load the trainMatrix...")
+       
+        return train_matrix,train_dict,test_matrix,pos_per_user,userids,itemids,time_matrix

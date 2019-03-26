@@ -3,10 +3,10 @@ from evaluation.leaveoneout import NDCG as looNDCG
 from evaluation.leaveoneout import AUC as looAUC
 import heapq  # for retrieval topK
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor  # xxxxxxxxxxxxxxxxxx
+from concurrent.futures import ThreadPoolExecutor  
 
 
-def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives):
+def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives,num_thread):
     """
     Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
     Return: score of each test rating.
@@ -21,29 +21,27 @@ def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives):
     _evaluateMatrix = evaluateMatrix.tocsr()
     _evaluateNegatives = evaluateNegatives
     _K = _model.topK
-    num_thread = 20  # xxxxxxxxxxxxxxxxxx
     hits, ndcgs,aucs = [], [],[]
     if(num_thread > 1): # Multi-thread
-        with ThreadPoolExecutor() as executor:  # xxxxxxxxxxxxxxxxxx
-            res = executor.map(eval_by_loo_user, range(_evaluateMatrix.shape[0]))  # xxxxxxxxxxxxxxxxxx
-        res = list(res)  # xxxxxxxxxxxxxxxxxx
+        with ThreadPoolExecutor() as executor:  
+            res = executor.map(eval_by_loo_user, range(_evaluateMatrix.shape[0]))  
+        res = list(res)  
         hits = [r[0] for r in res]
         ndcgs = [r[1] for r in res]
         aucs = [r[2] for r in res]
     # Single thread
     else:
-       
         # Single thread
         for u in range(_model.num_users):
             if len(_evaluateMatrix[u].indices) !=0:
-                (hr, ndcg,auc) = eval_by_loo_user(u)  # xxxxxxxxxxxxxxxxxx
+                (hr, ndcg,auc) = eval_by_loo_user(u)
                 aucs.append(auc)
                 hits.append(hr)
                 ndcgs.append(ndcg)
             
     return (hits, ndcgs,aucs)
 
-def eval_by_loo_user(u):  # xxxxxxxxxxxxxxxxxx
+def eval_by_loo_user(u):
     target_item = _evaluateMatrix[u].indices[0]
     eval_items =[]
     if _evaluateNegatives != None:

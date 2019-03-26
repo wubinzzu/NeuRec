@@ -26,12 +26,12 @@ if __name__ == "__main__":
     data_input_path = conf["data.input.path"]
     dataset_name = conf["data.input.dataset"]
     splitter = conf["data.splitter"]
+    threshold = float(conf["data.convert.binarize.threshold"])
     separator = eval(conf["data.convert.separator"])
     recommender = str(conf["recommender"])
     evaluate_neg = int(conf["rec.evaluate.neg"])
-    isgivenTest = str(conf["isgiventest"])
     splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path+dataset_name,splitter,separator,evaluate_neg,dataset_name,isgivenTest,splitterRatio) 
+    dataset = Dataset(data_input_path+dataset_name,splitter,threshold,separator,evaluate_neg,dataset_name,splitterRatio) 
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True

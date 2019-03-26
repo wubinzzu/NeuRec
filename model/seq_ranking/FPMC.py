@@ -11,7 +11,6 @@ from time import time
 from util import learner, data_gen
 from evaluation import Evaluate
 import configparser
-from copy import deepcopy
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class FPMC(AbstractRecommender):
     def __init__(self,sess,dataset):  
@@ -141,7 +140,7 @@ class FPMC(AbstractRecommender):
                 Evaluate.test_model(self,self.dataset)
                 #Evaluate.test_model(self,self.dataset)
     def predict(self, user_id, items):
-        cand_items = deepcopy(self.dataset.trainDict[user_id])
+        cand_items = self.dataset.trainDict[user_id]
         item_recent = np.full(len(items), cand_items[-1], dtype='int32')
 
         users = np.full(len(items), user_id, dtype='int32')

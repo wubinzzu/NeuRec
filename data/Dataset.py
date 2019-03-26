@@ -8,6 +8,7 @@ import numpy as np
 import os
 from data.LeaveOneOutDataSplitter import LeaveOneOutDataSplitter
 from data.HoldOutDataSplitter import HoldOutDataSplitter
+from data.GivenData import GivenData
 class Dataset(object):
     '''
     Loading the data file
@@ -17,13 +18,14 @@ class Dataset(object):
         testNegatives: sample the items not rated by user
     '''
 
-    def __init__(self,path,splitter,separator,evaluate_neg,dataset_name,isgivenTest=False,splitterRatio=[0.8,0.2]):
+    def __init__(self,path,splitter,threshold,separator,evaluate_neg,dataset_name,splitterRatio=[0.8,0.2]):
         '''
         Constructor
         '''
         self.path = path
         self.dataset_name = dataset_name
         self.separator= separator
+        self.threshold = threshold
         self.splitterRatio=splitterRatio
         self.evaluate_neg = evaluate_neg
         self.splitter=splitter
@@ -38,42 +40,31 @@ class Dataset(object):
         self.userids = None
         self.itemids = None
         if splitter == "loo" :
-            loo = LeaveOneOutDataSplitter(self.path,self.separator)
-            if isgivenTest.lower() == "true":
-                self.trainMatrix = loo.load_training_file_as_matrix()
-                self.trainDict = loo.load_training_file_as_list()
-                self.testMatrix = loo.load_testrating_file_as_Matrix()
-                self.num_users = self.trainMatrix.shape[0]
-                self.num_items = self.trainMatrix.shape[1]
-                if os.path.exists(self.path+".negative"):
-                    self.testNegatives = loo.load_negative_file()
-                else :
-                    self.testNegatives = self.get_negatives()
-            else :
-                self.trainMatrix,self.trainDict,self.testMatrix,\
-                self.userseq,self.userids,self.itemids,self.timeMatrix = loo.load_data_by_user_time()
-                self.num_users = self.trainMatrix.shape[0]
-                self.num_items = self.trainMatrix.shape[1]
-                self.testNegatives = self.get_negatives()
+            loo = LeaveOneOutDataSplitter(self.path,self.separator, self.threshold)
+            self.trainMatrix,self.trainDict,self.testMatrix,\
+            self.userseq,self.userids,self.itemids,self.timeMatrix = loo.load_data_by_user_time()
+            self.num_users = self.trainMatrix.shape[0]
+            self.num_items = self.trainMatrix.shape[1]
+            self.testNegatives = self.get_negatives()
         elif splitter == "ratio" :
-            hold_out = HoldOutDataSplitter(self.path,self.separator,self.splitterRatio)
-            if isgivenTest.lower() == "true":
-                self.trainMatrix = hold_out.load_training_file_as_matrix()
-                self.testMatrix = hold_out.load_testrating_file_as_matrix()
-                self.num_users = self.trainMatrix.shape[0]
-                self.num_items = self.trainMatrix.shape[1]
-                if os.path.exists(self.path+".negative"):
-                    self.testNegatives = hold_out.load_negative_file()
-                else :
-                    self.testNegatives = self.get_negatives()
+            hold_out = HoldOutDataSplitter(self.path,self.separator, self.threshold, self.splitterRatio)
+            self.trainMatrix,self.trainDict,self.testMatrix,\
+            self.userseq,self.userids,self.itemids,self.timeMatrix =\
+            hold_out.load_data_by_user_time()
+            self.num_users = self.trainMatrix.shape[0]
+            self.num_items = self.trainMatrix.shape[1]
+            self.testNegatives = self.get_negatives()
+        elif splitter == "given" : 
+            given = GivenData(self.path,self.separator, self.threshold)
+            self.trainMatrix = given.load_training_file_as_matrix()
+            self.self.trainDict =given.load_training_file_as_list() 
+            self.testMatrix = given.load_testrating_file_as_matrix()
+            self.num_users = self.trainMatrix.shape[0]
+            self.num_items = self.trainMatrix.shape[1]
+            if os.path.exists(self.path+".negative"):
+                self.testNegatives = hold_out.load_negative_file()
             else :
-                self.trainMatrix,self.trainDict,self.testMatrix,\
-                self.userseq,self.userids,self.itemids,self.timeMatrix =\
-                hold_out.load_data_by_user_time()
-                self.num_users = self.trainMatrix.shape[0]
-                self.num_items = self.trainMatrix.shape[1]
-                self.testNegatives = self.get_negatives()
-            
+                self.testNegatives = self.get_negatives()      
         else :
             print("please choose a splitter")
         self.num_users = self.trainMatrix.shape[0]

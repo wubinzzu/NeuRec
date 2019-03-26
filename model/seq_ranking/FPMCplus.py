@@ -11,7 +11,6 @@ from time import time
 from util import learner, data_gen
 from evaluation import Evaluate
 import configparser
-from copy import deepcopy
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class FPMCplus(AbstractRecommender):
     def __init__(self,sess,dataset):  
@@ -172,7 +171,7 @@ class FPMCplus(AbstractRecommender):
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
     def predict(self, user_id, items):
-        cand_items = deepcopy(self.dataset.trainDict[user_id])
+        cand_items = self.dataset.trainDict[user_id]
         item_recents = []
         for _ in range(len(items)):
             item_recents.append( cand_items[len(cand_items)-self.high_order:])

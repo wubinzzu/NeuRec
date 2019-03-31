@@ -6,7 +6,6 @@ from model.AbstractRecommender import AbstractRecommender
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
-import logging
 from time import time
 from evaluation import Evaluate
 import configparser
@@ -43,7 +42,6 @@ class DeepICF(AbstractRecommender):
         self.algorithm = int(self.conf["algorithm"])
         self.learner = str(self.conf["learner"])
         self.dataset = dataset
-        self.dataset_name= dataset.dataset_name 
         self.num_items = dataset.num_items
         self.num_users = dataset.num_users
         self.sess=sess  
@@ -172,21 +170,10 @@ class DeepICF(AbstractRecommender):
         self._create_inference()
         self._create_loss()
         self._create_optimizer()
-        logging.info("already build the computing graph...")
     def batch_gen(self,batches, i):  
         return [(batches[r])[i] for r in range(4)]    
     def train_model(self):
-        algo = "DeepICF"
-        log_dir = "Log/%s/" % self.dataset_name
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
         
-        filename = log_dir+"log_{}_model_{}_lr_reg{}.txt".\
-        format(algo,self.dataset_name,self.learning_rate,self.lambda_bilinear)
-        
-        logging.basicConfig(filename=filename, level=logging.INFO)
-        logging.info("begin training %s model ......" % algo)
-        logging.info(self.conf)
         for epoch in  range(self.num_epochs):
             batches = self.shuffle()
             num_batch = len(batches[1])

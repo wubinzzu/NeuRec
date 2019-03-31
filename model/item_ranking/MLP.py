@@ -13,7 +13,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
 import numpy as np
-import logging
 from time import time
 from util import data_gen, learner
 from evaluation import Evaluate
@@ -98,7 +97,6 @@ class MLP(AbstractRecommender):
         self._create_variables()
         self._create_loss()
         self._create_optimizer()
-        logging.info("already build the computing graph...")
             
     def train_model(self):
         algo = "mlp"
@@ -108,10 +106,7 @@ class MLP(AbstractRecommender):
         
         filename = log_dir+"log_{}_model_{}_lr_reg{}.txt".\
         format(algo,self.dataset_name,self.learning_rate,self.reg_mlp)
-        
-        logging.basicConfig(filename=filename, level=logging.INFO)
-        logging.info("begin training %s model ......" % algo)
-        logging.info(self.conf)
+
         for epoch in  range(self.num_epochs):
             # Generate training instances
             if self.ispairwise.lower() =="true":
@@ -138,7 +133,6 @@ class MLP(AbstractRecommender):
                       
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)

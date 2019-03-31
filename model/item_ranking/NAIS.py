@@ -8,7 +8,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
 import numpy as np
-import logging
 from time import time
 from evaluation import Evaluate
 import configparser
@@ -131,8 +130,6 @@ class NAIS(AbstractRecommender):
         self._create_variables()
         self._create_loss()
         self._create_optimizer()
-        logging.info("already build the computing graph...")
-
 
     def _attention_MLP(self, q_,embedding_q_,num_idx):
             with tf.name_scope("attention_MLP"):
@@ -162,17 +159,7 @@ class NAIS(AbstractRecommender):
                 return tf.reduce_sum(A * embedding_q_, 1)      
 
     def train_model(self):
-        algo = "FISM"
-        log_dir = "Log/%s/" % self.dataset_name
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        
-        filename = log_dir+"log_{}_model_{}_lr_reg{}.txt".\
-        format(algo,self.dataset_name,self.learning_rate,self.lambda_bilinear)
-        
-        logging.basicConfig(filename=filename, level=logging.INFO)
-        logging.info("begin training %s model ......" % algo)
-        logging.info(self.conf)
+
         for epoch in  range(self.num_epochs):
             if self.ispairwise.lower() =="true":
                 user_input,user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg = \

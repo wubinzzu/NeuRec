@@ -16,6 +16,8 @@ from model.seq_ranking.HRM import HRM
 
 from model.item_ranking.DMF import DMF 
 from model.item_ranking.ConvNCF import ConvNCF
+from model.item_ranking.U_CDAE import U_CDAE
+from model.item_ranking.U_DAE import U_DAE
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     evaluate_neg = int(conf["rec.evaluate.neg"])
     num_thread = int(conf["rec.number.thread"])
     splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path+dataset_name,splitter,separator,evaluate_neg,dataset_name,splitterRatio) 
+    dataset = Dataset(data_input_path,splitter,separator,evaluate_neg,dataset_name,splitterRatio) 
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -72,6 +74,12 @@ if __name__ == "__main__":
         elif recommender.lower() == "transrec":
             model = TransRec(sess,dataset)  
             
+        elif recommender.lower() == "u_cdae":
+            model = U_CDAE(sess,dataset)  
+        
+        elif recommender.lower() == "u_dae":
+            model = U_DAE(sess,dataset)  
+
         model.build_graph()
         sess.run(tf.global_variables_initializer())
         model.train_model()

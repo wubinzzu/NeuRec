@@ -14,7 +14,7 @@ class Dataset(object):
         '''
         Constructor
         '''
-        self.path = path
+        self.path = path+dataset_name
         self.dataset_name = dataset_name
         self.separator= separator
         self.splitterRatio=splitterRatio
@@ -37,7 +37,7 @@ class Dataset(object):
             self.num_users = self.trainMatrix.shape[0]
             self.num_items = self.trainMatrix.shape[1]
         elif splitter == "ratio" :
-            hold_out = HoldOutDataSplitter(self.path,self.separator, self.splitterRatio)
+            hold_out = HoldOutDataSplitter(self.path,self.separator,self.splitterRatio)
             self.trainMatrix,self.trainDict,self.testMatrix,\
             self.userseq,self.userids,self.itemids,self.timeMatrix =\
             hold_out.load_data_by_user_time()

@@ -4,7 +4,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
-import logging
 from time import time
 import configparser
 from util import learner,data_gen
@@ -34,7 +33,6 @@ class APR(AbstractRecommender):
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
-        self.dataset_name = dataset.dataset_name
         self.sess=sess  
     
     def _create_placeholders(self):
@@ -150,7 +148,6 @@ class APR(AbstractRecommender):
                 
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            logging.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)

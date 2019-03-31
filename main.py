@@ -16,8 +16,9 @@ from model.seq_ranking.HRM import HRM
 
 from model.item_ranking.DMF import DMF 
 from model.item_ranking.ConvNCF import ConvNCF
-from model.item_ranking.U_CDAE import U_CDAE
-from model.item_ranking.U_DAE import U_DAE
+from model.item_ranking.CDAE import CDAE
+from model.item_ranking.DAE import DAE
+from model.seq_ranking.NPE import NPE
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -74,11 +75,14 @@ if __name__ == "__main__":
         elif recommender.lower() == "transrec":
             model = TransRec(sess,dataset)  
             
-        elif recommender.lower() == "u_cdae":
-            model = U_CDAE(sess,dataset)  
+        elif recommender.lower() == "cdae":
+            model = CDAE(sess,dataset)  
         
-        elif recommender.lower() == "u_dae":
-            model = U_DAE(sess,dataset)  
+        elif recommender.lower() == "dae":
+            model = DAE(sess,dataset)  
+            
+        elif recommender.lower() == "npe":
+            model = NPE(sess,dataset)  
 
         model.build_graph()
         sess.run(tf.global_variables_initializer())

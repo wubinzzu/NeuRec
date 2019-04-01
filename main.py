@@ -19,6 +19,7 @@ from model.item_ranking.ConvNCF import ConvNCF
 from model.item_ranking.CDAE import CDAE
 from model.item_ranking.DAE import DAE
 from model.seq_ranking.NPE import NPE
+from model.item_ranking.IRGAN import IRGAN
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -83,6 +84,9 @@ if __name__ == "__main__":
             
         elif recommender.lower() == "npe":
             model = NPE(sess,dataset)  
+            
+        elif recommender.lower() == "irgan":
+            model = IRGAN(sess,dataset)  
 
         model.build_graph()
         sess.run(tf.global_variables_initializer())

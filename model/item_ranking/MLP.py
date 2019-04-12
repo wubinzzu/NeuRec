@@ -99,13 +99,6 @@ class MLP(AbstractRecommender):
         self._create_optimizer()
             
     def train_model(self):
-        algo = "mlp"
-        log_dir = "Log/%s/" % self.dataset_name
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        
-        filename = log_dir+"log_{}_model_{}_lr_reg{}.txt".\
-        format(algo,self.dataset_name,self.learning_rate,self.reg_mlp)
 
         for epoch in  range(self.num_epochs):
             # Generate training instances

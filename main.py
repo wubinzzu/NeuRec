@@ -20,6 +20,8 @@ from model.item_ranking.CDAE import CDAE
 from model.item_ranking.DAE import DAE
 from model.seq_ranking.NPE import NPE
 from model.item_ranking.IRGAN import IRGAN
+from model.item_ranking.MultiDAE import MultiDAE
+from model.item_ranking.MultiVAE import MultiVAE
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -84,6 +86,12 @@ if __name__ == "__main__":
             
         elif recommender.lower() == "npe":
             model = NPE(sess,dataset)  
+            
+        elif recommender.lower() == "multidae":
+            model = MultiDAE(sess,dataset)  
+            
+        elif recommender.lower() == "multivae":
+            model = MultiVAE(sess,dataset)  
             
         elif recommender.lower() == "irgan":
             model = IRGAN(sess,dataset)  

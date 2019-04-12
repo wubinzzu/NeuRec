@@ -11,7 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import learner
+from util import learner,tool
 from evaluation import Evaluate
 import configparser
 class CDAE(AbstractRecommender):
@@ -62,11 +62,11 @@ class CDAE(AbstractRecommender):
             self.user_latent =  tf.nn.embedding_lookup(self.V, self.user_input)
             
             corrupted_input = tf.multiply(self.input_R,self.mask_corruption)
-            encoder_op = self.activation_function(self.h_act,\
+            encoder_op = tool.activation_function(self.h_act,\
             tf.matmul(corrupted_input, self.weights['encoder'])+self.biases['encoder']+self.user_latent)
               
             self.decoder_op = tf.matmul(encoder_op, self.weights['decoder'])+self.biases['decoder']
-            self.output = self.activation_function(self.g_act,self.decoder_op)
+            self.output = tool.activation_function(self.g_act,self.decoder_op)
             
     def _create_loss(self):
         with tf.name_scope("loss"):
@@ -126,24 +126,6 @@ class CDAE(AbstractRecommender):
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
     
-    def activation_function(self,act,act_input):
-        act_func = None
-        if act == "sigmoid":
-            act_func = tf.nn.sigmoid(act_input)
-        elif act == "tanh":
-            act_func = tf.nn.tanh(act_input)
-            
-        elif act == "relu":
-            act_func = tf.nn.relu(act_input)
-        
-        elif act == "elu":
-            act_func = tf.nn.elu(act_input)
-           
-        elif act == "identity":
-            act_func = tf.identity(act_input)
-        else:
-            raise NotImplementedError("ERROR")
-        return act_func            
     def predict(self, user_id, items):
         mask = np.ones((1,self.num_items), dtype=np.int32)
         rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)

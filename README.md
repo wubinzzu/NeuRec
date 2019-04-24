@@ -19,7 +19,7 @@
 <li><b>Flexible Configuration</b>: Configs a recommendation model only using a configuration file, including any loss & optimizer.</li>
 
 <li><b>Easy Expansion</b>: Well-designed interfaces, automatic differentiation.</li>
-<li><b>Fast Execution</b>: Naturally support GPU, multi-thread evaluator. </li>
+<li><b>Fast Execution</b>: Naturally supports GPU, multi-thread evaluator. </li>
 </ul>
 
 <h2>Prerequisites</h2>

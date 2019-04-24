@@ -36,25 +36,8 @@ These requirements may be satisified with an updated Anaconda environment as wel
 
 <h2>Example to run the code</h2>
 Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
-
 ```
 python main.py
-```
-<h2>Implement your own model</h2>
-Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods, or re-write the methods in the abstract class. In order to inherit the AbstractRecommender class, for example, the implementation of an algorithm is shown as follows.
-
-```
-1. Re-write the __init__ method
-    The main task of the __init__ method is to initialize the member variables. 
-
-2. Implement the build_graph Method
-    
-
-3. Implement the train_model Method
-   
-    
-4. Implement the predict Method
-   
 ```
 
 <h2>Models Implemented</h2>

@@ -7,5 +7,5 @@ class AbstractRecommender(object):
     def train_model(self):
         raise NotImplementedError
     
-    def evaluate_model(self): 
+    def predict(self):
         raise NotImplementedError 

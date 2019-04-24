@@ -1,11 +1,10 @@
 '''
-Reference: Xiangnan He, et al., ¡°Adversarial Personalized Ranking for Recommendation" in SIGIR2018
+Reference: Xiangnan He, et al., Adversarial Personalized Ranking for Recommendation" in SIGIR2018
 @author: wubin
 '''
 from __future__ import absolute_import
 from __future__ import division
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time

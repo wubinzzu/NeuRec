@@ -4,7 +4,7 @@
 **Founder**: [WuBin]( https://github.com/wubinzzu)<br>
 **Main Contributors**: [ZhongchuanSun](https://github.com/ZhongchuanSun) [XiangnanHe](https://github.com/hexiangnan) 
 
-**NeuRec** is is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is distributed under the GNU General Public License.
+**NeuRec** is is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
 
 <h2>Architecture of NeuRec</h2>
 
@@ -157,3 +157,11 @@ for Next-Basket Recommendation, WWW 2010.<br>
   </table>
 </div>
 </div>
+<h2>Acknowledgements</h2>
+The development of NeuRec was supported by the National Natural Science
+Foundation of China under Grant No. 61772475. This work is also supported by
+the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
+
+![Architecture](zzu.png?raw=true "Title") 
+![Architecture](next.png?raw=true "Title") 
+

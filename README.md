@@ -127,15 +127,32 @@ Collaborative Autoencoders. WWW 2019.
 		<th>Paper</th>
    </tr>
   <tr>
-	<td scope="row">BPR</td>
-    <td>Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback, UAI 2009.<br>
+	<td scope="row">FPMC,FPMCplus</td>
+    <td>    Steffen Rendle et al., Factorizing Personalized Markov Chains
+for Next-Basket Recommendation, WWW 2010.<br>
     </td>
   </tr>
     <tr>
-    <td scope="row">WRMF</td>
-    <td>Yifan Hu et al.Collaborative Filtering for Implicit Feedback Datasets, KDD 2009.
-     </td>
+    <td scope="row">HRM</td>
+    <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
+     </td>   
   </tr>
+    <tr>
+    <td scope="row">HRM</td>
+    <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
+     </td>   
+  </tr>
+	    <tr>
+    <td scope="row">NPE</td>
+    <td>     ThaiBinh Nguyen et al., NPE: Neural Personalized Embedding for Collaborative Filtering, ijcai 2018.
+     </td>   
+  </tr>
+    <tr>
+    <td scope="row">TransRec</td>
+    <td>    Ruining He et al., Translation-based Recommendation, SIGIR 2015.
+     </td>   
+  </tr>
+
   </table>
 </div>
 

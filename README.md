@@ -41,7 +41,7 @@ These requirements may be satisified with an updated Anaconda environment as wel
 python main.py
 ```
 <h2>Implement your own model</h2>
-Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods in the abstract class. 
+Implementing your own models in NeuRec needs to inherit AbstractRecommender class. And you need to implement the abstract methods in the abstract class. 
 
 ```
 1. __init__()

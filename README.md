@@ -32,10 +32,7 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
 <h2>How to Run it</h2>
-<ul>
-<li>Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
-<li>Run the **main.py** in the project, and then input following the prompt.</li>
-</ul>
+
 
 <h2>Models Implemented</h2>
 <div>

@@ -45,8 +45,7 @@ These requirements may be satisified with an updated Anaconda environment as wel
 		<th>General Recommender</th>
 		<th>Paper</th>
   </tr>
-  <tr>
-	<td scope="row">GMF</td>
+	<td scope="row">GMF,MLP,NeuMF</td>
     <td>Xiangnan He et al., Neural Collaborative Filtering , WWW 2017.<br>
     </td>
   </tr>
@@ -55,6 +54,59 @@ These requirements may be satisified with an updated Anaconda environment as wel
     <td>	Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.
      </td>
   </tr> 
+  <tr>
+    <td scope="row">SBPR</td>
+    <td>	Tong Zhao et al., Leveraging Social Connections to Improve Personalized Ranking for Collaborative Filtering. CIKM 2014.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">FISM</td>
+    <td>	Santosh Kabbur et al., FISM: Factored Item Similarity Models for Top-N Recommender Systems. KDD 2013.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">NAIS</td>
+    <td>	Xiangnan He et al., NAIS: Neural Attentive Item Similarity Model for Recommendation . TKDE2018.
+     </td>
+  </tr> 
+    <tr>
+    <td scope="row">DeepICF</td>
+    <td>	Feng Xue et al., Deep Item-based Collaborative Filtering for Top-N Recommendation. TOIS 2019.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">DMF</td>
+    <td>	Hong-Jian Xue et al., Deep Matrix Factorization Models for Recommender Systems. IJCAI 2017.
+     </td>
+  </tr> 
+  <tr>
+    <td scope="row">CDAE,DAE</td>
+    <td>	Yao Wu et al., Collaborative denoising auto-encoders for top-n recommender systems. WSDM 2016.
+     </td>
+  </tr> 
+ <tr>
+    <td scope="row">MultiDAE,MultiVAE</td>
+    <td>	Dawen Liang, et al., Variational autoencoders for collaborative filtering. WWW 2018.
+     </td>
+  </tr>	
+ <tr>
+    <td scope="row">JCA</td>
+    <td>	Ziwei Zhu, et al., Improving Top-K Recommendation via Joint
+Collaborative Autoencoders. WWW 2019.
+     </td>
+  </tr>		
+ <tr>
+    <td scope="row">IRGAN</td>
+    <td>	Jun Wang, et al., IRGAN: A Minimax Game for Unifying Generative and Discriminative Information Retrieval Models. SIGIR 2017.
+     </td>
+  </tr>	
+   <tr>
+    <td scope="row">CFGAN</td>
+    <td>       Dong-Kyu Chae, et al., CFGAN: A Generic Collaborative Filtering Framework based on Generative Adversarial Networks. CIKM 2018.
+     </td>
+  </tr>	
+	
+	
   </table>
 
   </br>

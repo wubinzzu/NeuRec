@@ -32,9 +32,9 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
 <h2>how to run it</h2>
-1.The format of the data in the dataset file should be UIRT, ie., [userid,itemid,rating,time(Unix timestamp)]<br>
+1. The format of the data in the dataset file should be UIRT, ie., [userid,itemid,rating,Unix timestamp]<br>
 2. Configure the global file **neurec.properties** and the specific file **XX.properties** in the directory named conf (XX means the name of the specific model).<br>
-3.Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
+3. Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
 
 ```
 python main.py

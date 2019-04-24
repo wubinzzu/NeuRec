@@ -157,8 +157,6 @@ for Next-Basket Recommendation, WWW 2010.<br>
   </table>
 </div>
 
-<h2>GPL License </h2>
-
 
 
 

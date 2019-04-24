@@ -4,7 +4,7 @@
 **Founder**: [BinWu]( https://github.com/wubinzzu)<br>
 **Main Contributors**: [ZhongchuanSun](https://github.com/ZhongchuanSun) [XiangnanHe](https://github.com/hexiangnan) 
 
-**NeuRec** is is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
+**NeuRec** is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
 
 <h2>Architecture of NeuRec</h2>
 

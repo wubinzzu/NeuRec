@@ -26,9 +26,9 @@ Next RecSys Library
 <h2>Prerequisites</h2>
 Our framework can be compiled on Python 3.6+ environments with the following modules installed:
 <ul>
-<li>tensorflow</li>
-<li>numpy</li>
-<li>scipy</li>
+<li>tensorflow1.12.0+</li>
+<li>numpy1.15.4+</li>
+<li>scipy1.1.0+</li>
 </ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 

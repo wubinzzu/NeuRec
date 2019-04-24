@@ -1,4 +1,3 @@
-
 import numpy as np
 import tensorflow as tf
 from data.Dataset import Dataset
@@ -14,7 +13,6 @@ from model.item_ranking.MLP import MLP
 from model.item_ranking.NeuMF import NeuMF
 from model.item_ranking.APR import APR
 from model.seq_ranking.HRM import HRM
-
 from model.item_ranking.DMF import DMF 
 from model.item_ranking.ConvNCF import ConvNCF
 from model.item_ranking.CDAE import CDAE
@@ -25,6 +23,7 @@ from model.item_ranking.MultiDAE import MultiDAE
 from model.item_ranking.MultiVAE import MultiVAE
 from model.item_ranking.JCA import JCA
 from model.item_ranking.CFGAN import CFGAN
+from model.item_ranking.SBPR import SBPR
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -105,7 +104,9 @@ if __name__ == "__main__":
             
         elif recommender.lower() == "jca":
             model = JCA(sess,dataset)  
-
+            
+        elif recommender.lower() == "sbpr":
+            model = SBPR(sess,dataset)  
         model.build_graph()
         sess.run(tf.global_variables_initializer())
         model.train_model()

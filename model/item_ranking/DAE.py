@@ -19,7 +19,6 @@ class DAE(AbstractRecommender):
         config = configparser.ConfigParser()
         config.read("conf/DAE.properties")
         self.conf=dict(config.items("hyperparameters"))
-        print("DAE arguments: %s " %(self.conf))
         self.hidden_neuron = int(self.conf["hidden_neuron"])
         self.learning_rate = float(self.conf["learning_rate"])
         self.learner = self.conf["learner"]

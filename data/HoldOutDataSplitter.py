@@ -2,6 +2,7 @@ import scipy.sparse as sp
 import numpy as np
 import math
 from copy import deepcopy
+from util.Logger import logger
 class HoldOutDataSplitter(object):
     def __init__(self,path,separator,threshold,splitterRatio=[0.8,0.2]):
         self.path =path +".rating"
@@ -11,7 +12,7 @@ class HoldOutDataSplitter(object):
         if float(splitterRatio[0])+ float(splitterRatio[1]) != 1.0:
             raise ValueError("please given a correct splitterRatio")
     def load_data_by_user_time(self):
-        print("Loading interaction records from %s "%(self.path))
+        logger.info("Loading interaction records from %s "%(self.path))
         pos_per_user={}
         num_ratings=0
         num_items=0
@@ -51,11 +52,10 @@ class HoldOutDataSplitter(object):
                         pos_per_user[userids[useridx]]=[]
                     pos_per_user[userids[useridx]].append([itemids[itemidx],rating,int(time)])
                 # rating_matrix[self.userids[useridx],self.itemids[itemidx]] = rating
-            print("Sorting interactions for each users")
 
         for u in range(num_users):
             pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
-        print("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
+        logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d"%(num_users,num_items,num_ratings))
         userseq = deepcopy(pos_per_user)
         train_dict = {}
         train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)

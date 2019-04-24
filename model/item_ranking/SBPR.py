@@ -14,19 +14,25 @@ from time import time
 from util import learner
 from evaluation import Evaluate
 from model.AbstractRecommender import AbstractRecommender
+import configparser
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 class SBPR(AbstractRecommender):
-    def __init__(self,sess,dataset): 
-        self.socialpath = "dataset/Book_ur5_uu3.trust"
-        self.learning_rate = 0.001
-        self.embedding_size = 16
-        self.learner = "adam"
-        self.loss_function = "bpr"
-        self.topK = 50
-        self.num_epochs= 300
-        self.reg_mf = 0
-        self.batch_size= 256
-        self.verbose= 1
+    def __init__(self,sess,dataset):
+        config = configparser.ConfigParser()
+        config.read("conf/SBPR.properties")
+        self.conf = dict(config.items("hyperparameters"))
+        self.socialpath = self.conf["socialpath"]
+        self.learning_rate = eval(self.conf["learning_rate"])
+        self.embedding_size = eval(self.conf["embedding_size"])
+        self.learner = self.conf["learner"]
+        self.loss_function = self.conf["loss_function"]
+        self.topK = eval(self.conf["topk"])
+        self.num_epochs= eval(self.conf["num_epochs"])
+        self.reg_mf = eval(self.conf["reg_mf"])
+        self.batch_size = eval(self.conf["batch_size"])
+        self.verbose = eval(self.conf["verbose"])
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
@@ -163,7 +169,7 @@ class SBPR(AbstractRecommender):
                 trustedUserIdices = self.socialMatrix[u].indices
                 socialWeight = 0
                 for trustedUserIdx in trustedUserIdices:
-                    indices = trainMatrix[trustedUserIdx].indices
+                    indices = trainMatrix[trustedUserIdx].tocsr().indices
                     if k in indices:
                         socialWeight += 1
                 suk_input.append(socialWeight+1) 

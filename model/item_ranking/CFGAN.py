@@ -44,8 +44,7 @@ class CFGAN(AbstractRecommender):
         model_config.read("conf/CFGAN.properties")
         config = dict(model_config.items("hyperparameters"))
         self.dataset = dataset
-
-
+        print("DAE arguments: %s " %(config))
         self.epochs = eval(config["epochs"])
         self.topK = eval(config["topk"])
         self.mode = config["mode"]

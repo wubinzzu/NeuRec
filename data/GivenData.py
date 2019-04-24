@@ -1,5 +1,6 @@
 import scipy.sparse as sp
 import numpy as np
+from util.Logger import logger
 class GivenData(object):
     def __init__(self,path,separator,threshold):
         self.path =path
@@ -92,7 +93,7 @@ class GivenData(object):
                     train_matrix[user, item] = rating
                 time_matrix[user, item] = time            
                 line = f.readline()
-        print ("already load the trainMatrix...")  
+        logger.info("already load the trainMatrix...")  
         
         test_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
         with open(self.path+".test.rating", "r") as f:
@@ -106,6 +107,6 @@ class GivenData(object):
                     test_matrix[user, item] = rating
                 time_matrix[user, item] = time            
                 line = f.readline()
-        print ("already load the trainMatrix...")
+        logger.info("already load the trainMatrix...")
        
         return train_matrix,train_dict,test_matrix,pos_per_user,userids,itemids,time_matrix

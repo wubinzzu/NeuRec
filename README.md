@@ -13,14 +13,14 @@ Next RecSys Library
 
 <h2>Features</h2>
 <ul>
-<li><b>Cross-platform</b>: Written in python and easily executed in multiple platforms, including Windows, Linux and Mac OS.</li>
+<li><b>Cross Platform</b>: Written in python and easily executed in multiple platforms, including Windows, Linux and Mac OS.</li>
   
 <li><b>Rich State-of-The-Arts</b>: More than 20 neural recommender models have been implemented, eg., DeepMF, NeuMF, ConvNCF, IRGAN,APR, CFGAN, MultiVAE and more representative models will be continuously added in the NeuRec.
   
 <li><b>Flexible Configuration</b>: Configs a recommendation model only using a configuration file, including any loss & optimizer.</li>
 
-<li><b>Easy expansion</b>: Well-designed interfaces, automatic differentiation.</li>
-<li><b>Fast execution</b>: Naturally support GPU, multi-thread evaluator. </li>
+<li><b>Easy Expansion</b>: Well-designed interfaces, automatic differentiation.</li>
+<li><b>Fast Execution</b>: Naturally support GPU, multi-thread evaluator. </li>
 </ul>
 
 <h2>Prerequisites</h2>
@@ -156,5 +156,9 @@ for Next-Basket Recommendation, WWW 2010.<br>
 
   </table>
 </div>
+
+<h2>GPL License </h2>
+
+
 
 

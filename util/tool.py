@@ -1,4 +1,5 @@
 import tensorflow as tf
+import time
 def activation_function(act,act_input):
         act_func = None
         if act == "sigmoid":
@@ -16,4 +17,7 @@ def activation_function(act,act_input):
             act_func = tf.identity(act_input)
         else:
             raise NotImplementedError("ERROR")
-        return act_func            
+        return act_func  
+def getlocaltime():
+    date = time.strftime('%y-%m-%d', time.localtime())
+    current_time = time.strftime('%H:%M:%S', time.localtime())      

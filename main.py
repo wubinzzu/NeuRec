@@ -22,6 +22,8 @@ from model.seq_ranking.NPE import NPE
 from model.item_ranking.IRGAN import IRGAN
 from model.item_ranking.MultiDAE import MultiDAE
 from model.item_ranking.MultiVAE import MultiVAE
+from model.item_ranking.JCA import JCA
+from model.item_ranking.CFGAN import CFGAN
 np.random.seed(2018)
 tf.random.set_random_seed(2017)
 
@@ -33,11 +35,12 @@ if __name__ == "__main__":
     dataset_name = conf["data.input.dataset"]
     splitter = conf["data.splitter"]
     separator = eval(conf["data.convert.separator"])
+    threshold = float(conf["data.convert.binarize.threshold"])
     recommender = str(conf["recommender"])
     evaluate_neg = int(conf["rec.evaluate.neg"])
     num_thread = int(conf["rec.number.thread"])
     splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path,splitter,separator,evaluate_neg,dataset_name,splitterRatio) 
+    dataset = Dataset(data_input_path,splitter,separator,threshold,evaluate_neg,dataset_name,splitterRatio) 
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -95,6 +98,12 @@ if __name__ == "__main__":
             
         elif recommender.lower() == "irgan":
             model = IRGAN(sess,dataset)  
+            
+        elif recommender.lower() == "cfgan":
+            model = CFGAN(sess,dataset)  
+            
+        elif recommender.lower() == "jca":
+            model = JCA(sess,dataset)  
 
         model.build_graph()
         sess.run(tf.global_variables_initializer())

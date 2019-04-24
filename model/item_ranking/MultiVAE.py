@@ -89,11 +89,11 @@ class MultiVAE(object):
                 h = tool.activation_function(self.act, h)
             else:
                 mu_q = h[:, :self.q_dims[-1]]
-                logvar_q = h[:, self.q_dims[-1]:]
+                logvar_q = h[:, self.q_dims[-1]:]#log sigmod^2  batch x 200
 
-                std_q = tf.exp(0.5 * logvar_q)
+                std_q = tf.exp(0.5 * logvar_q) #sigmod batch x 200
                 KL = tf.reduce_mean(tf.reduce_sum(
-                        0.5 * (-logvar_q + tf.exp(logvar_q) + mu_q**2 - 1), axis=1))
+                        0.5 * (-logvar_q + tf.exp(logvar_q) + tf.pow(mu_q,2) - 1), axis=1))
         return mu_q, std_q, KL
 
     def p_graph(self, z):
@@ -113,7 +113,7 @@ class MultiVAE(object):
             epsilon = tf.random_normal(tf.shape(std_q))
     
             sampled_z = mu_q + self.is_training_ph *\
-                epsilon * std_q
+                epsilon * std_q # batch x 200
     
             # p-network
             logits = self.p_graph(sampled_z)
@@ -125,7 +125,7 @@ class MultiVAE(object):
         with tf.name_scope("loss"):  
             neg_ll = -tf.reduce_mean(tf.reduce_sum(
             self.log_softmax_var * self.input_ph,
-            axis=-1))
+            axis=1))
             # apply regularization to weights
             reg = l2_regularizer(self.reg)
             

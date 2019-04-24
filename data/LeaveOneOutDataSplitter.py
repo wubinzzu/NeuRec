@@ -2,9 +2,10 @@ import scipy.sparse as sp
 import numpy as np
 from copy import deepcopy
 class LeaveOneOutDataSplitter(object):
-    def __init__(self,path,separator):
+    def __init__(self,path,separator, threshold):
         self.path =path
         self.separator = separator
+        self.threshold = threshold
     def load_data_by_user_time(self):
         print("Loading interaction records from %s "%(self.path))
         pos_per_user = {}
@@ -21,18 +22,32 @@ class LeaveOneOutDataSplitter(object):
             for line in f.readlines():
                 useridx, itemidx,rating, time= line.strip().split(self.separator)
                 
-                num_ratings+=1
-                if  itemidx not in itemids:
-                    iditems[num_items]=itemidx
-                    itemids[itemidx] = num_items
-                    num_items+=1
-
-                if useridx not in userids:
-                    idusers[num_users]=useridx
-                    userids[useridx]=num_users
-                    num_users+=1
-                    pos_per_user[userids[useridx]]=[]
-                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
+                if float(rating)>= self.threshold:
+                    num_ratings+=1
+                    if  itemidx not in itemids:
+                        iditems[num_items]=itemidx
+                        itemids[itemidx] = num_items
+                        num_items+=1
+    
+                    if useridx not in userids:
+                        idusers[num_users]=useridx
+                        userids[useridx]=num_users
+                        num_users+=1
+                        pos_per_user[userids[useridx]]=[]
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],1,int(time)))
+                else :
+                    num_ratings+=1
+                    if  itemidx not in itemids:
+                        iditems[num_items]=itemidx
+                        itemids[itemidx] = num_items
+                        num_items+=1
+    
+                    if useridx not in userids:
+                        idusers[num_users]=useridx
+                        userids[useridx]=num_users
+                        num_users+=1
+                        pos_per_user[userids[useridx]]=[]
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
                 # rating_matrix[self.userids[useridx],self.itemids[itemidx]] = rating
             print("Sorting interactions for each users")
 

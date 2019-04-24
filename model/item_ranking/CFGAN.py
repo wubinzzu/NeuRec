@@ -47,6 +47,7 @@ class CFGAN(AbstractRecommender):
 
         self.epochs = eval(config["epochs"])
         self.topK = eval(config["topk"])
+        self.mode = config["mode"]
         self.reg_G = eval(config["reg_g"])
         self.reg_D = eval(config["reg_d"])
         self.lr_G = eval(config["lr_g"])
@@ -67,6 +68,8 @@ class CFGAN(AbstractRecommender):
 
         train_matrix = dataset.trainMatrix.tocsr()
         self.train_matrix = train_matrix.copy()
+        if self.mode == "itemBased":
+            self.train_matrix = self.train_matrix.transpose(copy=True).tocsr()
 
         self.num_users, self.num_items = self.train_matrix.shape
         self.user_pos_train = csr_to_user_dict(self.train_matrix)
@@ -207,10 +210,15 @@ class CFGAN(AbstractRecommender):
                     feed = {self.realData: train_data, self.condition: train_data,
                             self.mask: train_p_mask, self.G_ZR_dims: train_z_mask}
                     self.sess.run(self.trainer_G, feed_dict=feed)
+                self.eval_rating_matrix()
                 Evaluate.test_model(self, self.dataset)
 
+    def eval_rating_matrix(self):
+        allRatings = self.sess.run(self.G_output, feed_dict={self.condition: self.train_matrix.toarray()})
+        if self.mode == "itemBased":
+            allRatings = np.transpose(allRatings)
+        self.allRatings_for_test = allRatings
+
     def predict(self, user_id, items):
-        eval_data = self.train_matrix[user_id].toarray()
-        rating = self.sess.run(self.G_output, feed_dict={self.condition: eval_data})
-        rating = rating.flatten()
-        return rating[items]
+
+        return self.allRatings_for_test[user_id, items]

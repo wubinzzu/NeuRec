@@ -1,3 +1,8 @@
+'''
+Reference: Jun Wang, et al., "IRGAN: A Minimax Game for Unifying Generative and 
+Discriminative Information Retrieval Models." SIGIR 2017.
+@author: Zhongchuan Sun
+'''
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import pickle

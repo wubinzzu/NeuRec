@@ -1,6 +1,9 @@
+'''
+Reference: Santosh Kabbur et al., "FISM: Factored Item Similarity Models for Top-N Recommender Systems." in KDD 2013.
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
-
 import os
 from model.AbstractRecommender import AbstractRecommender
 

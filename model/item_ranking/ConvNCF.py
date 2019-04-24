@@ -1,5 +1,5 @@
 '''
-He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.  
+Xiangnan He et al., "Outer Product-based Neural Collaborative Filtering", In IJCAI 2018.  
 @author: wubin
 '''
 from __future__ import absolute_import

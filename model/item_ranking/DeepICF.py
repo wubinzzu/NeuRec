@@ -1,6 +1,9 @@
+'''
+Reference: Feng Xue et al., "Deep Item-based Collaborative Filtering for Top-N Recommendation" in TOIS2019
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
-
 import os
 from model.AbstractRecommender import AbstractRecommender
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'

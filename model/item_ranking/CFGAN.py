@@ -1,7 +1,8 @@
-"""
-Paper: CFGAN: A Generic Collaborative Filtering Framework based on Generative Adversarial Networks
-Author: Dong-Kyu Chae, Jin-Soo Kang, Sang-Wook Kim and Jung-Tae Lee
-"""
+'''
+Reference: Dong-Kyu Chae, et al., "CFGAN: A Generic Collaborative Filtering Framework 
+based on Generative Adversarial Networks." in CIKM2018
+@author: Zhongchuan Sun
+'''
 # ZP: Hybrid of zero-reconstruction regularization and partial-masking
 
 from model.AbstractRecommender import AbstractRecommender

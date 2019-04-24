@@ -1,8 +1,6 @@
 '''
-Created on Aug 9, 2016
-Keras Implementation of Multi-Layer Perceptron (GMF) recommender model in:
-He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.  
-@author: Xiangnan He (xiangnanhe@gmail.com)
+Xiangnan He et al., "Neural Collaborative Filtering." in WWW 2017.
+@author: WuBin
 '''
 
 from __future__ import absolute_import

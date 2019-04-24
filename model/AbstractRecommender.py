@@ -1,6 +1,5 @@
 class AbstractRecommender(object):
-    def __init__(self):  
-        
+    def __init__(self):       
         raise NotImplementedError
     def build_graph(self):
         raise NotImplementedError

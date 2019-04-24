@@ -1,3 +1,7 @@
+'''
+Reference: Xiangnan He et al., "NAIS: Neural Attentive Item Similarity Model for Recommendation." in TKDE2018
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 

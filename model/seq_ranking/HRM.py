@@ -1,3 +1,7 @@
+'''
+Reference: Pengfei Wang et al., "Learning Hierarchical Representation Model for NextBasket Recommendation." in SIGIR 2015.
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import os

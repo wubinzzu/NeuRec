@@ -1,3 +1,8 @@
+'''
+Reference: Steffen Rendle et al., "Factorizing Personalized Markov Chains
+for Next-Basket Recommendation." in WWW 2010.
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import os

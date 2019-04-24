@@ -1,3 +1,8 @@
+'''
+Reference: Tong Zhao et al., "Leveraging Social Connections to Improve 
+Personalized Ranking for Collaborative Filtering." in CIKM 2014
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import scipy.sparse as sp
@@ -8,8 +13,9 @@ import numpy as np
 from time import time
 from util import learner
 from evaluation import Evaluate
+from model.AbstractRecommender import AbstractRecommender
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-class SBPR():
+class SBPR(AbstractRecommender):
     def __init__(self,sess,dataset): 
         self.socialpath = "dataset/Book_ur5_uu3.trust"
         self.learning_rate = 0.001

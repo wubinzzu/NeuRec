@@ -9,7 +9,8 @@ from util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
 import configparser
 from evaluation import Evaluate
-class MultiVAE(object):
+from model.AbstractRecommender import AbstractRecommender
+class MultiVAE(AbstractRecommender):
     def __init__(self,sess,dataset):
         config = configparser.ConfigParser()
         config.read("conf/MultiVAE.properties")

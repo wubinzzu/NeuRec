@@ -1,3 +1,8 @@
+'''
+Reference: Steffen Rendle et al., "BPR: Bayesian Personalized Ranking from Implicit Feedback." in UAI 2009.
+    GMF: Xiangnan He et al., "Neural Collaborative Filtering." in WWW 2017.
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import os
@@ -8,8 +13,9 @@ from time import time
 import configparser
 from util import learner,data_gen
 from evaluation import Evaluate
+from model.AbstractRecommender import AbstractRecommender
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-class MF():
+class MF(AbstractRecommender):
     def __init__(self,sess,dataset):  
         config = configparser.ConfigParser()
         config.read("conf/MF.properties")

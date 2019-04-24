@@ -1,5 +1,5 @@
 '''
-He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.  
+Reference: Hong-Jian Xue et al., "Deep Matrix Factorization Models for Recommender Systems." In IJCAI2017.  
 @author: wubin
 '''
 from __future__ import absolute_import

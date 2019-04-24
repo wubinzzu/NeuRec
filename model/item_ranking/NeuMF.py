@@ -1,6 +1,6 @@
 '''
-He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.  
-@author: wubin
+Xiangnan He et al., "Neural Collaborative Filtering." in WWW 2017.
+@author: WuBin
 '''
 from __future__ import absolute_import
 from __future__ import division

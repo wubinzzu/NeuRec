@@ -1,3 +1,7 @@
+'''
+Reference: Xiangnan He, et al., ¡°Adversarial Personalized Ranking for Recommendation" in SIGIR2018
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import os

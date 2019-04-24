@@ -1,3 +1,7 @@
+'''
+Reference: ThaiBinh Nguyen, et al. "Ruining He et al., Translation-based Recommendation." in SIGIR 2015
+@author: wubin
+'''
 from __future__ import absolute_import
 from __future__ import division
 import os

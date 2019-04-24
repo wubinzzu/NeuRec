@@ -31,8 +31,13 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 </ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
-<h2>How to Run it</h2>
+<h2>Example to run the code</h2>
 
+<h2>Example to run the code</h2>
+Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
+```
+python main.py
+```
 
 <h2>Models Implemented</h2>
 <div>

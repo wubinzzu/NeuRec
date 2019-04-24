@@ -137,16 +137,13 @@ for Next-Basket Recommendation, WWW 2010.<br>
     <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
      </td>   
   </tr>
-<<<<<<< HEAD
    <tr>
-=======
     <tr>
     <td scope="row">HRM</td>
     <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
      </td>   
   </tr>
-	    <tr>
->>>>>>> 33af526638ef93479bf26f5b0e7990e059e0f0d4
+	<tr>
     <td scope="row">NPE</td>
     <td>     ThaiBinh Nguyen et al., NPE: Neural Personalized Embedding for Collaborative Filtering, ijcai 2018.
      </td>   
@@ -158,7 +155,5 @@ for Next-Basket Recommendation, WWW 2010.<br>
   </tr>
 
   </table>
-<<<<<<< HEAD
 </div>
-=======
 </div>

@@ -37,7 +37,7 @@ These requirements may be satisified with an updated Anaconda environment as wel
 <li>2.Run the **main.py** in the project, and then input following the prompt.</li>
 </ul>
 
-<h2>Algorithms Implemented</h2>
+<h2>Models Implemented</h2>
 <div>
 
  <table class="table table-hover table-bordered">

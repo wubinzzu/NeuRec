@@ -43,7 +43,7 @@ python main.py
 Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods in the abstract class. 
 
 ```
-1. the __init__()
+1. __init__()
 2. build_graph()   
 3. train_model()   
 4. predict() 

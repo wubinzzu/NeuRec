@@ -74,6 +74,12 @@ These requirements may be satisified with an updated Anaconda environment as wel
     <td>	Feng Xue et al., Deep Item-based Collaborative Filtering for Top-N Recommendation. TOIS 2019.
      </td>
   </tr> 
+    </tr> 
+    <tr>
+    <td scope="row">ConvNCF</td>
+    <td>	Xiangnan He et al., Outer Product-based Neural Collaborative Filtering . IJCAI 2018.
+     </td>
+  </tr> 
   <tr>
     <td scope="row">DMF</td>
     <td>	Hong-Jian Xue et al., Deep Matrix Factorization Models for Recommender Systems. IJCAI 2017.
@@ -103,6 +109,11 @@ Collaborative Autoencoders. WWW 2019.
    <tr>
     <td scope="row">CFGAN</td>
     <td>       Dong-Kyu Chae, et al., CFGAN: A Generic Collaborative Filtering Framework based on Generative Adversarial Networks. CIKM 2018.
+     </td>
+  </tr>
+     <tr>
+    <td scope="row">APR</td>
+    <td>       Xiangnan He, et al., Adversarial Personalized Ranking for Recommendation. SIGIR 2018.
      </td>
   </tr>	
 	

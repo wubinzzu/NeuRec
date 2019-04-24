@@ -13,7 +13,7 @@ Next RecSys Library
 
 <h2>Features</h2>
 <ul>
-<li><b>Cross-platform</b>: It is written in python and can be easily deployed and executed in multiple platforms, including Windows, Linux and Mac OS.</li>
+<li><b>Cross-platform</b>: Written in python and easily executed in multiple platforms, including Windows, Linux and Mac OS.</li>
   
 <li><b>Rich State-of-The-Arts</b>: More than 20 neural recommender models have been implemented, eg., DeepMF, NeuMF, ConvNCF, IRGAN,APR, CFGAN, MultiVAE and more representative models will be continuously added in the NeuRec.
   

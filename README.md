@@ -4,7 +4,7 @@
 **Founder**: [BinWu]( https://github.com/wubinzzu)<br>
 **Main Contributors**: [ZhongchuanSun](https://github.com/ZhongchuanSun) [XiangnanHe](https://github.com/hexiangnan) 
 
-**NeuRec** is is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
+**NeuRec** is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
 
 <h2>Architecture of NeuRec</h2>
 
@@ -19,7 +19,7 @@
 <li><b>Flexible Configuration</b>: Configs a recommendation model only using a configuration file, including any loss & optimizer.</li>
 
 <li><b>Easy Expansion</b>: Well-designed interfaces, automatic differentiation.</li>
-<li><b>Fast Execution</b>: Naturally support GPU, multi-thread evaluator. </li>
+<li><b>Fast Execution</b>: Naturally supports GPU, multi-thread evaluator. </li>
 </ul>
 
 <h2>Prerequisites</h2>
@@ -31,8 +31,24 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 </ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
-<h2>How to Run it</h2>
+<h2>How to run it</h2>
 
+1. The format of the data in the dataset file should be UIRT, ie., [userid,itemid,rating,Unix timestamp]<br>
+2. Configure the global file **neurec.properties** and the specific file **XX.properties** in the directory named conf (XX means the name of the specific model).<br>
+3. Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
+
+```
+python main.py
+```
+<h2>Implement your own model</h2>
+Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods in the abstract class. 
+
+```
+1. __init__()
+2. build_graph()   
+3. train_model()   
+4. predict() 
+```
 
 <h2>Models Implemented</h2>
 <div>
@@ -150,7 +166,7 @@ for Next-Basket Recommendation, WWW 2010.<br>
 </div>
 <h2>Acknowledgements</h2>
 The development of NeuRec was supported by the National Natural Science
-Foundation of China under Grant No. 61772475. This work is also supported by
+Foundation of China under Grant No. 61772475. This project is also supported by
 the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
 
 <img src="https://github.com/wubinzzu/NeuRec/blob/master/next.png" width = "297" height = "100" alt="next" align=center />

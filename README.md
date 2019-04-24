@@ -31,13 +31,22 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 </ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
-<h2>Parameters Settings</h2>
+<h2>how to run it</h2>
+1.The format of the data in the dataset file should be UIRT, ie., [userid,itemid,rating,time(Unix timestamp)]
+2. Configure the global file **neurec.properties** and the specific file **XX.properties** in the directory named conf (XX means the name of the specific model).
+3.Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
 
-
-<h2>Example to run the code</h2>
-Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
 ```
 python main.py
+```
+<h2>Implement your own model</h2>
+Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods in the abstract class. 
+
+```
+1. the __init__()
+2. build_graph()   
+3. train_model()   
+4. predict() 
 ```
 
 <h2>Models Implemented</h2>

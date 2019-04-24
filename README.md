@@ -25,16 +25,17 @@ Next RecSys Library
 
 <h2>Prerequisites</h2>
 Our framework can be compiled on Python 3.6+ environments with the following modules installed:
+<ul>
 - [tensorflow](https://www.tensorflow.org/)
 - [numpy](http://www.numpy.org/)
 - [scipy](https://www.scipy.org/)
-
+</ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
 <h2>How to Run it</h2>
 <ul>
-<li>1.Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
-<li>2.Run the **main.py** in the project, and then input following the prompt.</li>
+<li>Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
+<li>Run the **main.py** in the project, and then input following the prompt.</li>
 </ul>
 
 <h2>Models Implemented</h2>

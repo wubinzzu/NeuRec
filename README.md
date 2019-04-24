@@ -162,6 +162,6 @@ The development of NeuRec was supported by the National Natural Science
 Foundation of China under Grant No. 61772475. This work is also supported by
 the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
 
-<img src="https://github.com/wubinzzu/NeuRec/blob/master/zzu.png" width = "150" height = "152" alt="zzu" align=center />
-<img src="https://github.com/wubinzzu/NeuRec/blob/master/next.png" width = "452" height = "152" alt="next" align=center />
+<img src="https://github.com/wubinzzu/NeuRec/blob/master/zzu.png" width = "98" height = "100" alt="zzu" align=center />
+<img src="https://github.com/wubinzzu/NeuRec/blob/master/next.png" width = "297" height = "100" alt="next" align=center />
 

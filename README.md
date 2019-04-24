@@ -31,7 +31,8 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 </ul>
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
-<h2>Example to run the code</h2>
+<h2>Parameters Settings</h2>
+
 
 <h2>Example to run the code</h2>
 Train and evaluate the specific model (strongly suggest running this project on GPU, which is faster than on CPU):
@@ -43,16 +44,17 @@ python main.py
 Implementing users' own models in NeuRec needs to inherit AbstractRecommender class. And users need to implement the abstract methods, or re-write the methods in the abstract class. In order to inherit the AbstractRecommender class, for example, the implementation of an algorithm is shown as follows.
 
 ```
-1. Re-write the setup method (optional)
-    The main task of the setup method is to initialize the member variables. For example, reading arguments from the configuration file. If the algorithm does not need to set extra configurations, the program does not need to re-write the methods.
-    It should be noted that, in the rewrite of the setup method, users need to call the original abstract class in the setup method. That is, to put super.setup() in the first line of the implementation, to ensure that the basic parameters of the algorithm is initialized.
+1. Re-write the __init__ method
+    The main task of the __init__ method is to initialize the member variables. 
 
-2. Implement the trainModel Method
-    The trainModel method accomplish the task of training the model. For example, using gradient descent to optimize the cost function of the model.
+2. Implement the build_graph Method
+    
 
-3. Implement the predict Method
-    The task of the Predict method is to use the trained model to make predictions.
-    For example, for rating prediction algorithms, the predict method is used to predict each rating in the test set. Particularly, for a given userIndex and itemIndex, using the model to predict the rating score of userIndex-itemIndex pair.
+3. Implement the train_model Method
+   
+    
+4. Implement the predict Method
+   
 ```
 
 <h2>Models Implemented</h2>

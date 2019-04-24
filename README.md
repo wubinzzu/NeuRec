@@ -1,7 +1,7 @@
 # NeuRec
 [![GitHub version](https://badge.fury.io/gh/wubinzzu%2FNeuRec.svg)](https://badge.fury.io/gh/wubinzzu%2FNeuRec)
 
-**Founder**: [WuBin]( https://github.com/wubinzzu)<br>
+**Founder**: [BinWu]( https://github.com/wubinzzu)<br>
 **Main Contributors**: [ZhongchuanSun](https://github.com/ZhongchuanSun) [XiangnanHe](https://github.com/hexiangnan) 
 
 **NeuRec** is is a flexible and comprehensive library including a variety of state-of-the-art neural recommender models. It aims to solve general and sequential (ie., next-item ) recommendation task. Current version includes 20+ neural recommendation models, and more will be be expected in the near future. NeuRec is free software (open source software), it can be used and distributed under the terms of the GNU General Public License (GPL).
@@ -32,10 +32,7 @@ Our framework can be compiled on Python 3.6+ environments with the following mod
 These requirements may be satisified with an updated Anaconda environment as well - https://www.anaconda.com/
 
 <h2>How to Run it</h2>
-<ul>
-<li>Configure the **xx.conf** file in the directory named config. (xx is the name of the algorithm you want to run)</li>
-<li>Run the **main.py** in the project, and then input following the prompt.</li>
-</ul>
+
 
 <h2>Models Implemented</h2>
 <div>
@@ -137,12 +134,6 @@ for Next-Basket Recommendation, WWW 2010.<br>
     <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
      </td>   
   </tr>
-   <tr>
-    <tr>
-    <td scope="row">HRM</td>
-    <td>     Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015.
-     </td>   
-  </tr>
 	<tr>
     <td scope="row">NPE</td>
     <td>     ThaiBinh Nguyen et al., NPE: Neural Personalized Embedding for Collaborative Filtering, ijcai 2018.
@@ -162,6 +153,5 @@ The development of NeuRec was supported by the National Natural Science
 Foundation of China under Grant No. 61772475. This work is also supported by
 the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
 
-![Architecture](zzu.png?raw=true "Title") 
-![Architecture](next.png?raw=true "Title") 
+<img src="https://github.com/wubinzzu/NeuRec/blob/master/next.png" width = "297" height = "100" alt="next" align=center />
 

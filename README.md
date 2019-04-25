@@ -8,7 +8,7 @@
 
 <h2>Architecture of NeuRec</h2>
 
-![Architecture](architecture.svg?raw=true "Title") 
+![Architecture](architecture.jpg?raw=true "Title") 
 
 <h2>Features</h2>
 <ul>

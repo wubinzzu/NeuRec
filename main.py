@@ -29,7 +29,7 @@ tf.random.set_random_seed(2017)
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
-    config.read("neurec.properties")
+    config.read("NeuRec.properties")
     conf=dict(config.items("default")) 
     data_input_path = conf["data.input.path"]
     dataset_name = conf["data.input.dataset"]

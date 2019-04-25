@@ -165,7 +165,7 @@ for Next-Basket Recommendation, WWW 2010.<br>
 </div>
 </div>
 <h2>Acknowledgements</h2>
-The development of NeuRec was supported by the National Natural Science
+The development of NeuRec is supported by the National Natural Science
 Foundation of China under Grant No. 61772475. This project is also supported by
 the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
 

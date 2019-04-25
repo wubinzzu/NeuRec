@@ -8,7 +8,7 @@
 
 <h2>Architecture of NeuRec</h2>
 
-![Architecture](architecture.jpg?raw=true "Title") 
+<img src="architecture.jpg" width = "50%" height = "50%"/>
 
 <h2>Features</h2>
 <ul>

@@ -44,7 +44,7 @@ class Logger(object):
 
 def _create_logger():
     config = ConfigParser()
-    config.read("Neurec.properties")
+    config.read("NeuRec.properties")
     lib_config = OrderedDict(config._sections["default"].items())
     model_name = lib_config["recommender"].upper()
 

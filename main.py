@@ -25,7 +25,7 @@ from model.item_ranking.JCA import JCA
 from model.item_ranking.CFGAN import CFGAN
 from model.item_ranking.SBPR import SBPR
 np.random.seed(2018)
-tf.random.set_random_seed(2017)
+tf.set_random_seed(2017)
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()

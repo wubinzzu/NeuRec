@@ -11,32 +11,29 @@ from concurrent.futures import ThreadPoolExecutor
 import configparser
 from util import data_gen
 from evaluation import Evaluate
+from util.dataiterator import DataIterator
+from util.tool import random_choice
+from util.Logger import logger
 
 
 class GEN(object):
-    def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
+    def __init__(self, itemNum, userNum, emb_dim, lamda, initdelta=0.05, learning_rate=0.05):
         self.itemNum = itemNum
         self.userNum = userNum
         self.emb_dim = emb_dim
         self.lamda = lamda  # regularization parameters
-        self.param = param
         self.initdelta = initdelta
         self.learning_rate = learning_rate
         self.g_params = []
 
         with tf.variable_scope('generator'):
-            if self.param == None:
-                self.user_embeddings = tf.Variable(
-                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
-                                      dtype=tf.float32))
-                self.item_embeddings = tf.Variable(
-                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
-                                      dtype=tf.float32))
-                self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
-            else:
-                self.user_embeddings = tf.Variable(self.param[0])
-                self.item_embeddings = tf.Variable(self.param[1])
-                self.item_bias = tf.Variable(param[2])
+            self.user_embeddings = tf.Variable(
+                tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                                  dtype=tf.float32))
+            self.item_embeddings = tf.Variable(
+                tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                                  dtype=tf.float32))
+            self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
 
             self.g_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
@@ -65,29 +62,23 @@ class GEN(object):
 
 
 class DIS(object):
-    def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
+    def __init__(self, itemNum, userNum, emb_dim, lamda, initdelta=0.05, learning_rate=0.05):
         self.itemNum = itemNum
         self.userNum = userNum
         self.emb_dim = emb_dim
         self.lamda = lamda  # regularization parameters
-        self.param = param
         self.initdelta = initdelta
         self.learning_rate = learning_rate
         self.d_params = []
 
         with tf.variable_scope('discriminator'):
-            if self.param == None:
-                self.user_embeddings = tf.Variable(
-                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
-                                      dtype=tf.float32))
-                self.item_embeddings = tf.Variable(
-                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
-                                      dtype=tf.float32))
-                self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
-            else:
-                self.user_embeddings = tf.Variable(self.param[0])
-                self.item_embeddings = tf.Variable(self.param[1])
-                self.item_bias = tf.Variable(self.param[2])
+            self.user_embeddings = tf.Variable(
+                tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                                  dtype=tf.float32))
+            self.item_embeddings = tf.Variable(
+                tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                                  dtype=tf.float32))
+            self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
 
         self.d_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
@@ -145,7 +136,10 @@ class IRGAN(AbstractRecommender):
         self.batch_size = eval(self.conf["batch_size"])
         self.d_tau = eval(self.conf["d_tau"])
         self.topK = eval(self.conf["topk"])
-        self.pretrain_file = self.conf["pretrain_file"]
+        self.pre_reg = eval(self.conf["pre_reg"])
+        self.pre_lr = eval(self.conf["pre_lr"])
+        self.pre_epochs = eval(self.conf["pre_epochs"])
+        self.pre_dns = eval(self.conf["pre_dns"])
         self.loss_function = "None"
 
         idx_value_dict = {}
@@ -161,12 +155,26 @@ class IRGAN(AbstractRecommender):
         self.all_items = np.arange(self.num_items)
 
     def build_graph(self):
-        with open(self.pretrain_file, "rb") as fin:
-            pretrain_params = pickle.load(fin, encoding="latin")
-        self.generator = GEN(self.num_items, self.num_users, self.factors_num, self.g_reg, param=pretrain_params,
-                             learning_rate=self.lr)
-        self.discriminator = DIS(self.num_items, self.num_users, self.factors_num, self.d_reg, param=None,
-                                 learning_rate=self.lr)
+        self.generator = GEN(self.num_items, self.num_users, self.factors_num, self.g_reg, learning_rate=self.lr)
+        self.discriminator = DIS(self.num_items, self.num_users, self.factors_num, self.d_reg, learning_rate=self.lr)
+
+        # for pretrain
+        self.pre_user = tf.placeholder(tf.int32)
+        self.pre_item_pos = tf.placeholder(tf.int32)
+        self.pre_item_neg = tf.placeholder(tf.int32)
+        g_user_embeddings, g_item_embeddings, g_item_biaes = self.generator.g_params
+        user_emb = tf.nn.embedding_lookup(g_user_embeddings, self.pre_user)
+        pos_emb = tf.nn.embedding_lookup(g_item_embeddings, self.pre_item_pos)
+        neg_emb = tf.nn.embedding_lookup(g_item_embeddings, self.pre_item_neg)
+        pos_bias = tf.gather(g_item_biaes, self.pre_item_pos)
+        neg_bias = tf.gather(g_item_biaes, self.pre_item_neg)
+        self.pre_pos_logit = tf.matmul(user_emb, pos_emb, transpose_b=True) + pos_bias
+        neg_logit = tf.matmul(user_emb, neg_emb, transpose_b=True) + neg_bias
+        loss = -tf.log_sigmoid(self.pre_pos_logit - neg_logit)
+        reg_loss = tf.nn.l2_loss(user_emb) + tf.nn.l2_loss(pos_emb) + tf.nn.l2_loss(neg_emb) + \
+                   tf.nn.l2_loss(pos_bias) + tf.nn.l2_loss(neg_bias)
+        loss = loss + self.pre_reg * reg_loss
+        self.pre_opt = tf.train.GradientDescentOptimizer(self.pre_lr).minimize(loss)
 
     def get_train_data(self):
         users_list, items_list, labels_list = [], [], []
@@ -201,7 +209,65 @@ class IRGAN(AbstractRecommender):
             label_list.append(0.0)
         return (user_list, items_list, label_list)
 
+    def pre_training(self):
+        logger.info("Pre-training")
+        for epoch in range(self.pre_epochs):
+            data = self.get_pre_train_data()
+            for user_input, item_input_pos, item_dns_list in data:
+                user_feed = user_input
+                item_pos_feed = item_input_pos
+                user_tmp = []
+                neg_tmp = []
+                for user, neg in zip(user_input, item_dns_list):
+                    user_tmp.extend([user] * self.pre_dns)
+                    neg_tmp.extend(neg)
+
+                user_tmp = np.reshape(user_tmp, newshape=[-1, 1])
+                neg_tmp = np.reshape(neg_tmp, newshape=[-1, 1])
+                feed_dict = {self.pre_user: user_tmp,
+                             self.pre_item_pos: neg_tmp}
+                output_neg = self.sess.run(self.pre_pos_logit, feed_dict)
+                # select the best negtive sample as for item_input_neg
+                output_neg = np.reshape(output_neg, newshape=[-1, self.pre_dns])
+                max_idx = np.argmax(output_neg, axis=1)
+
+                item_neg_feed = [neg_list[idx] for idx, neg_list in zip(max_idx, item_dns_list)]
+
+                user_feed = np.reshape(user_feed, newshape=[-1, 1])
+                item_pos_feed = np.reshape(item_pos_feed, newshape=[-1, 1])
+                item_neg_feed = np.reshape(item_neg_feed, newshape=[-1, 1])
+                feed_dict = {self.pre_user: user_feed,
+                             self.pre_item_pos: item_pos_feed,
+                             self.pre_item_neg: item_neg_feed}
+                self.sess.run(self.pre_opt, feed_dict)
+
+            Evaluate.test_model(self, self.dataset)
+
+    def get_pre_train_data(self):
+        users_list, pos_items, neg_items = [], [], []
+        train_users = list(self.user_pos_train.keys())
+        with ThreadPoolExecutor() as executor:
+            data = executor.map(self.get_pre_train_data_one_user, train_users)
+        data = list(data)
+        for users, pos, neg_dns in data:
+            users_list.extend(users)
+            pos_items.extend(pos)
+            neg_items.extend(neg_dns)
+
+        dataloader = DataIterator(users_list, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
+        return dataloader
+
+    def get_pre_train_data_one_user(self, user):
+        pos = self.user_pos_train[user]
+        pos_len = len(pos)
+
+        neg = random_choice(self.all_items, size=pos_len*self.pre_dns, exclusion=pos)
+        neg = np.reshape(neg, newshape=[pos_len, self.pre_dns])
+        return [user] * pos_len, pos.tolist(), neg.tolist()
+
     def train_model(self):
+        self.pre_training()
+        logger.info("training...")
         for _ in range(self.epochs):
             for _ in range(self.d_epoch):
                 users_list, items_list, labels_list = self.get_train_data()

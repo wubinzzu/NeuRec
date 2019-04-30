@@ -64,8 +64,9 @@ class FPMC(AbstractRecommender):
             embeddings_IU_i = tf.nn.embedding_lookup(self.embeddings_IU,item_input)
             embeddings_IL_i = tf.nn.embedding_lookup(self.embeddings_IL, item_input)
             embeddings_LI_l = tf.nn.embedding_lookup(self.embeddings_LI, self.item_input_recent)
-            return embeddings_UI_u, embeddings_IU_i,embeddings_IL_i,embeddings_LI_l,\
-                tf.multiply(embeddings_UI_u, embeddings_IU_i) + tf.multiply(embeddings_IL_i, embeddings_LI_l)
+            predict_vector = tf.multiply(embeddings_UI_u, embeddings_IU_i) + tf.multiply(embeddings_IL_i, embeddings_LI_l)
+            return embeddings_UI_u, embeddings_IU_i,embeddings_IL_i,embeddings_LI_l,predict_vector
+                
                 #tf.multiply(user_embedding, item_embedding)+item_embedding_short
 
     def _create_loss(self):

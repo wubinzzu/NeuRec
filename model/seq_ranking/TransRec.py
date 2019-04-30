@@ -60,8 +60,9 @@ class TransRec(AbstractRecommender):
             user_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.user_input)
             item_embedding_recent = tf.nn.embedding_lookup(self.item_embeddings_recent, self.item_input_recent)
             item_embedding = tf.nn.embedding_lookup(self.item_embeddings, item_input)
-            return user_embedding, item_embedding,item_embedding_recent,\
-               user_embedding-item_embedding+item_embedding_recent
+            predict_vector = user_embedding-item_embedding+item_embedding_recent
+            return user_embedding, item_embedding,item_embedding_recent,predict_vector
+               
 
     def _create_loss(self):
         with tf.name_scope("loss"):

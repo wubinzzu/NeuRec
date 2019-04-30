@@ -58,9 +58,10 @@ class NPE(AbstractRecommender):
             embeddings_LI_l = tf.nn.embedding_lookup(self.embeddings_IL, self.item_input_recents)
             
             context_embedding = tf.reduce_sum(embeddings_LI_l,1)
-            return embeddings_UI_u,embeddings_IU_i,embeddings_LI_l,\
-               tf.multiply(tf.nn.relu(embeddings_UI_u), tf.nn.relu(embeddings_IU_i))\
+            predict_vector = tf.multiply(tf.nn.relu(embeddings_UI_u), tf.nn.relu(embeddings_IU_i))\
                +tf.multiply(tf.nn.relu(embeddings_IU_i),tf.nn.relu(context_embedding))
+            return embeddings_UI_u,embeddings_IU_i,embeddings_LI_l, predict_vector
+               
 
     def _create_loss(self):
         with tf.name_scope("loss"):

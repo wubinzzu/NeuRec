@@ -19,7 +19,7 @@ def optimizer(learner,loss,learning_rate,momentum=0.9):
 def pairwise_loss(loss_function,y,margin=1):
     loss=None
     if loss_function.lower() == "bpr":
-        loss = -tf.reduce_sum(tf.nn.sigmoid(y))
+        loss = -tf.reduce_sum(tf.log_sigmoid(y))
     elif loss_function.lower() == "hinge":
         loss = tf.reduce_sum(tf.maximum(y+margin, 0))
     elif loss_function.lower() == "square":  

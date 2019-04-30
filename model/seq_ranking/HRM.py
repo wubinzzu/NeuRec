@@ -77,8 +77,9 @@ class HRM(AbstractRecommender):
                 hybrid_user_embedding = self.max_pooling(concat_user_item)
             elif self.session_agg == "avg":
                 hybrid_user_embedding = self.avg_pooling(concat_user_item)
-            return user_embedding, item_embedding,item_embedding_recent,\
-            tf.multiply(hybrid_user_embedding, item_embedding)
+            predict_vector = tf.multiply(hybrid_user_embedding, item_embedding)
+            return user_embedding, item_embedding,item_embedding_recent,predict_vector
+            
 
     def _create_loss(self):
         with tf.name_scope("loss"):

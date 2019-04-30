@@ -93,10 +93,10 @@ class FPMCplus(AbstractRecommender):
             embeddings_IU_i = tf.nn.embedding_lookup(self.embeddings_IU,item_input)
             embeddings_IL_i = tf.nn.embedding_lookup(self.embeddings_IL, item_input)
             embeddings_LI_l = tf.nn.embedding_lookup(self.embeddings_LI, self.item_input_recents)
-            
             item_embedding_short = self._attention_MLP(embeddings_UI_u,embeddings_IL_i,embeddings_LI_l)
-            return embeddings_UI_u,embeddings_IU_i, embeddings_IL_i,embeddings_LI_l,\
-               tf.multiply(embeddings_UI_u, embeddings_IU_i)+tf.multiply(embeddings_IL_i,item_embedding_short)
+            predict_vector =  tf.multiply(embeddings_UI_u, embeddings_IU_i)+tf.multiply(embeddings_IL_i,item_embedding_short)
+            return embeddings_UI_u,embeddings_IU_i, embeddings_IL_i,embeddings_LI_l,predict_vector
+              
 
     def _create_loss(self):
         with tf.name_scope("loss"):

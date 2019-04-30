@@ -44,7 +44,7 @@ class CFGAN(AbstractRecommender):
         model_config.read("conf/CFGAN.properties")
         config = dict(model_config.items("hyperparameters"))
         self.dataset = dataset
-        print("DAE arguments: %s " %(config))
+        print("CFGAN arguments: %s " %(config))
         self.epochs = eval(config["epochs"])
         self.topK = eval(config["topk"])
         self.mode = config["mode"]
@@ -65,7 +65,8 @@ class CFGAN(AbstractRecommender):
         self.ZR_ratio = eval(config["zr_ratio"])
         self.ZP_ratio = eval(config["zp_ratio"])
         self.ZR_coefficient = eval(config["zr_coefficient"])
-
+        self.verbose= int(config["verbose"])
+        
         train_matrix = dataset.trainMatrix.tocsr()
         self.train_matrix = train_matrix.copy()
         if self.mode == "itemBased":
@@ -210,8 +211,10 @@ class CFGAN(AbstractRecommender):
                     feed = {self.realData: train_data, self.condition: train_data,
                             self.mask: train_p_mask, self.G_ZR_dims: train_z_mask}
                     self.sess.run(self.trainer_G, feed_dict=feed)
+            if epoch %self.verbose == 0:    
                 self.eval_rating_matrix()
                 Evaluate.test_model(self, self.dataset)
+            
 
     def eval_rating_matrix(self):
         allRatings = self.sess.run(self.G_output, feed_dict={self.condition: self.train_matrix.toarray()})
@@ -220,5 +223,4 @@ class CFGAN(AbstractRecommender):
         self.allRatings_for_test = allRatings
 
     def predict(self, user_id, items):
-
         return self.allRatings_for_test[user_id, items]

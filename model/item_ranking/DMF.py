@@ -76,7 +76,7 @@ class DMF(AbstractRecommender):
             
     def _create_loss(self):
         with tf.name_scope("loss"):
-            self.loss = learner.pointwise_loss(self.loss_function, y_rea, y_pre)
+            self.loss = learner.pointwise_loss(self.loss_function, self.lables, self.output)
     def _create_optimizer(self):
         with tf.name_scope("learner"):
             self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate) 

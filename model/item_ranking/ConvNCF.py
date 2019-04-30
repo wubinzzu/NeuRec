@@ -112,7 +112,7 @@ class ConvNCF(AbstractRecommender):
             self.p1, self.q1, self.output = self._create_inference(self.item_input_pos)
             self.p2, self.q2, self.output_neg = self._create_inference(self.item_input_neg)
             self.result = self.output - self.output_neg
-            self.loss = -learner.pairwise_loss(self.loss_function, self.result)########
+            self.loss = learner.pairwise_loss(self.loss_function, self.result)########
 
             self.opt_loss = self.loss + self.lambda_bilinear * ( tf.reduce_sum(tf.square(self.p1)) \
                                     + tf.reduce_sum(tf.square(self.q2)) + tf.reduce_sum(tf.square(self.q1)))\

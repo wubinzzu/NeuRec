@@ -19,7 +19,7 @@ def _get_pairwise_all_data(dataset):
     user_input=user_input[shuffle_index]
     item_input_pos=item_input_pos[shuffle_index]
     item_input_neg=item_input_neg[shuffle_index]
-    return user_input, item_input_pos,item_input_neg 
+    return user_input, item_input_pos,item_input_neg
 
 def _get_pairwise_all_highorder_data(dataset,high_order):
     user_input, item_input_pos,item_input_recents,item_input_neg = [], [], [],[]

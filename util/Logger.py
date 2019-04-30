@@ -46,7 +46,7 @@ def _create_logger():
     config = ConfigParser()
     config.read("NeuRec.properties")
     lib_config = OrderedDict(config._sections["default"].items())
-    model_name = lib_config["recommender"].upper()
+    model_name = lib_config["recommender"]
 
     model_config_path = os.path.join("./conf", model_name + ".properties")
     config.read(model_config_path)

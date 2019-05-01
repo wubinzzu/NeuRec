@@ -24,7 +24,6 @@ class JCA(AbstractRecommender):
         self.hidden_neuron = int(self.conf["hidden_neuron"])
         self.learning_rate = float(self.conf["learning_rate"])
         self.learner = self.conf["learner"]
-        self.loss_function = self.conf["loss_function"]
         self.topK = int(self.conf["topk"])
         self.reg = float(self.conf["reg"])
         self.num_epochs= int(self.conf["epochs"])
@@ -38,7 +37,7 @@ class JCA(AbstractRecommender):
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items 
         self.dataset = dataset
-        self.train_R = dataset.trainMatrix.todense()
+        self.train_R = dataset.trainMatrix.toarray()
         self.U_OH_mat = np.eye(self.num_users, dtype=float)
         self.I_OH_mat = np.eye(self.num_items, dtype=float)
         self.num_batch_U = int(self.num_users / float(self.batch_size)) + 1
@@ -178,8 +177,8 @@ class JCA(AbstractRecommender):
                 total_loss+=loss
             print("[iter %d : total_loss : %f, time: %f]" %(epoch+1,total_loss,time()-training_start_time))
             if epoch %self.verbose == 0:
-                continue
-                #Evaluate.test_model(self,self.dataset)
+                self.eval_rating_matrix()
+                Evaluate.test_model(self,self.dataset)
                 
     def pairwise_neg_sampling(self,row_idx, col_idx):
         R = self.train_R[row_idx, :]
@@ -204,17 +203,20 @@ class JCA(AbstractRecommender):
                 n_input.append([u, ns])
         # print('dataset size = ' + str(len(p_input)))
         return np.array(p_input), np.array(n_input)
-
     
+    def eval_rating_matrix(self):
+        self.allRatings = self.sess.run(self.Decoder,
+            feed_dict={
+            self.input_R_U: self.train_R,
+            self.input_R_I: self.train_R,
+            self.input_OH_I: self.I_OH_mat,
+            self.input_P_cor: [[0, 0]],
+            self.input_N_cor: [[0, 0]],
+            self.row_idx: np.reshape(range(self.num_users), (self.num_users, 1)),
+            self.col_idx: np.reshape(range(self.num_items), (self.num_items, 1))})
+
     def predict(self, user_id, items):
-        mask = np.ones((1,self.num_items), dtype=np.int32)
-        rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-        items_by_userid = self.dataset.trainDict[user_id]
-        for itemid in items_by_userid:
-            rating_matrix[0,itemid] = 1
-        output = self.sess.run(self.output, feed_dict={self.mask_corruption:mask,self.input_R:rating_matrix,
-            self.user_input: np.array([user_id])})
-        return output[0,items]
+        return self.allRatings[user_id, items]
     
     def l2_norm(self,tensor):
         return tf.sqrt(tf.reduce_sum(tf.square(tensor)))

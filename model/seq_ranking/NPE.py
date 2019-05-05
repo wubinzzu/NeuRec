@@ -60,14 +60,14 @@ class NPE(AbstractRecommender):
             context_embedding = tf.reduce_sum(embeddings_LI_l,1)
             predict_vector = tf.multiply(tf.nn.relu(embeddings_UI_u), tf.nn.relu(embeddings_IU_i))\
                +tf.multiply(tf.nn.relu(embeddings_IU_i),tf.nn.relu(context_embedding))
-            return embeddings_UI_u,embeddings_IU_i,embeddings_LI_l, predict_vector
+            predict = tf.reduce_sum(predict_vector,1)
+            return embeddings_UI_u,embeddings_IU_i,embeddings_LI_l, predict
                
 
     def _create_loss(self):
         with tf.name_scope("loss"):
-            UI_u,IU_i,LI_l,predict_vector = self._create_inference()
-            prediction = tf.layers.dense(inputs=predict_vector,units=1, activation=tf.nn.sigmoid)
-            self.output = tf.squeeze(prediction)
+            UI_u,IU_i,LI_l,self.output = self._create_inference()
+            self.output = tf.sigmoid(self.output)
             self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg* (tf.reduce_sum(tf.square(UI_u)) \
             +tf.reduce_sum(tf.square(IU_i))+tf.reduce_sum(tf.square(LI_l)))
 

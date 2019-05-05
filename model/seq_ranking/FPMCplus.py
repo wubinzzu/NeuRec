@@ -95,26 +95,24 @@ class FPMCplus(AbstractRecommender):
             embeddings_LI_l = tf.nn.embedding_lookup(self.embeddings_LI, self.item_input_recents)
             item_embedding_short = self._attention_MLP(embeddings_UI_u,embeddings_IL_i,embeddings_LI_l)
             predict_vector =  tf.multiply(embeddings_UI_u, embeddings_IU_i)+tf.multiply(embeddings_IL_i,item_embedding_short)
-            return embeddings_UI_u,embeddings_IU_i, embeddings_IL_i,embeddings_LI_l,predict_vector
+            predict = tf.reduce_sum(predict_vector, 1)
+            return embeddings_UI_u,embeddings_IU_i, embeddings_IL_i,embeddings_LI_l,predict
               
 
     def _create_loss(self):
         with tf.name_scope("loss"):
             # loss for L(Theta)
             # loss for L(Theta)
-            UI_u,IU_i,IL_i,LI_l,predict_vector = self._create_inference(self.item_input)
+            UI_u,IU_i,IL_i,LI_l,self.output = self._create_inference(self.item_input)
             if self.ispairwise.lower() =="true":
-                self.output = tf.reduce_sum(predict_vector,1)
-                _, IU_j,IL_j,_,predict_vector_neg = self._create_inference(self.item_input_neg)
-                output_neg = tf.reduce_sum(predict_vector_neg,1)
+                _, IU_j,IL_j,_,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(UI_u)) \
                 + tf.reduce_sum(tf.square(IU_i)) + tf.reduce_sum(tf.square(IL_i)) + tf.reduce_sum(tf.square(LI_l))+ \
                  tf.reduce_sum(tf.square(LI_l))+tf.reduce_sum(tf.square(IU_j))+tf.reduce_sum(tf.square(IL_j)))+\
                  self.reg_w * (tf.reduce_sum(tf.square(self.W))+tf.reduce_sum(tf.square(self.h)))
             else :
-                prediction = tf.layers.dense(inputs=predict_vector,units=1, activation=tf.nn.sigmoid)
-                self.output = tf.squeeze(prediction)
+                self.output = tf.sigmoid(self.output)
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(UI_u)) \
                 +tf.reduce_sum(tf.square(IU_i))+ tf.reduce_sum(tf.square(IL_i))+tf.reduce_sum(tf.square(LI_l)))
 

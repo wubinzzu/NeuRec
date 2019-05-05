@@ -61,23 +61,21 @@ class TransRec(AbstractRecommender):
             item_embedding_recent = tf.nn.embedding_lookup(self.item_embeddings_recent, self.item_input_recent)
             item_embedding = tf.nn.embedding_lookup(self.item_embeddings, item_input)
             predict_vector = user_embedding-item_embedding+item_embedding_recent
-            return user_embedding, item_embedding,item_embedding_recent,predict_vector
+            predict = tf.reduce_sum(predict_vector,1)
+            return user_embedding, item_embedding,item_embedding_recent,predict
                
 
     def _create_loss(self):
         with tf.name_scope("loss"):
             # loss for L(Theta)
-            p1,q1,r1,predict_vector = self._create_inference(self.item_input)
+            p1,q1,r1,self.output = self._create_inference(self.item_input)
             if self.ispairwise.lower() =="true":
-                self.output = tf.reduce_sum(predict_vector,1)
-                _, q2,_,predict_vector_neg = self._create_inference(self.item_input_neg)
-                output_neg = tf.reduce_sum(predict_vector_neg,1)
+                _, q2,_,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
                 +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1)))
             else :
-                prediction = tf.layers.dense(inputs=predict_vector,units=1, activation=tf.nn.sigmoid)
-                self.output = tf.squeeze(prediction)
+                self.output = tf.sigmoid(self.output)
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(p1)) \
                 +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1)))
 

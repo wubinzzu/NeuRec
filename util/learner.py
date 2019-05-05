@@ -31,9 +31,9 @@ def pairwise_loss(loss_function,y,margin=1):
 def pointwise_loss(loss_function,y_rea,y_pre):
     loss=None
     if loss_function.lower() == "cross_entropy":
-        #loss = tf.losses.log_loss(labels=y_rea, predictions=y_pre)
-        loss = - tf.reduce_sum(
-            y_rea * tf.log(y_pre) + (1 - y_rea) * tf.log(1 - y_pre)) 
+        loss = tf.losses.sigmoid_cross_entropy(y_rea,y_pre)
+#         loss = - tf.reduce_sum(
+#             y_rea * tf.log(y_pre) + (1 - y_rea) * tf.log(1 - y_pre)) 
     elif loss_function.lower() == "square":  
         loss = tf.reduce_sum(tf.square(y_rea-y_pre))  
     else:

@@ -86,7 +86,6 @@ class HRM(AbstractRecommender):
         with tf.name_scope("loss"):
             # loss for L(Theta)
             p1,q1,r1,self.output = self._create_inference()
-            self.output = tf.sigmoid(self.output)
             self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(p1)) \
             +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1)))
 

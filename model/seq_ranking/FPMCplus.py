@@ -112,7 +112,6 @@ class FPMCplus(AbstractRecommender):
                  tf.reduce_sum(tf.square(LI_l))+tf.reduce_sum(tf.square(IU_j))+tf.reduce_sum(tf.square(IL_j)))+\
                  self.reg_w * (tf.reduce_sum(tf.square(self.W))+tf.reduce_sum(tf.square(self.h)))
             else :
-                self.output = tf.sigmoid(self.output)
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(UI_u)) \
                 +tf.reduce_sum(tf.square(IU_i))+ tf.reduce_sum(tf.square(IL_i))+tf.reduce_sum(tf.square(LI_l)))
 

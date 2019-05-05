@@ -75,7 +75,6 @@ class TransRec(AbstractRecommender):
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
                 +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1)))
             else :
-                self.output = tf.sigmoid(self.output)
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(p1)) \
                 +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1)))
 

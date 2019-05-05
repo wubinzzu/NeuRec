@@ -84,7 +84,7 @@ class FISM(AbstractRecommender):
             
             else:
                 self.loss = learner.pointwise_loss(self.loss_function, \
-                self.lables,tf.sigmoid(self.output)) + self.lambda_bilinear *\
+                self.lables,self.output) + self.lambda_bilinear *\
                 (tf.reduce_sum(tf.square(p1)))+self.gamma_bilinear *(tf.reduce_sum(tf.square(q1)))
     def _create_optimizer(self):
         with tf.name_scope("learner"):

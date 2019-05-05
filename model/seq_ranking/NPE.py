@@ -67,7 +67,6 @@ class NPE(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             UI_u,IU_i,LI_l,self.output = self._create_inference()
-            self.output = tf.sigmoid(self.output)
             self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg* (tf.reduce_sum(tf.square(UI_u)) \
             +tf.reduce_sum(tf.square(IU_i))+tf.reduce_sum(tf.square(LI_l)))
 

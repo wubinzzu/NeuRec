@@ -24,9 +24,11 @@ from model.item_ranking.MultiVAE import MultiVAE
 from model.item_ranking.JCA import JCA
 from model.item_ranking.CFGAN import CFGAN
 from model.item_ranking.SBPR import SBPR
+from model.item_ranking.MFVAE import MFVAE
+from model.item_ranking.MFVAEBPR import MFVAEBPR
+from model.item_ranking.SpectralCF import SpectralCF
 np.random.seed(2018)
 tf.set_random_seed(2017)
-
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("NeuRec.properties")
@@ -34,14 +36,15 @@ if __name__ == "__main__":
     data_input_path = conf["data.input.path"]
     dataset_name = conf["data.input.dataset"]
     splitter = conf["data.splitter"]
+    dataset_format = conf["data.column.format"]
     separator = eval(conf["data.convert.separator"])
     threshold = float(conf["data.convert.binarize.threshold"])
     recommender = str(conf["recommender"])
     evaluate_neg = int(conf["rec.evaluate.neg"])
     num_thread = int(conf["rec.number.thread"])
     splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path,splitter,separator,threshold,evaluate_neg,dataset_name,splitterRatio) 
-
+    dataset = Dataset(data_input_path,dataset_name,splitter,separator,threshold,evaluate_neg,splitterRatio) 
+    
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
@@ -105,8 +108,18 @@ if __name__ == "__main__":
         elif recommender.lower() == "jca":
             model = JCA(sess,dataset)  
             
+        elif recommender.lower() == "mfvae":
+            model = MFVAE(sess,dataset) 
+            
+        elif recommender.lower() == "mfvaebpr":
+            model = MFVAEBPR(sess,dataset)  
+            
         elif recommender.lower() == "sbpr":
-            model = SBPR(sess,dataset)  
+            model = SBPR(sess,dataset) 
+             
+        elif recommender.lower() == "spectralcf":
+            model = SpectralCF(sess,dataset)  
+        
         model.build_graph()
         sess.run(tf.global_variables_initializer())
         model.train_model()

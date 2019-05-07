@@ -10,12 +10,13 @@ from data.HoldOutDataSplitter import HoldOutDataSplitter
 from data.GivenData import GivenData
 class Dataset(object):
 
-    def __init__(self,path,splitter,separator,threshold, evaluate_neg,dataset_name,splitterRatio=[0.8,0.2]):
+    def __init__(self,path,dataset_name,splitter,separator,threshold,evaluate_neg,dataset_format,splitterRatio=[0.8,0.2]):
         '''
         Constructor
         '''
         self.path = path+dataset_name
         self.dataset_name = dataset_name
+        self.dataset_format = dataset_format
         self.separator= separator
         self.threshold = threshold
         self.splitterRatio=splitterRatio
@@ -44,7 +45,7 @@ class Dataset(object):
             hold_out.load_data_by_user_time()
             self.num_users = self.trainMatrix.shape[0]
             self.num_items = self.trainMatrix.shape[1]
-        elif splitter == "given" : 
+        elif splitter == "given":
             given = GivenData(self.path,self.separator)
             self.trainMatrix,self.trainDict,self.testMatrix,\
             self.userseq,self.userids,self.itemids,self.timeMatrix =\
@@ -63,7 +64,7 @@ class Dataset(object):
         for u in np.arange(self.num_users):
             negative_per_user =[]
             if(self.evaluate_neg>0):
-                for _ in np.arange(self.evaluate_neg): #.....................
+                for _ in np.arange(self.evaluate_neg):
                     neg_item_id = np.random.randint(0,self.num_items)
                     while (u,neg_item_id) in self.trainMatrix.keys() or  (u,neg_item_id) in self.testMatrix.keys() \
                           or neg_item_id in negative_per_user:

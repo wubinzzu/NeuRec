@@ -129,6 +129,12 @@ Collaborative Autoencoders. WWW 2019.
     <td>       Xiangnan He, et al., Adversarial Personalized Ranking for Recommendation. SIGIR 2018.
      </td>
   </tr>	
+    </tr>
+     <tr>
+    <td scope="row">SpectralCF</td>
+    <td>       Lei Zheng, et al., Spectral Collaborative Filtering. RecSys 2018.
+     </td>
+  </tr>	
 	
 	
   </table>

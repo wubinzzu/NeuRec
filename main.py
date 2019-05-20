@@ -24,6 +24,7 @@ from model.item_ranking.MultiVAE import MultiVAE
 from model.item_ranking.JCA import JCA
 from model.item_ranking.CFGAN import CFGAN
 from model.item_ranking.SBPR import SBPR
+from model.item_ranking.WRMF import WRMF
 from model.item_ranking.SpectralCF import SpectralCF
 np.random.seed(2018)
 tf.set_random_seed(2017)
@@ -104,7 +105,7 @@ if __name__ == "__main__":
             model = CFGAN(sess,dataset)  
             
         elif recommender.lower() == "jca":
-            model = JCA(sess,dataset)  
+            model = JCA(sess,dataset)   
             
         elif recommender.lower() == "sbpr":
             model = SBPR(sess,dataset) 
@@ -113,7 +114,7 @@ if __name__ == "__main__":
             model = SpectralCF(sess,dataset)  
 
 		elif recommender.lower() == "wrmf":
-            model = WRMF(dataset)
+            model = WRMF(dataset) 
         
         model.build_graph()
         sess.run(tf.global_variables_initializer())

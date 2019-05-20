@@ -112,8 +112,8 @@ if __name__ == "__main__":
              
         elif recommender.lower() == "spectralcf":
             model = SpectralCF(sess,dataset)  
-
-		elif recommender.lower() == "wrmf":
+	
+	elif recommender.lower() == "wrmf":
             model = WRMF(dataset) 
         
         model.build_graph()

@@ -135,7 +135,13 @@ Collaborative Autoencoders. WWW 2019.
     <td>       Lei Zheng, et al., Spectral Collaborative Filtering. RecSys 2018.
      </td>
   </tr>	
-	
+  </tr>	
+    </tr>
+     <tr>
+    <td scope="row">WRMF</td>
+    <td>       Yifan Hu, et al., Collaborative Filtering for Implicit Feedback Datasets. ICDM 2008.
+     </td>
+  </tr>		
 	
   </table>
 

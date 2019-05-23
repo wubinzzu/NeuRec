@@ -71,7 +71,7 @@ class CDAE(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             
-            self.loss = learner.pointwise_loss(self.loss_function, self.input_R, self.output)
+            self.loss = - tf.reduce_sum(self.input_R* tf.log(self.output) + (1 - self.input_R) * tf.log(1 - self.output))
  
             self.reg_loss = self.reg*(tf.nn.l2_loss(self.weights['encoder'])+tf.nn.l2_loss(self.weights['decoder'])+
                 tf.nn.l2_loss(self.biases['encoder'])+tf.nn.l2_loss(self.biases['decoder']))

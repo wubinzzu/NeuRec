@@ -46,7 +46,7 @@ class Dataset(object):
             self.num_users = self.trainMatrix.shape[0]
             self.num_items = self.trainMatrix.shape[1]
         elif splitter == "given":
-            given = GivenData(self.path,self.separator)
+            given = GivenData(self.path,self.separator,self.threshold)
             self.trainMatrix,self.trainDict,self.testMatrix,\
             self.userseq,self.userids,self.itemids,self.timeMatrix =\
             given.load_pre_splitter_data()

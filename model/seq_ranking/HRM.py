@@ -75,7 +75,7 @@ class HRM(AbstractRecommender):
                 concat_user_item = tf.concat([tf.expand_dims(user_embedding,1),tf.expand_dims(item_embedding_recent,1)],axis=1) 
             if self.pre_agg == "max":
                 hybrid_user_embedding = self.max_pooling(concat_user_item)
-            elif self.session_agg == "avg":
+            elif self.pre_agg == "avg":
                 hybrid_user_embedding = self.avg_pooling(concat_user_item)
             predict_vector = tf.multiply(hybrid_user_embedding, item_embedding)
             predict = tf.reduce_sum(predict_vector,1)

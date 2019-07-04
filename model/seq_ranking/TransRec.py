@@ -65,7 +65,7 @@ class TransRec(AbstractRecommender):
             item_embedding = tf.nn.embedding_lookup(self.item_embeddings, item_input)
             item_bias = tf.nn.embedding_lookup(self.item_biases, item_input)
             predict_vector = user_embedding + tf.tile(self.global_embedding, tf.stack([batch_size,1]))+item_embedding_recent -item_embedding
-            predict = item_bias-tf.reduce_sum(predict_vector,1)
+            predict = item_bias-tf.reduce_sum(tf.square(predict_vector),1)
             return user_embedding, item_embedding_recent,item_embedding,item_bias,predict      
 
     def _create_loss(self):

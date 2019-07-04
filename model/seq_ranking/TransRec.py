@@ -1,5 +1,5 @@
 '''
-Reference: ThaiBinh Nguyen, et al. "Ruining He et al., Translation-based Recommendation." in SIGIR 2015
+Reference: Ruining He et al., "Translation-based Recommendation." in RecSys 2017
 @author: wubin
 '''
 from __future__ import absolute_import
@@ -51,32 +51,35 @@ class TransRec(AbstractRecommender):
                 name='user_embeddings', dtype=tf.float32)  #(users, embedding_size)
             self.item_embeddings = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embedding_size], mean=0.0, stddev=0.01),
                 name='item_embeddings', dtype=tf.float32)  #(items, embedding_size)
-            self.item_embeddings_recent = tf.Variable(tf.truncated_normal(shape=[self.num_items, self.embedding_size], mean=0.0, stddev=0.01),
-                name='item_embeddings_recent', dtype=tf.float32)  #(items, embedding_size)
+            self.item_biases = tf.Variable(tf.truncated_normal(shape=[self.num_items], mean=0.0, stddev=0.01),
+                name='item_biases', dtype=tf.float32)  #(items)
+            self.global_embedding = tf.Variable(tf.truncated_normal(shape=[1,self.embedding_size], mean=0.0, stddev=0.01),
+                name='global_embedding', dtype=tf.float32)
     
     def _create_inference(self, item_input):
         with tf.name_scope("inference"):
             # embedding look up
             user_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.user_input)
-            item_embedding_recent = tf.nn.embedding_lookup(self.item_embeddings_recent, self.item_input_recent)
+            batch_size =  tf.shape(user_embedding)[0]
+            item_embedding_recent = tf.nn.embedding_lookup(self.item_embeddings, self.item_input_recent)
             item_embedding = tf.nn.embedding_lookup(self.item_embeddings, item_input)
-            predict_vector = user_embedding-item_embedding+item_embedding_recent
-            predict = tf.reduce_sum(predict_vector,1)
-            return user_embedding, item_embedding,item_embedding_recent,predict
-               
+            item_bias = tf.nn.embedding_lookup(self.item_biases, item_input)
+            predict_vector = user_embedding + tf.tile(self.global_embedding, tf.stack([batch_size,1]))+item_embedding_recent -item_embedding
+            predict = item_bias-tf.reduce_sum(predict_vector,1)
+            return user_embedding, item_embedding_recent,item_embedding,item_bias,predict      
 
     def _create_loss(self):
         with tf.name_scope("loss"):
             # loss for L(Theta)
-            p1,q1,r1,self.output = self._create_inference(self.item_input)
+            p1,q1,r1,b1,self.output = self._create_inference(self.item_input)
             if self.ispairwise.lower() =="true":
-                _, q2,_,output_neg = self._create_inference(self.item_input_neg)
+                _,_,q2,b2,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
-                +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1)))
+                +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1))+tf.reduce_sum(tf.square(b1)) + tf.reduce_sum(tf.square(b2)))
             else :
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(p1)) \
-                +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1)))
+                +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1))+ tf.reduce_sum(tf.square(b1)))
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
@@ -98,10 +101,10 @@ class TransRec(AbstractRecommender):
             else :
                 user_input, item_input,item_input_recents, lables = data_gen._get_pointwise_all_firstorder_data(self.dataset,self.num_negatives)
            
-            num_training_instances = len(user_input)
+           
             total_loss = 0.0
             training_start_time = time()
-      
+            num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
                 if self.ispairwise.lower() =="true":
                     bat_users, bat_items_pos, bat_items_recents,bat_items_neg  = \

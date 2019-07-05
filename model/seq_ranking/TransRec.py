@@ -71,15 +71,15 @@ class TransRec(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             # loss for L(Theta)
-            p1,q1,r1,b1,self.output = self._create_inference(self.item_input)
+            p1,r1,q1,b1,self.output = self._create_inference(self.item_input)
             if self.ispairwise.lower() =="true":
                 _,_,q2,b2,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
-                +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1))+tf.reduce_sum(tf.square(b1)) + tf.reduce_sum(tf.square(b2)))
+                +tf.reduce_sum(tf.square(r1)) + tf.reduce_sum(tf.square(q2)) + tf.reduce_sum(tf.square(q1))+tf.reduce_sum(tf.square(b1)) + tf.reduce_sum(tf.square(b2)) + tf.reduce_sum(tf.square(self.global_embedding)))
             else :
                 self.loss = learner.pointwise_loss(self.loss_function,self.lables,self.output) + self.reg_mf * (tf.reduce_sum(tf.square(p1)) \
-                +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1))+ tf.reduce_sum(tf.square(b1)))
+                +tf.reduce_sum(tf.square(r1))+ tf.reduce_sum(tf.square(q1))+ tf.reduce_sum(tf.square(b1))+ tf.reduce_sum(tf.square(self.global_embedding)))
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):

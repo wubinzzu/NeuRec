@@ -20,7 +20,7 @@ def test_model(model,dataset,num_thread=10):
         ndcg = np.array(ndcgs).mean()
         auc = np.array(aucs).mean()
         logger.info(
-            "[model=%s]: [Test HR = %.4f, NDCG = %.4f,AUC = %.4f] [Time=%.1fs]" % (model_name,
+            "[model=%s]: [Test HR = %.6f, NDCG = %.6f,AUC = %.6f] [Time=%.1fs]" % (model_name,
             hr, ndcg,auc, time() - eval_begin))
         
     else:
@@ -30,5 +30,5 @@ def test_model(model,dataset,num_thread=10):
         MAP = np.array(maps).mean()
         NDCG = np.array(ndcgs).mean()
         MRR = np.array(mrrs).mean()    
-        logger.info("[model=%s][%.1fs]: [Test Precision = %.4f, Recall= %.4f, MAP= %.4f, NDCG= %.4f, MRR= %.4f][topk=%.4s]"
+        logger.info("[model=%s][%.1fs]: [Test Precision = %.6f, Recall= %.6f, MAP= %.6f, NDCG= %.6f, MRR= %.6f][topk=%.4s]"
                %(model_name,time() - eval_begin, Precision, Recall,MAP,NDCG,MRR,model.topK))     

@@ -1,5 +1,6 @@
 '''
-Reference: Lei, Zheng, et al. "Spectral Collaborative Filtering." in RecSys2018
+Reference: Wang Xiang et al. "Neural Graph Collaborative Filtering." in SIGIR2019
+Source code: https://github.com/xiangwang1223/neural_graph_collaborative_filtering
 @author: wubin
 '''
 import tensorflow as tf

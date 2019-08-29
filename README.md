@@ -138,6 +138,13 @@ Collaborative Autoencoders. WWW 2019.
   </tr>	
     </tr>
      <tr>
+    <td scope="row">NGCF</td>
+    <td>       Xiang Wang, et al., Neural Graph Collaborative Filtering. SIGIR 2019.
+     </td>
+  </tr>	
+  </tr>	
+    </tr>
+     <tr>
     <td scope="row">WRMF</td>
     <td>       Yifan Hu, et al., Collaborative Filtering for Implicit Feedback Datasets. ICDM 2008.
      </td>

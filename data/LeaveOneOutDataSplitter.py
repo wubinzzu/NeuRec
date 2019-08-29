@@ -21,7 +21,7 @@ class LeaveOneOutDataSplitter(object):
         iditems={}
         with open(self.path+".rating", 'r') as f:
             for line in f.readlines():
-                useridx, itemidx,rating, time= line.strip().split(self.separator)
+                useridx, itemidx,rating,time= line.strip().split(self.separator)
                 
                 if float(rating)>= self.threshold:
                     num_ratings+=1
@@ -35,7 +35,7 @@ class LeaveOneOutDataSplitter(object):
                         userids[useridx]=num_users
                         num_users+=1
                         pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],1,int(time)))
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],1,int(float(time))))
                 else :
                     num_ratings+=1
                     if  itemidx not in itemids:

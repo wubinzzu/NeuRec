@@ -15,8 +15,20 @@ from util import learner
 from evaluation import Evaluate
 from model.AbstractRecommender import AbstractRecommender
 import configparser
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
+from util.Logger import logger
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    
+def random_choice(a, size=None, replace=True, p=None, exclusion=None):
+    # TODO exclusion is element, not the index
+    if exclusion is not None:
+        if p is None:
+            p = np.ones_like(a)
+        else:
+            p = np.array(p, copy=True)
+        p = np.ndarray.flatten(p)
+        p[exclusion] = 0
+        p = p / np.sum(p)
+    sample = np.random.choice(a, size=size, replace=replace, p=p)
+    return sample
 
 class SBPR(AbstractRecommender):
     def __init__(self,sess,dataset):
@@ -38,20 +50,25 @@ class SBPR(AbstractRecommender):
         self.num_items = dataset.num_items
         self.userids = self.dataset.userids
         self.dataset_name = dataset.dataset_name
+        self.userouterids = self.userids.keys()
+        trainMatrix = self.dataset.trainMatrix.tocsr()
+        self.train_dict = {u: set(pos_item.indices) for u, pos_item in enumerate(trainMatrix)}
         self.socialMatrix=self._get_social_data()
         self.userSocialItemsSetList = self._get_SocialItemsSet_sun()
-        self.sess=sess  
+        logger.info("init finished")
+        self.sess = sess
+
     def _get_social_data(self):
         social_users = np.genfromtxt(self.socialpath, dtype=None, names=["user0", "user1"], delimiter=',')
         users_key = np.array(list(self.userids.keys()))
         user0 = social_users["user0"].astype(np.str)
         index = np.in1d(user0, users_key)
         social_users = social_users[index]
-
+    
         user1 = social_users["user1"].astype(np.str)
         index = np.in1d(user1, users_key)
         social_users = social_users[index]
-
+    
         user0 = social_users["user0"].astype(np.str)
         user0_id = [self.userids[u] for u in user0]
         user1 = social_users["user1"].astype(np.str)
@@ -63,22 +80,12 @@ class SBPR(AbstractRecommender):
     def _get_SocialItemsSet_sun(self):
         #find items rated by trusted neighbors only
         userSocialItemsSetList = {}
-        trainmatrix = self.dataset.trainMatrix.tocsr()
-        for u in range(self.num_users):
-            uRatedItems = set(trainmatrix[u].indices.tolist())
-            if len(uRatedItems)<=0:
-                continue
-            #find items rated by trusted neighbors only
-            trustedUsers = self.socialMatrix[u].indices
-            items = set()
-            for trustedUserIdx in trustedUsers:
-                trustedRatedItems = trainmatrix[trustedUserIdx].indices
-                for trustedRatedItemIdx in trustedRatedItems:
-                    #v's rated items
-                    if trustedRatedItemIdx not in uRatedItems and trustedRatedItemIdx not in items:
-                        items.add(trustedRatedItemIdx)
-            if len(items)>0:    
-                userSocialItemsSetList[u]= list(items)
+        for u, _ in self.train_dict.items():
+            trustors = self.socialMatrix[u].indices
+            items = [item for f_u in trustors for item in self.train_dict[f_u] if item not in self.train_dict[u]]
+            items = set(items)
+            if len(items) > 0:
+                userSocialItemsSetList[u] = list(items)
         return userSocialItemsSetList
 
     def _create_placeholders(self):
@@ -125,13 +132,16 @@ class SBPR(AbstractRecommender):
         self._create_optimizer()
 #---------- training process -------
     def train_model(self):
-        for epoch in  range(self.num_epochs):
+        for epoch in range(self.num_epochs):
             # Generate training instances
-            user_input, item_input_pos,item_input_social,item_input_neg,suk_input = self._get_pairwise_all_data()
+#             logger.info("get training data")
+            user_input, item_input_pos,item_input_social,item_input_neg,suk_input = self._get_pairwise_all_data_sun()
+#             logger.info("begin training")
             total_loss = 0.0
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
+#                 print(num_batch)
                 num_training_instances =len(user_input) 
                 id_start = num_batch * self.batch_size
                 id_end = (num_batch + 1) *self.batch_size
@@ -142,7 +152,7 @@ class SBPR(AbstractRecommender):
                 bat_items_social = item_input_social[id_start:id_end]
                 bat_items_neg = item_input_neg[id_start:id_end]
                 bat_suk_input = suk_input[id_start:id_end]
-                feed_dict = {self.user_input:bat_users,self.item_input:bat_items_pos,\
+                feed_dict = {self.user_input:bat_users,self.item_input_pos:bat_items_pos,\
                             self.item_input_social:bat_items_social,\
                             self.item_input_neg:bat_items_neg,self.suk:bat_suk_input}
                       
@@ -151,6 +161,7 @@ class SBPR(AbstractRecommender):
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
+
     def _get_pairwise_all_data(self):
         user_input, item_input_pos,item_input_social,item_input_neg,suk_input = [],[],[],[],[]
         trainMatrix = self.dataset.trainMatrix
@@ -166,13 +177,57 @@ class SBPR(AbstractRecommender):
                 item_input_neg.append(j)
                 k = np.random.choice(socialItemsList)
                 item_input_social.append(k)
-                trustedUserIdices = self.socialMatrix[u].indices
+                trustorIndices = self.socialMatrix[u].indices
                 socialWeight = 0
-                for trustedUserIdx in trustedUserIdices:
+                for trustedUserIdx in trustorIndices:
                     indices = trainMatrix[trustedUserIdx].tocsr().indices
                     if k in indices:
                         socialWeight += 1
                 suk_input.append(socialWeight+1) 
+        user_input = np.array(user_input, dtype=np.int32)
+        item_input_pos = np.array(item_input_pos, dtype=np.int32)
+        item_input_social = np.array(item_input_social, dtype=np.int32)
+        item_input_neg = np.array(item_input_neg, dtype=np.int32)
+        suk_input = np.array(suk_input, dtype=np.float32)
+        num_training_instances = len(user_input)
+        shuffle_index = np.arange(num_training_instances,dtype=np.int32)
+        np.random.shuffle(shuffle_index)
+        user_input=user_input[shuffle_index]
+        item_input_pos=item_input_pos[shuffle_index]
+        item_input_social=item_input_social[shuffle_index]
+        item_input_neg=item_input_neg[shuffle_index]
+        suk_input = suk_input[shuffle_index]
+        return user_input, item_input_pos,item_input_social,item_input_neg,suk_input
+
+    def _get_pairwise_all_data_sun(self):
+        user_input, item_input_pos, item_input_social, item_input_neg, suk_input = [],[],[],[],[]
+
+        num_items = self.dataset.num_items
+        all_items = np.arange(num_items)
+
+        for u, pos_item in self.train_dict.items():
+            if u not in self.userSocialItemsSetList:
+                continue
+            # pos_item = pos_item.indices.tolist()
+            pos_len = len(pos_item)
+            user_input.extend([u]*pos_len)
+            item_input_pos.extend(pos_item)
+
+            socialItemsList = self.userSocialItemsSetList[u]
+            # a, size = None, replace = True, p = None, exclusion = None
+            neg_excl = np.concatenate([socialItemsList, list(pos_item)], axis=0)
+
+            neg_item = random_choice(all_items, pos_len, replace=True, exclusion=neg_excl)
+            item_input_neg.extend(neg_item)
+            social_item = np.random.choice(socialItemsList, size=pos_len)
+            item_input_social.extend(social_item)
+
+            trustedUserIdices = self.socialMatrix[u].indices
+            socialWeight_bool = [[1 if k in self.train_dict[f_u] else 0 for f_u in trustedUserIdices]
+                                 for k in social_item]
+            socialWeight = np.sum(socialWeight_bool, axis=-1) + 1
+            suk_input.extend(socialWeight)
+
         user_input = np.array(user_input, dtype=np.int32)
         item_input_pos = np.array(item_input_pos, dtype=np.int32)
         item_input_social = np.array(item_input_social, dtype=np.int32)

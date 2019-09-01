@@ -48,7 +48,7 @@ class LeaveOneOutDataSplitter(object):
                         userids[useridx]=num_users
                         num_users+=1
                         pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
                 # rating_matrix[self.userids[useridx],self.itemids[itemidx]] = rating
             for u in np.arange(num_users):
                 pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])

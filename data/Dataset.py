@@ -10,13 +10,13 @@ from data.HoldOutDataSplitter import HoldOutDataSplitter
 from data.GivenData import GivenData
 class Dataset(object):
 
-    def __init__(self,path,dataset_name,splitter,separator,threshold,evaluate_neg,dataset_format,splitterRatio=[0.8,0.2]):
+    def __init__(self,path,dataset_name, data_format, splitter,separator,threshold,evaluate_neg,splitterRatio=[0.8,0.2]):
         '''
         Constructor
         '''
         self.path = path+dataset_name
         self.dataset_name = dataset_name
-        self.dataset_format = dataset_format
+        self.data_format = data_format
         self.separator= separator
         self.threshold = threshold
         self.splitterRatio=splitterRatio
@@ -33,13 +33,13 @@ class Dataset(object):
         self.userids = None
         self.itemids = None
         if splitter == "loo" :
-            loo = LeaveOneOutDataSplitter(self.path,self.separator, self.threshold)
+            loo = LeaveOneOutDataSplitter(self.path,self.data_format,self.separator, self.threshold)
             self.trainMatrix,self.trainDict,self.testMatrix,\
             self.userseq,self.userids,self.itemids,self.timeMatrix = loo.load_data_by_user_time()
             self.num_users = self.trainMatrix.shape[0]
             self.num_items = self.trainMatrix.shape[1]
         elif splitter == "ratio" :
-            hold_out = HoldOutDataSplitter(self.path,self.separator,self.threshold,self.splitterRatio)
+            hold_out = HoldOutDataSplitter(self.path,self.data_format, self.separator,self.threshold,self.splitterRatio)
             self.trainMatrix,self.trainDict,self.testMatrix,\
             self.userseq,self.userids,self.itemids,self.timeMatrix =\
             hold_out.load_data_by_user_time()

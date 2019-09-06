@@ -4,9 +4,10 @@ import math
 from copy import deepcopy
 from util.Logger import logger
 class HoldOutDataSplitter(object):
-    def __init__(self,path,separator,threshold,splitterRatio=[0.8,0.2]):
+    def __init__(self,path,data_format,separator,threshold,splitterRatio=[0.8,0.2]):
         self.path =path +".rating"
         self.separator = separator
+        self.data_format = data_format
         self.splitterRatio = splitterRatio
         self.threshold = threshold
         if float(splitterRatio[0])+ float(splitterRatio[1]) != 1.0:
@@ -25,36 +26,44 @@ class HoldOutDataSplitter(object):
         iditems={}
         with open(self.path, 'r') as f:
             for line in f.readlines():
-                useridx, itemidx,rating, time= line.strip().split(self.separator) 
+                if self.data_format == "UIRT":
+                    useridx, itemidx,rating,time= line.strip().split(self.separator)
+                    if float(rating) < self.threshold:
+                        continue
+                elif self.data_format == "UIT":
+                    useridx, itemidx,time= line.strip().split(self.separator)
+                    rating = 1
+                elif self.data_format == "UIR":
+                    useridx, itemidx,rating = line.strip().split(self.separator)
+                    if float(rating) < self.threshold:
+                        continue
+                elif self.data_format == "UI":
+                    useridx, itemidx = line.strip().split(self.separator)
+                    rating = 1
+                    
+                else:
+                    print("please choose a correct data format. ")
+                    
                 num_ratings+=1
-                if float(rating)>= self.threshold:
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
-    
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],1,int(time)])
-                else :
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
-    
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],rating,int(time)])
-                # rating_matrix[self.userids[useridx],self.itemids[itemidx]] = rating
+                if  itemidx not in itemids:
+                    iditems[num_items]=itemidx
+                    itemids[itemidx] = num_items
+                    num_items+=1
 
-        for u in range(num_users):
-            pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
+                if useridx not in userids:
+                    idusers[num_users]=useridx
+                    userids[useridx]=num_users
+                    num_users+=1
+                    pos_per_user[userids[useridx]]=[]
+                if  self.data_format == "UIRT" or self.data_format == "UIT":
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
+                    
+                else:
+                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,1))
+                    
+        if  self.data_format == "UIRT" or self.data_format == "UIT":
+            for u in range(num_users):
+                pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
         logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d"%(num_users,num_items,num_ratings))
         userseq = deepcopy(pos_per_user)
         train_dict = {}
@@ -64,7 +73,7 @@ class HoldOutDataSplitter(object):
         for u in range(num_users):
             num_ratings_by_user = len(pos_per_user[u])
             num_test_ratings = math.floor(float(self.splitterRatio[1])*num_ratings_by_user)
-            if len(pos_per_user[u]) > 3 and num_test_ratings >1:
+            if len(pos_per_user[u]) >= 2 and num_test_ratings >=1:
                 for _ in range(num_test_ratings):
                     test_item=pos_per_user[u][-1]
                     pos_per_user[u].pop() 

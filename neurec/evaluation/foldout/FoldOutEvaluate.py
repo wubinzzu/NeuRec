@@ -1,8 +1,8 @@
-from evaluation.foldout import Precision 
-from evaluation.foldout import Recall 
-from evaluation.foldout import MAP 
-from evaluation.foldout import MRR 
-from evaluation.foldout import NDCG
+from neurec.evaluation.foldout import Precision 
+from neurec.evaluation.foldout import Recall 
+from neurec.evaluation.foldout import MAP 
+from neurec.evaluation.foldout import MRR 
+from neurec.evaluation.foldout import NDCG
 import heapq  # for retrieval topK
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor

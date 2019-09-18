@@ -13,14 +13,13 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-import configparser
-from neurec.util import learner,data_gen
+from neurec.util import learner,data_gen,reader
+
 class FISM(AbstractRecommender):
 
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/FISM.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("FISM.properties", "hyperparameters")
+
         print("FISM arguments: %s " %(self.conf))
         self.verbose = int(self.conf["verbose"])
         self.batch_size = int(self.conf["batch_size"])

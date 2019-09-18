@@ -11,14 +11,12 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-import configparser
-from neurec.util import learner
+from neurec.util import learner, reader
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 class DeepICF(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/DeepICF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("DeepICF.properties", "hyperparameters")
+
         print("DeepICF arguments: %s " %(self.conf))
         self.pretrain = int(self.conf["pretrain"])
         self.verbose = int(self.conf["verbose"])

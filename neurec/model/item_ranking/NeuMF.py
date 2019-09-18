@@ -11,14 +11,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import data_gen,learner
+from neurec.util import data_gen,learner,reader
 from neurec.evaluation import Evaluate
-import configparser
+
 class NeuMF(AbstractRecommender):
-    def __init__(self,sess,dataset):  
-        config = configparser.ConfigParser()
-        config.read("conf/NeuMF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+    def __init__(self,sess,dataset):
+        self.conf = reader.config("NeuMF.properties", "hyperparameters")
+
         print("NeuMF arguments: %s " %(self.conf))
         self.embedding_size = int(self.conf["embedding_size"])
         self.layers = list(eval(self.conf["layers"]))

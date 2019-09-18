@@ -15,11 +15,11 @@ from neurec.util import learner, data_gen
 from neurec.evaluation import Evaluate
 import configparser
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 class TransRec(AbstractRecommender):
-    def __init__(self,sess,dataset):  
-        config = configparser.ConfigParser()
-        config.read("conf/TransRec.properties")
-        self.conf=dict(config.items("hyperparameters"))
+    def __init__(self,sess,dataset):
+        self.conf = reader.config("TransRec.properties", "hyperparameters")
+
         print("TransRec arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])
         self.embedding_size = int(self.conf["embedding_size"])

@@ -8,10 +8,9 @@ based on Generative Adversarial Networks." in CIKM2018
 from neurec.model.AbstractRecommender import AbstractRecommender
 import numpy as np
 import tensorflow as tf
-import configparser
 from scipy.sparse import csr_matrix
 from neurec.evaluation import Evaluate
-
+from neurec.util import reader
 
 def csr_to_user_dict(sparse_matrix_data):
     """convert a scipy.sparse.csr_matrix to a dict,
@@ -40,9 +39,8 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
 
 class CFGAN(AbstractRecommender):
     def __init__(self, sess, dataset):
-        model_config = configparser.ConfigParser()
-        model_config.read("conf/CFGAN.properties")
-        config = dict(model_config.items("hyperparameters"))
+        self.conf = reader.config("CFGAN.properties", "hyperparameters")
+
         self.dataset = dataset
         print("CFGAN arguments: %s " %(config))
         self.epochs = eval(config["epochs"])

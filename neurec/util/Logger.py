@@ -1,10 +1,10 @@
 from configparser import ConfigParser
 from collections import OrderedDict
 import logging
+from neurec.util import reader
 import time
 import sys
 import os
-
 
 class Logger(object):
     def __init__(self, filename):
@@ -43,16 +43,10 @@ class Logger(object):
 
 
 def _create_logger():
-    neurec_config_path = "../NeuRec.properties"
+    lib_config = reader.config("NeuRec.properties", "default")
 
-    config = ConfigParser()
-    config.read(neurec_config_path)
-    lib_config = OrderedDict(config._sections["default"].items())
-    model_name = lib_config["recommender"].upper()
-
-    model_config_path = os.path.join("./conf", model_name + ".properties")
-    config.read(model_config_path)
-    model_config = OrderedDict(config._sections["hyperparameters"].items())
+    model_name = lib_config["recommender"].upper() + ".properties"
+    model_config = reader.config(model_name, "hyperparameters")
 
     data_name = lib_config["data.input.dataset"]
 

@@ -7,15 +7,13 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 from time import time
-from neurec.util import data_gen
-import configparser
+from neurec.util import data_gen, reader
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
 class NGCF(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/NGCF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("NGCF.properties", "hyperparameters")
+
         print("NGCF arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])
         self.learner = self.conf["learner"]

@@ -2,7 +2,9 @@ import scipy.sparse as sp
 import numpy as np
 import math
 from copy import deepcopy
+from neurec.util import reader
 from neurec.util.Logger import logger
+
 class HoldOutDataSplitter(object):
     def __init__(self,path,data_format,separator,threshold,splitterRatio=[0.8,0.2]):
         self.path =path +".rating"
@@ -24,41 +26,41 @@ class HoldOutDataSplitter(object):
         # inverse views of userIds, itemIds,
         idusers = {}
         iditems={}
-        with open(self.path, 'r') as f:
-            for line in f.readlines():
-                if self.data_format == "UIRT":
-                    useridx, itemidx,rating,time= line.strip().split(self.separator)
-                    if float(rating) < self.threshold:
-                        continue
-                elif self.data_format == "UIT":
-                    useridx, itemidx,time= line.strip().split(self.separator)
-                    rating = 1
-                elif self.data_format == "UIR":
-                    useridx, itemidx,rating = line.strip().split(self.separator)
-                    if float(rating) < self.threshold:
-                        continue
-                elif self.data_format == "UI":
-                    useridx, itemidx = line.strip().split(self.separator)
-                    rating = 1
+        data = reader.lines(self.path)
+        for line in data:
+            if self.data_format == "UIRT":
+                useridx, itemidx,rating,time= line.strip().split(self.separator)
+                if float(rating) < self.threshold:
+                    continue
+            elif self.data_format == "UIT":
+                useridx, itemidx,time= line.strip().split(self.separator)
+                rating = 1
+            elif self.data_format == "UIR":
+                useridx, itemidx,rating = line.strip().split(self.separator)
+                if float(rating) < self.threshold:
+                    continue
+            elif self.data_format == "UI":
+                useridx, itemidx = line.strip().split(self.separator)
+                rating = 1
 
-                else:
-                    print("please choose a correct data format. ")
+            else:
+                print("please choose a correct data format. ")
 
-                num_ratings+=1
-                if  itemidx not in itemids:
-                    iditems[num_items]=itemidx
-                    itemids[itemidx] = num_items
+            num_ratings+=1
+            if  itemidx not in itemids:
+                iditems[num_items]=itemidx
+                itemids[itemidx] = num_items
 
-                if useridx not in userids:
-                    idusers[num_users]=useridx
-                    userids[useridx]=num_users
-                    num_users+=1
-                    pos_per_user[userids[useridx]]=[]
-                if  self.data_format == "UIRT" or self.data_format == "UIT":
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
+            if useridx not in userids:
+                idusers[num_users]=useridx
+                userids[useridx]=num_users
+                num_users+=1
+                pos_per_user[userids[useridx]]=[]
+            if  self.data_format == "UIRT" or self.data_format == "UIT":
+                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
 
-                else:
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,1))
+            else:
+                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,1))
 
         if  self.data_format == "UIRT" or self.data_format == "UIT":
             for u in range(num_users):

@@ -1,6 +1,8 @@
 import scipy.sparse as sp
 import numpy as np
+from neurec.util import reader
 from neurec.util.Logger import logger
+
 class GivenData(object):
     def __init__(self,path,separator,threshold):
         self.path =path
@@ -13,33 +15,35 @@ class GivenData(object):
         num_items,num_users = 0,0
         userids,itemids,idusers,iditems = {},{},{},{}
         # Get number of users and items
-        with open(self.path+".train.rating", 'r') as f:
-            for line in f.readlines():
-                useridx, itemidx, rating, time= line.strip().split(self.separator)
-                if float(rating)>= self.threshold:
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
 
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],1,int(time)])
-                else:
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
+        data = reader.lines(self.path + ".train.rating")
 
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
+        for line in data:
+            useridx, itemidx, rating, time= line.strip().split(self.separator)
+            if float(rating)>= self.threshold:
+                if  itemidx not in itemids:
+                    iditems[num_items]=itemidx
+                    itemids[itemidx] = num_items
+                    num_items+=1
+
+                if useridx not in userids:
+                    idusers[num_users]=useridx
+                    userids[useridx]=num_users
+                    num_users+=1
+                    pos_per_user[userids[useridx]]=[]
+                pos_per_user[userids[useridx]].append([itemids[itemidx],1,int(time)])
+            else:
+                if  itemidx not in itemids:
+                    iditems[num_items]=itemidx
+                    itemids[itemidx] = num_items
+                    num_items+=1
+
+                if useridx not in userids:
+                    idusers[num_users]=useridx
+                    userids[useridx]=num_users
+                    num_users+=1
+                    pos_per_user[userids[useridx]]=[]
+                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
 
             train_dict = {}
             for u in range(num_users):

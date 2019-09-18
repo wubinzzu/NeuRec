@@ -26,15 +26,15 @@ from neurec.model.item_ranking.CFGAN import CFGAN
 from neurec.model.item_ranking.SBPR import SBPR
 from neurec.model.item_ranking.WRMF import WRMF
 from neurec.model.item_ranking.SpectralCF import SpectralCF
+from neurec.util import reader
 
 def setup():
     np.random.seed(2018)
     tf.set_random_seed(2017)
 
 def run():
-    config = configparser.ConfigParser()
-    config.read("NeuRec.properties")
-    conf=dict(config.items("default"))
+    conf = reader.config("NeuRec.properties", "default")
+
     data_input_path = conf["data.input.path"]
     dataset_name = conf["data.input.dataset"]
     splitter = conf["data.splitter"]

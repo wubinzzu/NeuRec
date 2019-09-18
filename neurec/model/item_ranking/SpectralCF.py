@@ -5,15 +5,12 @@ Reference: Lei, Zheng, et al. "Spectral Collaborative Filtering." in RecSys2018
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import data_gen,learner, tool
-import configparser
+from neurec.util import data_gen, learner, tool, reader
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
 class SpectralCF(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/SpectralCF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("SpectralCF.properties", "hyperparameters")
         print("SpectralCF arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])
         self.learner = self.conf["learner"]

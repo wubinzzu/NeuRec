@@ -11,14 +11,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner,tool
+from neurec.util import learner,tool,reader
 from neurec.evaluation import Evaluate
-import configparser
+
 class CDAE(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/CDAE.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("CDAE.properties", "hyperparameters")
+
         print("CDAE arguments: %s " %(self.conf))
         self.hidden_neuron = int(self.conf["hidden_neuron"])
         self.learning_rate = float(self.conf["learning_rate"])

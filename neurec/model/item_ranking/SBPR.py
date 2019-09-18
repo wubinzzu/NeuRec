@@ -11,12 +11,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner
+from neurec.util import learner, reader
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
-import configparser
 from neurec.util.Logger import logger
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     # TODO exclusion is element, not the index
     if exclusion is not None:
@@ -32,9 +31,7 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
 
 class SBPR(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/SBPR.properties")
-        self.conf = dict(config.items("hyperparameters"))
+        self.conf = reader.config("SBPR.properties", "hyperparameters")
         self.socialpath = self.conf["socialpath"]
         self.learning_rate = eval(self.conf["learning_rate"])
         self.embedding_size = eval(self.conf["embedding_size"])

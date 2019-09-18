@@ -1,7 +1,9 @@
 import scipy.sparse as sp
 import numpy as np
 from copy import deepcopy
+from neurec.util import reader
 from neurec.util.Logger import logger
+
 class LeaveOneOutDataSplitter(object):
     def __init__(self,path,data_format,separator, threshold):
         self.path =path
@@ -20,42 +22,43 @@ class LeaveOneOutDataSplitter(object):
         # inverse views of userIds, itemIds,
         idusers = {}
         iditems={}
-        with open(self.path+".rating", 'r') as f:
-            for line in f.readlines():
-                if self.data_format == "UIRT":
-                    useridx, itemidx,rating,time= line.strip().split(self.separator)
-                    if float(rating) < self.threshold:
-                        continue
-                elif self.data_format == "UIT":
-                    useridx, itemidx,time= line.strip().split(self.separator)
-                    rating = 1
-                elif self.data_format == "UIR":
-                    useridx, itemidx,rating = line.strip().split(self.separator)
-                    if float(rating) < self.threshold:
-                        continue
-                elif self.data_format == "UI":
-                    useridx, itemidx = line.strip().split(self.separator)
-                    rating = 1
 
-                else:
-                    print("please choose a correct data format. ")
+        data = reader.lines(self.path + ".rating")
+        for line in data:
+            if self.data_format == "UIRT":
+                useridx, itemidx,rating,time= line.strip().split(self.separator)
+                if float(rating) < self.threshold:
+                    continue
+            elif self.data_format == "UIT":
+                useridx, itemidx,time= line.strip().split(self.separator)
+                rating = 1
+            elif self.data_format == "UIR":
+                useridx, itemidx,rating = line.strip().split(self.separator)
+                if float(rating) < self.threshold:
+                    continue
+            elif self.data_format == "UI":
+                useridx, itemidx = line.strip().split(self.separator)
+                rating = 1
 
-                num_ratings+=1
-                if  itemidx not in itemids:
-                    iditems[num_items]=itemidx
-                    itemids[itemidx] = num_items
-                    num_items+=1
+            else:
+                print("please choose a correct data format. ")
 
-                if useridx not in userids:
-                    idusers[num_users]=useridx
-                    userids[useridx]=num_users
-                    num_users+=1
-                    pos_per_user[userids[useridx]]=[]
-                if  self.data_format == "UIRT" or self.data_format == "UIT":
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
+            num_ratings+=1
+            if  itemidx not in itemids:
+                iditems[num_items]=itemidx
+                itemids[itemidx] = num_items
+                num_items+=1
 
-                else:
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,1))
+            if useridx not in userids:
+                idusers[num_users]=useridx
+                userids[useridx]=num_users
+                num_users+=1
+                pos_per_user[userids[useridx]]=[]
+            if  self.data_format == "UIRT" or self.data_format == "UIT":
+                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(float(time))))
+
+            else:
+                pos_per_user[userids[useridx]].append((itemids[itemidx],rating,1))
 
         if  self.data_format == "UIRT" or self.data_format == "UIT":
             for u in np.arange(num_users):
@@ -106,5 +109,4 @@ class LeaveOneOutDataSplitter(object):
                     train_matrix[u,enlement[0]]=enlement[1]
                     time_matrix[u,enlement[0]] = enlement[2]
                 train_dict[u]=items
->>>>>>> Adjusted project structure:neurec/data/LeaveOneOutDataSplitter.py
         return train_matrix,train_dict,test_matrix,userseq,userids,itemids,time_matrix

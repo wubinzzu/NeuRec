@@ -12,13 +12,12 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-import configparser
-from neurec.util import data_gen, learner
+from neurec.util import data_gen, learner, reader
+
 class ConvNCF(AbstractRecommender):
     def __init__(self,sess,dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/ConvNCF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("ConvNCF.properties", "hyperparameters")
+
         print("ConvNCF arguments: %s " %(self.conf))
         self.embedding_size = int(self.conf["embedding_size"])
         self.topK = int(self.conf["topk"])

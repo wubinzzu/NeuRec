@@ -14,7 +14,7 @@ class Dataset(object):
         '''
         Constructor
         '''
-        self.path = path+dataset_name
+        self.path = dataset_name
         self.dataset_name = dataset_name
         self.data_format = data_format
         self.separator= separator

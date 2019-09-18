@@ -7,17 +7,16 @@ from __future__ import division
 import os
 import numpy as np
 from time import time
-import configparser
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
+from neurec.util import reader
 import tensorflow as tf
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class WRMF(AbstractRecommender):
     def __init__(self, sess, dataset):
-        config = configparser.ConfigParser()
-        config.read("conf/WRMF.properties")
-        self.conf=dict(config.items("hyperparameters"))
+        self.conf = reader.config("WRMF.properties", "hyperparameters")
+
         print("WRMF arguments: %s " %(self.conf))
         self.embedding_size = int(self.conf["embedding_size"])
         self.alpha = float(self.conf["alpha"])

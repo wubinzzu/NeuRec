@@ -8,10 +8,8 @@ import tensorflow as tf
 import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-import configparser
-from neurec.util import data_gen
+from neurec.util import data_gen, reader
 from neurec.evaluation import Evaluate
-
 
 class GEN(object):
     def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
@@ -129,9 +127,8 @@ class IRGAN(AbstractRecommender):
     # TODO
     def __init__(self, sess, dataset):
         # super(IRGAN, self).__init__()
-        config = configparser.ConfigParser()
-        config.read("conf/IRGAN.properties")
-        self.conf = dict(config.items("hyperparameters"))
+        self.conf = reader.config("IRGAN.properties", "hyperparameters")
+
         train_matrix = dataset.trainMatrix.tocsr()
         self.num_users, self.num_items = train_matrix.shape
 

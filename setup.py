@@ -6,7 +6,6 @@ setuptools.setup(
     author="Jonathan Staniforth",
     description="jonathanstaniforth@gmail.com",
     long_description="",
-    long_description_content_type="text/markdown",
     url="https://github.com/wubinzzu/NeuRec.git",
     packages=setuptools.find_packages(),
     classifiers=[

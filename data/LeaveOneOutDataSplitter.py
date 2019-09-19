@@ -80,4 +80,5 @@ class LeaveOneOutDataSplitter(object):
                 items.append(enlement[0])
                 train_matrix[u,enlement[0]]=enlement[1]
                 time_matrix[u,enlement[0]] = enlement[2]
+            train_dict[u]=items
         return train_matrix,train_dict,test_matrix,userseq,userids,itemids,time_matrix

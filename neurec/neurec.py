@@ -28,27 +28,33 @@ from neurec.model.item_ranking.WRMF import WRMF
 from neurec.model.item_ranking.SpectralCF import SpectralCF
 from neurec.util import reader
 
-def setup():
-    np.random.seed(2018)
-    tf.set_random_seed(2017)
+conf = reader.config("NeuRec.properties", "default")
+data_input_path = conf["data.input.path"]
+dataset_name = conf["data.input.dataset"]
+splitter = conf["data.splitter"]
+dataset_format = conf["data.column.format"]
+separator = eval(conf["data.convert.separator"])
+threshold = float(conf["data.convert.binarize.threshold"])
+recommender = str(conf["recommender"])
+evaluate_neg = int(conf["rec.evaluate.neg"])
+splitterRatio=list(eval(conf["data.splitterratio"]))
+
+dataset = Dataset(data_input_path,dataset_name,splitter,separator,threshold,evaluate_neg,splitterRatio)
+num_thread = int(conf["rec.number.thread"])
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+
+def setup(numpy_seed=2018, tensorflow_seed=2017):
+    """Setups initial values for neurec.
+
+    numpy_seed -- seed value for numpy random (default 2018)
+    tensorflow_seed -- seed value for tensorflow random (default 2017)
+    """
+    np.random.seed(numpy_seed)
+    tf.set_random_seed(tensorflow_seed)
 
 def run():
-    conf = reader.config("NeuRec.properties", "default")
-
-    data_input_path = conf["data.input.path"]
-    dataset_name = conf["data.input.dataset"]
-    splitter = conf["data.splitter"]
-    dataset_format = conf["data.column.format"]
-    separator = eval(conf["data.convert.separator"])
-    threshold = float(conf["data.convert.binarize.threshold"])
-    recommender = str(conf["recommender"])
-    evaluate_neg = int(conf["rec.evaluate.neg"])
-    num_thread = int(conf["rec.number.thread"])
-    splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path,dataset_name,splitter,separator,threshold,evaluate_neg,splitterRatio)
-
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
+    """Trains and evaluates a model."""
     with tf.Session(config=config) as sess:
         if recommender.lower() == "mf" :
             model = MF(sess,dataset)

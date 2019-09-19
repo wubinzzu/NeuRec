@@ -41,7 +41,7 @@ splitterRatio=list(eval(conf["data.splitterratio"]))
 
 dataset = Dataset(data_input_path,dataset_name,splitter,separator,threshold,evaluate_neg,splitterRatio)
 num_thread = int(conf["rec.number.thread"])
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True
 
 def setup(numpy_seed=2018, tensorflow_seed=2017):
@@ -51,11 +51,11 @@ def setup(numpy_seed=2018, tensorflow_seed=2017):
     tensorflow_seed -- seed value for tensorflow random (default 2017)
     """
     np.random.seed(numpy_seed)
-    tf.set_random_seed(tensorflow_seed)
+    tf.compat.v1.set_random_seed(tensorflow_seed)
 
 def run():
     """Trains and evaluates a model."""
-    with tf.Session(config=config) as sess:
+    with tf.compat.v1.Session(config=config) as sess:
         if recommender.lower() == "mf" :
             model = MF(sess,dataset)
 
@@ -126,6 +126,6 @@ def run():
             model = WRMF(dataset)
 
         model.build_graph()
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         model.train_model()
         Evaluate.test_model(model,dataset,num_thread)

@@ -44,15 +44,15 @@ class FISM(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.placeholder(tf.int32, shape=[None, None], name = "user_input")    #the index of users
-            self.num_idx = tf.placeholder(tf.float32, shape=[None,],name = "num_idx")    #the number of items rated by users
-            self.item_input = tf.placeholder(tf.int32, shape=[None,],name = "item_input_pos")      #the index of items
+            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None, None], name = "user_input")    #the index of users
+            self.num_idx = tf.compat.v1.placeholder(tf.float32, shape=[None,],name = "num_idx")    #the number of items rated by users
+            self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = "item_input_pos")      #the index of items
             if self.ispairwise.lower() =="true":
-                self.user_input_neg = tf.placeholder(tf.int32, shape=[None, None], name = "user_input_neg")
-                self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
-                self.num_idx_neg = tf.placeholder(tf.float32, shape=[None,],name = "num_idx_neg")
+                self.user_input_neg = tf.compat.v1.placeholder(tf.int32, shape=[None, None], name = "user_input_neg")
+                self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
+                self.num_idx_neg = tf.compat.v1.placeholder(tf.float32, shape=[None,],name = "num_idx_neg")
             else :
-                self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
+                self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now

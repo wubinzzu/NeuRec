@@ -38,21 +38,21 @@ class CDAE(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.placeholder(tf.int32, shape=[None,],name = 'user_input')
-            self.input_R = tf.placeholder(tf.float32, [None, self.num_items])
-            self.mask_corruption = tf.placeholder(tf.float32, [None, self.num_items])
+            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'user_input')
+            self.input_R = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])
+            self.mask_corruption = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            self.V = tf.Variable(tf.random_normal([self.num_users,  self.hidden_neuron], stddev=0.01))
+            self.V = tf.Variable(tf.random.normal([self.num_users,  self.hidden_neuron], stddev=0.01))
 
             self.weights = {
-            'encoder': tf.Variable(tf.random_normal([self.num_items, self.hidden_neuron],stddev=0.01)),
-            'decoder': tf.Variable(tf.random_normal([self.hidden_neuron, self.num_items],stddev=0.01)),
+            'encoder': tf.Variable(tf.random.normal([self.num_items, self.hidden_neuron],stddev=0.01)),
+            'decoder': tf.Variable(tf.random.normal([self.hidden_neuron, self.num_items],stddev=0.01)),
             }
             self.biases = {
-            'encoder': tf.Variable(tf.random_normal([self.hidden_neuron],stddev=0.01)),
-            'decoder': tf.Variable(tf.random_normal([self.num_items],stddev=0.01)),
+            'encoder': tf.Variable(tf.random.normal([self.hidden_neuron],stddev=0.01)),
+            'decoder': tf.Variable(tf.random.normal([self.num_items],stddev=0.01)),
             }
 
     def _create_inference(self):

@@ -38,9 +38,9 @@ class APR(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.placeholder(tf.int32, shape=[None,], name="user_input")
-            self.item_input_pos = tf.placeholder(tf.int32, shape=[None,], name="item_input_pos")
-            self.item_input_neg = tf.placeholder(tf.int32, shape=[None,], name="item_input_neg")
+            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None,], name="user_input")
+            self.item_input_pos = tf.compat.v1.placeholder(tf.int32, shape=[None,], name="item_input_pos")
+            self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape=[None,], name="item_input_neg")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):

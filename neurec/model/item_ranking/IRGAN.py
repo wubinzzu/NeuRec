@@ -38,9 +38,9 @@ class GEN(object):
 
             self.g_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
-        self.u = tf.placeholder(tf.int32)
-        self.i = tf.placeholder(tf.int32)
-        self.reward = tf.placeholder(tf.float32)
+        self.u = tf.compat.v1.placeholder(tf.int32)
+        self.i = tf.compat.v1.placeholder(tf.int32)
+        self.reward = tf.compat.v1.placeholder(tf.float32)
 
         self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u)
         self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.i)
@@ -90,9 +90,9 @@ class DIS(object):
         self.d_params = [self.user_embeddings, self.item_embeddings, self.item_bias]
 
         # placeholder definition
-        self.u = tf.placeholder(tf.int32)
-        self.i = tf.placeholder(tf.int32)
-        self.label = tf.placeholder(tf.float32)
+        self.u = tf.compat.v1.placeholder(tf.int32)
+        self.i = tf.compat.v1.placeholder(tf.int32)
+        self.label = tf.compat.v1.placeholder(tf.float32)
 
         self.u_embedding = tf.nn.embedding_lookup(self.user_embeddings, self.u)
         self.i_embedding = tf.nn.embedding_lookup(self.item_embeddings, self.i)

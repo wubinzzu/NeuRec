@@ -42,9 +42,9 @@ class DMF(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.one_hot_u = tf.placeholder(tf.float32, shape=[None,None],name = 'user_input')
-            self.one_hot_v = tf.placeholder(tf.float32, shape=[None,None],name = 'item_input')
-            self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
+            self.one_hot_u = tf.compat.v1.placeholder(tf.float32, shape=[None,None],name = 'user_input')
+            self.one_hot_v = tf.compat.v1.placeholder(tf.float32, shape=[None,None],name = 'item_input')
+            self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now

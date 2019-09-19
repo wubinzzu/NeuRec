@@ -42,22 +42,22 @@ class NeuMF(AbstractRecommender):
         
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.placeholder(tf.int32, shape=[None,],name = 'user_input')
-            self.item_input = tf.placeholder(tf.int32, shape=[None,],name = 'item_input')
+            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'user_input')
+            self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'item_input')
             if self.ispairwise.lower() =="true":
-                self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
+                self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
-                self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
+                self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
             
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            self.mf_embedding_user = tf.Variable(tf.random_normal(shape=[self.num_users,self.embedding_size],\
+            self.mf_embedding_user = tf.Variable(tf.random.normal(shape=[self.num_users,self.embedding_size],\
                 mean=0.0,stddev=0.01),name = 'mf_embedding_user',dtype=tf.float32)
-            self.mf_embedding_item = tf.Variable(tf.random_normal(shape=[self.num_items,self.embedding_size],\
+            self.mf_embedding_item = tf.Variable(tf.random.normal(shape=[self.num_items,self.embedding_size],\
                 mean=0.0,stddev=0.01),name = 'mf_embedding_item',dtype=tf.float32)
-            self.mlp_embedding_user = tf.Variable(tf.random_normal(shape = [self.num_users,\
+            self.mlp_embedding_user = tf.Variable(tf.random.normal(shape = [self.num_users,\
              int(self.layers[0]/2)],mean=0.0,stddev=0.01),name = "mlp_embedding_user",dtype=tf.float32)
-            self.mlp_embedding_item = tf.Variable(tf.random_normal(shape = [self.num_items,\
+            self.mlp_embedding_item = tf.Variable(tf.random.normal(shape = [self.num_items,\
              int(self.layers[0]/2)],mean=0.0,stddev=0.01),name = "mlp_embedding_item",dtype=tf.float32)
             
     def _create_inference(self,item_input):

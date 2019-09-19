@@ -40,10 +40,10 @@ class ConvNCF(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.placeholder(tf.int32, shape = [None,], name = "user_input")
-            self.item_input_pos = tf.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
-            self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
-            self.keep_prob = tf.placeholder(tf.float32, name = "keep_prob")
+            self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")
+            self.item_input_pos = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
+            self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
+            self.keep_prob = tf.compat.v1.placeholder(tf.float32, name = "keep_prob")
     #---------- model definition -------
     def weight_variable(self,shape):
         initial = tf.truncated_normal(shape, stddev=0.01)

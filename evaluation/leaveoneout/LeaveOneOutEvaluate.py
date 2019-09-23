@@ -22,9 +22,14 @@ def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives,num_thread):
     _evaluateNegatives = evaluateNegatives
     _K = _model.topK
     hits, ndcgs,aucs = [], [],[]
+    _evaluateusers = []
+    for u in range(_model.num_users):
+        items_test = _evaluateMatrix[u].indices
+        if len(items_test) >0:
+            _evaluateusers.append(u)
     if(num_thread > 1): # Multi-thread
         with ThreadPoolExecutor() as executor:  
-            res = executor.map(eval_by_loo_user, range(_evaluateMatrix.shape[0]))  
+            res = executor.map(eval_by_loo_user, _evaluateusers) 
         res = list(res)  
         hits = [r[0] for r in res]
         ndcgs = [r[1] for r in res]
@@ -32,7 +37,7 @@ def evaluate_by_loo(model,evaluateMatrix,evaluateNegatives,num_thread):
     # Single thread
     else:
         # Single thread
-        for u in range(_model.num_users):
+        for u in _evaluateusers:
             if len(_evaluateMatrix[u].indices) !=0:
                 (hr, ndcg,auc) = eval_by_loo_user(u)
                 aucs.append(auc)

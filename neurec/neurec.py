@@ -11,11 +11,11 @@ import tensorflow as tf
 logger = logging.getLogger('neurec')
 logger.setLevel(logging.DEBUG)
 
-fh = logging.FileHandler("testing")
-fh.setLevel(logging.DEBUG)
+fh = logging.FileHandler("neurec")
+fh.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
+ch.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
@@ -49,11 +49,12 @@ def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensor
     dataset_format = properties.getProperty("data.column.format")
     splitter_ratio = properties.getProperty("data.splitterratio")
 
+    global dataset
     dataset = Dataset(data_input_path, dataset_name, dataset_format, splitter, separator, threshold, evaluate_neg, splitter_ratio)
 
 def run():
     """Trains and evaluates a model."""
-    if isinstance(dataset, Dataset):
+    if not isinstance(dataset, Dataset):
         raise Exception("Dataset not set. Call setup() function and pass a properties file to set the dataset")
 
     recommender = properties.getProperty("recommender")

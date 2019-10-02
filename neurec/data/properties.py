@@ -1,3 +1,5 @@
+from neurec.util.helpers import to_list
+
 types = {
     "data.input.path": str,
     "data.input.dataset": str,
@@ -7,12 +9,12 @@ types = {
     "data.convert.binarize.threshold": float,
     "recommender": str,
     "rec.evaluate.neg": int,
-    "data.splitterratio": list,
+    "data.splitterratio": to_list,
     "rec.number.thread": int,
     "topk": int,
     "epochs": int,
     "batch_size": int,
-    "layers": list,
+    "layers": to_list,
     "embedding_size": int,
     "reg": int,
     "reg_adv": int,

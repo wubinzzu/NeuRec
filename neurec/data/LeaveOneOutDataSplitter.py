@@ -10,8 +10,9 @@ class LeaveOneOutDataSplitter(object):
         self.data_format = data_format
         self.separator = separator
         self.threshold = threshold
+        self.logger = logging.getLogger("neurec.data.LeaveOneOutDataSplitter.LeaveOneOutDataSplitter")
     def load_data_by_user_time(self):
-        logging.info("Loading interaction records from %s "%(self.path))
+        self.logger.info("Loading interaction records from %s "%(self.path))
         pos_per_user = {}
         num_ratings=0
         num_items=0
@@ -63,7 +64,7 @@ class LeaveOneOutDataSplitter(object):
         if  self.data_format == "UIRT" or self.data_format == "UIT":
             for u in np.arange(num_users):
                 pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
-        logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
+        self.logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
         userseq = deepcopy(pos_per_user)
         train_dict = {}
         time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
@@ -87,7 +88,7 @@ class LeaveOneOutDataSplitter(object):
 
             for u in np.arange(num_users):
                 pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
-            logging.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
+            self.logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
             userseq = deepcopy(pos_per_user)
             train_dict = {}
             train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)

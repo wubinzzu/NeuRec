@@ -12,6 +12,7 @@ class HoldOutDataSplitter(object):
         self.data_format = data_format
         self.splitterRatio = splitterRatio
         self.threshold = threshold
+        self.logger = logging.getLogger("neurec.data.HoldOutDataSplitter.HoldOutDataSplitter")
         if float(splitterRatio[0])+ float(splitterRatio[1]) != 1.0:
             raise ValueError("please given a correct splitterRatio")
     def load_data_by_user_time(self):
@@ -50,6 +51,7 @@ class HoldOutDataSplitter(object):
             if  itemidx not in itemids:
                 iditems[num_items]=itemidx
                 itemids[itemidx] = num_items
+                num_items+=1
 
             if useridx not in userids:
                 idusers[num_users]=useridx
@@ -65,7 +67,7 @@ class HoldOutDataSplitter(object):
         if  self.data_format == "UIRT" or self.data_format == "UIT":
             for u in range(num_users):
                 pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
-        logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d"%(num_users,num_items,num_ratings))
+        self.logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d"%(num_users,num_items,num_ratings))
         userseq = deepcopy(pos_per_user)
         train_dict = {}
         train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)

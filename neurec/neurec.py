@@ -49,7 +49,7 @@ def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensor
     dataset_format = properties.getProperty("data.column.format")
     splitter_ratio = properties.getProperty("data.splitterratio")
 
-    dataset = Dataset(data_input_path, dataset_name, splitter, separator, threshold, evaluate_neg, splitter_ratio)
+    dataset = Dataset(data_input_path, dataset_name, dataset_format, splitter, separator, threshold, evaluate_neg, splitter_ratio)
 
 def run():
     """Trains and evaluates a model."""

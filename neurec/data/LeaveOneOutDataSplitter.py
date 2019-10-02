@@ -2,7 +2,7 @@ import scipy.sparse as sp
 import numpy as np
 from copy import deepcopy
 from neurec.util import reader
-from neurec.util.Logger import logger
+import logging
 
 class LeaveOneOutDataSplitter(object):
     def __init__(self,path,data_format,separator, threshold):
@@ -11,7 +11,7 @@ class LeaveOneOutDataSplitter(object):
         self.separator = separator
         self.threshold = threshold
     def load_data_by_user_time(self):
-        logger.info("Loading interaction records from %s "%(self.path))
+        logging.info("Loading interaction records from %s "%(self.path))
         pos_per_user = {}
         num_ratings=0
         num_items=0
@@ -87,7 +87,7 @@ class LeaveOneOutDataSplitter(object):
 
             for u in np.arange(num_users):
                 pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
-            logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
+            logging.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d\n"%(num_users,num_items,num_ratings))
             userseq = deepcopy(pos_per_user)
             train_dict = {}
             train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)

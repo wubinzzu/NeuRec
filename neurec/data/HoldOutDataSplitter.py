@@ -3,7 +3,7 @@ import numpy as np
 import math
 from copy import deepcopy
 from neurec.util import reader
-from neurec.util.Logger import logger
+import logging
 
 class HoldOutDataSplitter(object):
     def __init__(self,path,data_format,separator,threshold,splitterRatio=[0.8,0.2]):
@@ -15,7 +15,7 @@ class HoldOutDataSplitter(object):
         if float(splitterRatio[0])+ float(splitterRatio[1]) != 1.0:
             raise ValueError("please given a correct splitterRatio")
     def load_data_by_user_time(self):
-        logger.info("Loading interaction records from %s "%(self.path))
+        logging.info("Loading interaction records from %s "%(self.path))
         pos_per_user={}
         num_ratings=0
         num_items=0

@@ -10,7 +10,7 @@ import numpy as np
 from time import time
 from neurec.evaluation.leaveoneout.LeaveOneOutEvaluate import evaluate_by_loo
 from neurec.evaluation.foldout.FoldOutEvaluate import evaluate_by_foldout
-from neurec.util.Logger import logger
+import logging
 def test_model(model,dataset,num_thread=10):
     eval_begin = time()
     model_name=str(model.__class__).split(sep=".")[-1].replace("\'>","")
@@ -19,7 +19,7 @@ def test_model(model,dataset,num_thread=10):
         hr = np.array(hits).mean()
         ndcg = np.array(ndcgs).mean()
         auc = np.array(aucs).mean()
-        logger.info(
+        logging.info(
             "[model=%s]: [Test HR = %.6f, NDCG = %.6f,AUC = %.6f] [Time=%.1fs]" % (model_name,
             hr, ndcg,auc, time() - eval_begin))
 
@@ -30,5 +30,5 @@ def test_model(model,dataset,num_thread=10):
         MAP = np.array(maps).mean()
         NDCG = np.array(ndcgs).mean()
         MRR = np.array(mrrs).mean()
-        logger.info("[model=%s][%.1fs]: [Test Precision = %.6f, Recall= %.6f, MAP= %.6f, NDCG= %.6f, MRR= %.6f][topk=%.4s]"
+        logging.info("[model=%s][%.1fs]: [Test Precision = %.6f, Recall= %.6f, MAP= %.6f, NDCG= %.6f, MRR= %.6f][topk=%.4s]"
                %(model_name,time() - eval_begin, Precision, Recall,MAP,NDCG,MRR,model.topK))

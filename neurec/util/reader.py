@@ -1,20 +1,26 @@
 """Functions to handle reading files in the package."""
 from configparser import ConfigParser
-from importlib_resources import read_text, open_text
+from importlib_resources import open_text
+import logging
 
-def config(config_name, item, config_path="neurec.conf"):
+logger = logging.getLogger('neurec.util.reader')
+
+def file(path):
     """Returns the configuration settings for a file.
 
-    config_name -- name of the file to read
-    item -- section in the file to read
-    config_path -- location of the configuration file (default neurec.conf) [optional]
+    path -- path to the file
     """
     parser = ConfigParser()
 
-    config = read_text(config_path, config_name)
-    parser.read_string(config)
+    try:
+        with open(path) as file:
+            parser.read_file(file)
+    except FileNotFoundError:
+        logger.error("Could not find file " + path + ". Make sure the file path is correct.")
 
-    return dict(parser.items(item))
+        raise
+
+    return parser
 
 def lines(file_name, file_path="neurec.dataset"):
     """Returns all lines from a file.

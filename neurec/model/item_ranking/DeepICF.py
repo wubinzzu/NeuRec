@@ -11,11 +11,37 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-from neurec.util import learner, reader
+from neurec.util import learner
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
+from neurec.util.properties import Properties
+
 class DeepICF(AbstractRecommender):
+    properties = [
+        "pretrain",
+        "verbose",
+        "batch_choice",
+        "batch_size",
+        "batch_norm",
+        "epochs",
+        "weight_size",
+        "embedding_size",
+        "layers",
+        "regs",
+        "regw",
+        "ispairwise",
+        "topk",
+        "alpha",
+        "beta",
+        "num_neg",
+        "learning_rate",
+        "activation",
+        "loss_function",
+        "algorithm",
+        "learner"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("DeepICF.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("DeepICF arguments: %s " %(self.conf))
         self.pretrain = int(self.conf["pretrain"])

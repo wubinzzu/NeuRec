@@ -1,11 +1,20 @@
-class AbstractRecommender(object):
-    def __init__(self):       
-        raise NotImplementedError
-    def build_graph(self):
-        raise NotImplementedError
+from abc import ABC, abstractmethod
 
+class AbstractRecommender(ABC):
+    """Abstract class for building a Recommender class."""
+    @property
+    @abstractmethod
+    def properties(self):
+        pass
+
+    @abstractmethod
+    def build_graph(self):
+        pass
+
+    @abstractmethod
     def train_model(self):
-        raise NotImplementedError
-    
+        pass
+
+    @abstractmethod
     def predict(self):
-        raise NotImplementedError 
+        pass

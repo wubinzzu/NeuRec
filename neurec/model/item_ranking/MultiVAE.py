@@ -5,14 +5,29 @@ Reference: Dawen, Liang, et al. "Variational autoencoders for collaborative filt
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner, tool, reader
+from neurec.util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
+from neurec.util.properties import Properties
 
 class MultiVAE(AbstractRecommender):
+    properties = [
+        "learning_rate",
+        "learner",
+        "topk",
+        "batch_size",
+        "p_dim",
+        "activation",
+        "reg",
+        "epochs",
+        "verbose",
+        "anneal_cap",
+        "total_anneal_steps"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("MultiVAE.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("MultiVAE arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])

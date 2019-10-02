@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from scipy.sparse import csr_matrix
 from neurec.evaluation import Evaluate
-from neurec.util import reader
+from neurec.util.properties import Properties
 
 def csr_to_user_dict(sparse_matrix_data):
     """convert a scipy.sparse.csr_matrix to a dict,
@@ -38,8 +38,30 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
 
 
 class CFGAN(AbstractRecommender):
+    properties = [
+        "epochs",
+        "topk",
+        "mode",
+        "reg_g",
+        "reg_d",
+        "lr_g",
+        "lr_d",
+        "batchsize_g",
+        "batchsize_d",
+        "opt_g",
+        "opt_d",
+        "hiddenlayer_g",
+        "hiddenlayer_d",
+        "step_g",
+        "step_d",
+        "zr_ratio",
+        "zp_ratio",
+        "zr_coefficient",
+        "verbose"
+    ]
+
     def __init__(self, sess, dataset):
-        self.conf = reader.config("CFGAN.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         self.dataset = dataset
         print("CFGAN arguments: %s " %(config))

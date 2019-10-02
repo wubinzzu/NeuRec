@@ -11,12 +11,26 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner, reader
+from neurec.util import learner
 from neurec.evaluation import Evaluate
+from neurec.util.properties import Properties
 
 class DMF(AbstractRecommender):
+    properties = [
+        "embedding_size",
+        "learning_rate",
+        "learner",
+        "topk",
+        "epochs",
+        "num_neg",
+        "batch_size",
+        "verbose",
+        "layers",
+        "loss_function"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("DMF.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("DMF arguments: %s " %(self.conf))
         self.embedding_size = int(self.conf["embedding_size"])

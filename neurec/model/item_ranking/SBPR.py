@@ -1,5 +1,5 @@
 '''
-Reference: Tong Zhao et al., "Leveraging Social Connections to Improve 
+Reference: Tong Zhao et al., "Leveraging Social Connections to Improve
 Personalized Ranking for Collaborative Filtering." in CIKM 2014
 @author: wubin
 '''
@@ -11,10 +11,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner, reader
+from neurec.util import learner
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
-from neurec.util.Logger import logger
+import logging
+from neurec.util.properties import Properties
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     # TODO exclusion is element, not the index
@@ -30,8 +31,21 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     return sample
 
 class SBPR(AbstractRecommender):
+    properties = [
+        "socialpath",
+        "learning_rate",
+        "embedding_size",
+        "learner",
+        "loss_function",
+        "topk",
+        "num_epochs",
+        "batch_size",
+        "verbose"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("SBPR.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
+
         self.socialpath = self.conf["socialpath"]
         self.learning_rate = eval(self.conf["learning_rate"])
         self.embedding_size = eval(self.conf["embedding_size"])
@@ -52,7 +66,7 @@ class SBPR(AbstractRecommender):
         self.train_dict = {u: set(pos_item.indices) for u, pos_item in enumerate(trainMatrix)}
         self.socialMatrix=self._get_social_data()
         self.userSocialItemsSetList = self._get_SocialItemsSet_sun()
-        logger.info("init finished")
+        logging.info("init finished")
         self.sess = sess
 
     def _get_social_data(self):
@@ -61,17 +75,17 @@ class SBPR(AbstractRecommender):
         user0 = social_users["user0"].astype(np.str)
         index = np.in1d(user0, users_key)
         social_users = social_users[index]
-    
+
         user1 = social_users["user1"].astype(np.str)
         index = np.in1d(user1, users_key)
         social_users = social_users[index]
-    
+
         user0 = social_users["user0"].astype(np.str)
         user0_id = [self.userids[u] for u in user0]
         user1 = social_users["user1"].astype(np.str)
         user1_id = [self.userids[u] for u in user1]
         social_matrix = sp.csr_matrix(([1]*len(user0_id), (user0_id, user1_id)),
-                                      shape=(self.num_users, self.num_users)) 
+                                      shape=(self.num_users, self.num_users))
         return social_matrix
 
     def _get_SocialItemsSet_sun(self):
@@ -121,7 +135,7 @@ class SBPR(AbstractRecommender):
     def _create_optimizer(self):
         with tf.name_scope("learner"):
             self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
-    
+
     def build_graph(self):
         self._create_placeholders()
         self._create_variables()
@@ -131,15 +145,15 @@ class SBPR(AbstractRecommender):
     def train_model(self):
         for epoch in range(self.num_epochs):
             # Generate training instances
-#             logger.info("get training data")
+#             logging.info("get training data")
             user_input, item_input_pos,item_input_social,item_input_neg,suk_input = self._get_pairwise_all_data_sun()
-#             logger.info("begin training")
+#             logging.info("begin training")
             total_loss = 0.0
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
 #                 print(num_batch)
-                num_training_instances =len(user_input) 
+                num_training_instances =len(user_input)
                 id_start = num_batch * self.batch_size
                 id_end = (num_batch + 1) *self.batch_size
                 if id_end>num_training_instances:
@@ -152,7 +166,7 @@ class SBPR(AbstractRecommender):
                 feed_dict = {self.user_input:bat_users,self.item_input_pos:bat_items_pos,\
                             self.item_input_social:bat_items_social,\
                             self.item_input_neg:bat_items_neg,self.suk:bat_suk_input}
-                      
+
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
@@ -180,7 +194,7 @@ class SBPR(AbstractRecommender):
                     indices = trainMatrix[trustedUserIdx].tocsr().indices
                     if k in indices:
                         socialWeight += 1
-                suk_input.append(socialWeight+1) 
+                suk_input.append(socialWeight+1)
         user_input = np.array(user_input, dtype=np.int32)
         item_input_pos = np.array(item_input_pos, dtype=np.int32)
         item_input_social = np.array(item_input_social, dtype=np.int32)
@@ -239,7 +253,7 @@ class SBPR(AbstractRecommender):
         item_input_neg=item_input_neg[shuffle_index]
         suk_input = suk_input[shuffle_index]
         return user_input, item_input_pos,item_input_social,item_input_neg,suk_input
-            
+
     def predict(self, user_id, eval_items):
         users = np.full(len(eval_items), user_id, dtype=np.int32)
-        return self.sess.run(self.output, feed_dict={self.user_input: users, self.item_input_pos: eval_items})  
+        return self.sess.run(self.output, feed_dict={self.user_input: users, self.item_input_pos: eval_items})

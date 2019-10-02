@@ -13,12 +13,28 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-from neurec.util import learner,data_gen,reader
+from neurec.util import learner,data_gen
+from neurec.util.properties import Properties
 
 class FISM(AbstractRecommender):
+    properties = [
+        "verbose",
+        "batch_size",
+        "epochs",
+        "embedding_size",
+        "regs",
+        "alpha",
+        "num_neg",
+        "learning_rate",
+        "learner",
+        "topk",
+        "loss_function",
+        "ispairwise",
+        "num_neg"
+    ]
 
     def __init__(self,sess,dataset):
-        self.conf = reader.config("FISM.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("FISM arguments: %s " %(self.conf))
         self.verbose = int(self.conf["verbose"])

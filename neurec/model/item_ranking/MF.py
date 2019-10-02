@@ -10,14 +10,29 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner,data_gen,reader
+from neurec.util import learner,data_gen
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
+from neurec.util.properties import Properties
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class MF(AbstractRecommender):
+    properties = [
+        "learning_rate",
+        "embedding_size",
+        "learner",
+        "loss_function",
+        "ispairwise",
+        "topk",
+        "epochs",
+        "reg_mf",
+        "batch_size",
+        "verbose",
+        "num_neg"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("MF.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("MF arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])

@@ -12,11 +12,26 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from neurec.evaluation import Evaluate
-from neurec.util import data_gen, learner, reader
+from neurec.util import data_gen, learner
+from neurec.util.properties import Properties
 
 class ConvNCF(AbstractRecommender):
+    properties = [
+        "embedding_size",
+        "topk",
+        "regs",
+        "keep",
+        "epochs",
+        "batch_size",
+        "net_channel",
+        "lr_embed",
+        "lr_net",
+        "verbose",
+        "loss_function"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("ConvNCF.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("ConvNCF arguments: %s " %(self.conf))
         self.embedding_size = int(self.conf["embedding_size"])

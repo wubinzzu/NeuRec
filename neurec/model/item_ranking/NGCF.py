@@ -7,12 +7,30 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 from time import time
-from neurec.util import data_gen, reader
+from neurec.util import data_gen
 from neurec.evaluation import Evaluate
 from neurec.model.AbstractRecommender import AbstractRecommender
+from neurec.util.properties import Properties
+
 class NGCF(AbstractRecommender):
+    properties = [
+        "learning_rate",
+        "learner",
+        "topk",
+        "batch_size",
+        "embedding_size",
+        "layer_size",
+        "epochs",
+        "reg",
+        "loss_function",
+        "node_dropout_flag",
+        "adj_type",
+        "alg_type",
+        "verbose"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("NGCF.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("NGCF arguments: %s " %(self.conf))
         self.learning_rate = float(self.conf["learning_rate"])
@@ -32,12 +50,12 @@ class NGCF(AbstractRecommender):
         self.verbose=int(self.conf["verbose"])
         self.dataset = dataset
         self.num_users = dataset.num_users
-        self.num_items = dataset.num_items    
+        self.num_items = dataset.num_items
         self.graph = dataset.trainMatrix.toarray()
         self.norm_adj= self.get_adj_mat()
         self.n_nonzero_elems = self.norm_adj.count_nonzero()
         self.pretrain_data = None
-        self.sess=sess        
+        self.sess=sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
@@ -45,16 +63,16 @@ class NGCF(AbstractRecommender):
             self.users = tf.compat.v1.placeholder(tf.int32, shape=(None,))
             self.pos_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
             self.neg_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
-    
+
             # dropout: node dropout (adopted on the ego-networks);
             #          ... since the usage of node dropout have higher computational cost,
             #          ... please use the 'node_dropout_flag' to indicate whether use such technique.
             #          message dropout (adopted on the convolution operations).
             self.node_dropout = tf.compat.v1.placeholder_with_default([0.], shape=[None])
             self.mess_dropout = tf.compat.v1.placeholder_with_default([0.], shape=[None])
-            
+
     def _create_variables(self):
-        with tf.name_scope("embedding"):  # The embedding initialization is unknown now   
+        with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             """
             *********************************************************
             Compute Graph-based Representations of all users & items via Message-Passing Mechanism of Graph Neural Networks.
@@ -65,17 +83,17 @@ class NGCF(AbstractRecommender):
             """
             # initialization of model parameters
             self.weights = self._init_weights()
-            
+
             if self.alg_type in ['ngcf']:
                 self.ua_embeddings, self.ia_embeddings = self._create_ngcf_embed()
-    
+
             elif self.alg_type in ['gcn']:
                 self.ua_embeddings, self.ia_embeddings = self._create_gcn_embed()
-    
+
             elif self.alg_type in ['gcmc']:
                 self.ua_embeddings, self.ia_embeddings = self._create_gcmc_embed()
-    
-    
+
+
     def _create_inference(self):
         with tf.name_scope("inference"):
             """
@@ -85,47 +103,47 @@ class NGCF(AbstractRecommender):
             self.u_g_embeddings = tf.nn.embedding_lookup(self.ua_embeddings, self.users)
             self.pos_i_g_embeddings = tf.nn.embedding_lookup(self.ia_embeddings, self.pos_items)
             self.neg_i_g_embeddings = tf.nn.embedding_lookup(self.ia_embeddings, self.neg_items)
-    
+
             """
             *********************************************************
             Inference for the testing phase.
             """
             self.batch_ratings = tf.matmul(self.u_g_embeddings, self.pos_i_g_embeddings, transpose_a=False, transpose_b=True)
 
-            
+
     def _create_loss(self):
-        with tf.name_scope("loss"): 
-            
+        with tf.name_scope("loss"):
+
             self.pos_scores = tf.reduce_sum(tf.multiply(self.u_g_embeddings, self.pos_i_g_embeddings), axis=1)
             neg_scores = tf.reduce_sum(tf.multiply(self.u_g_embeddings, self.neg_i_g_embeddings), axis=1)
-    
+
             regularizer = tf.nn.l2_loss(self.u_g_embeddings) + tf.nn.l2_loss(self.pos_i_g_embeddings) + tf.nn.l2_loss(self.neg_i_g_embeddings)
             regularizer = regularizer/self.batch_size
-    
+
             maxi = tf.log(tf.nn.sigmoid(self.pos_scores - neg_scores))
             mf_loss = tf.negative(tf.reduce_mean(maxi))
-    
+
             emb_loss = self.decay * regularizer
-    
+
             reg_loss = tf.constant(0.0, tf.float32, [1])
-            
+
             self.loss = mf_loss + emb_loss + reg_loss
     def _create_optimizer(self):
         with tf.name_scope("learner"):
             self.optimizer=tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
-    
+
     def build_graph(self):
         self._create_placeholders()
         self._create_variables()
         self._create_inference()
         self._create_loss()
         self._create_optimizer()
-        
+
     def train_model(self):
         for epoch in  range(self.num_epochs):
             # Generate training instances
             user_input, item_input_pos, item_input_neg = data_gen._get_pairwise_all_data(self.dataset)
-            
+
             total_loss = 0.0
             training_start_time = time()
             num_training_instances = len(user_input)
@@ -137,18 +155,18 @@ class NGCF(AbstractRecommender):
                               self.node_dropout: [0.1],
                               self.mess_dropout: [0.1],
                               self.neg_items: bat_items_neg}
-                      
+
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            
+
             print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
-                
+
     def predict(self, user_id, items):
         users = np.full(len(items), user_id, dtype=np.int32)
         return self.sess.run(self.pos_scores, feed_dict={self.users: users, self.pos_items: items})
-    
+
     def _create_ngcf_embed(self):
         # Generate a set of adjacency sub-matrix.
         if self.node_dropout_flag =='True':
@@ -239,7 +257,7 @@ class NGCF(AbstractRecommender):
 
         u_g_embeddings, i_g_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
         return u_g_embeddings, i_g_embeddings
-        
+
     def _init_weights(self):
         all_weights = dict()
 
@@ -275,7 +293,7 @@ class NGCF(AbstractRecommender):
                 initializer([1, self.weight_size_list[k+1]]), name='b_mlp_%d' % k)
 
         return all_weights
-     
+
     def normalized_adj_single(self,adj):
         rowsum = np.array(adj.sum(1))
 
@@ -295,7 +313,7 @@ class NGCF(AbstractRecommender):
         if self.adj_type== 'plain':
             adj_mat = A
             print('use the plain adjacency matrix')
-        elif self.adj_type == 'norm':  
+        elif self.adj_type == 'norm':
             adj_mat = self.normalized_adj_single(A + sp.eye(A.shape[0]))
             print('use the normalized adjacency matrix')
         elif self.adj_type == 'gcmc':
@@ -304,9 +322,9 @@ class NGCF(AbstractRecommender):
         else:
             adj_mat = self.normalized_adj_single(A) + sp.eye(A.shape[0])
             print('use the mean adjacency matrix')
-    
+
         return adj_mat.tocsr()
-    
+
     def _split_A_hat(self, X):
         A_fold_hat = []
 
@@ -337,7 +355,7 @@ class NGCF(AbstractRecommender):
             n_nonzero_temp = X[start:end].count_nonzero()
             A_fold_hat.append(self._dropout_sparse(temp, 1 - self.node_dropout[0], n_nonzero_temp))
         return A_fold_hat
-    
+
     def _dropout_sparse(self, X, keep_prob, n_nonzero_elems):
         """
         Dropout for sparse tensors.
@@ -349,7 +367,7 @@ class NGCF(AbstractRecommender):
         pre_out = tf.sparse_retain(X, dropout_mask)
 
         return pre_out * tf.div(1., keep_prob)
-    
+
     def _convert_sp_mat_to_sp_tensor(self, X):
         coo = X.tocoo().astype(np.float32)
         indices = np.mat([coo.row, coo.col]).transpose()

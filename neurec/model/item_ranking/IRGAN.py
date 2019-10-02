@@ -8,8 +8,9 @@ import tensorflow as tf
 import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-from neurec.util import data_gen, reader
+from neurec.util import data_gen
 from neurec.evaluation import Evaluate
+from neurec.util.properties import Properties
 
 class GEN(object):
     def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
@@ -124,10 +125,23 @@ class DIS(object):
 
 
 class IRGAN(AbstractRecommender):
-    # TODO
+    properties = [
+        "factors_num",
+        "lr",
+        "g_reg",
+        "d_reg",
+        "epochs",
+        "g_epoch",
+        "d_epoch",
+        "batch_size",
+        "d_tau",
+        "topk",
+        "pretrain_file"
+    ]
+
     def __init__(self, sess, dataset):
         # super(IRGAN, self).__init__()
-        self.conf = reader.config("IRGAN.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         train_matrix = dataset.trainMatrix.tocsr()
         self.num_users, self.num_items = train_matrix.shape

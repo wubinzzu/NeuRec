@@ -11,12 +11,28 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner,tool,reader
+from neurec.util import learner,tool
 from neurec.evaluation import Evaluate
+from neurec.util.properties import Properties
 
 class DAE(AbstractRecommender):
+    properties = [
+        "hidden_neuron",
+        "learning_rate",
+        "learner",
+        "loss_function",
+        "topk",
+        "reg",
+        "epochs",
+        "batch_size",
+        "verbose",
+        "h_act",
+        "g_act",
+        "corruption_level"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("DAE.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         self.hidden_neuron = int(self.conf["hidden_neuron"])
         self.learning_rate = float(self.conf["learning_rate"])

@@ -12,12 +12,28 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import data_gen, learner, reader
+from neurec.util import data_gen, learner
 from neurec.evaluation import Evaluate
+from neurec.util.properties import Properties
 
 class MLP(AbstractRecommender):
+    properties = [
+        "layers",
+        "learning_rate",
+        "ispairwise",
+        "learner",
+        "topk",
+        "epochs",
+        "num_neg",
+        "reg_mlp",
+        "batch_size",
+        "loss_function",
+        "verbose",
+        "num_neg"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("MLP.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("MLP arguments: %s " %(self.conf))
         self.layers = list(eval(self.conf["layers"]))

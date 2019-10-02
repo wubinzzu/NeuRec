@@ -12,12 +12,29 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 from time import time
-from neurec.util import learner,tool,reader
+from neurec.util import learner,tool
 from neurec.evaluation import Evaluate
+from neurec.util.properties import Properties
 
 class JCA(AbstractRecommender):
+    properties = [
+        "hidden_neuron",
+        "learning_rate",
+        "learner",
+        "topk",
+        "reg",
+        "epochs",
+        "batch_size",
+        "verbose",
+        "f_act",
+        "g_act",
+        "margin",
+        "corruption_level",
+        "num_neg"
+    ]
+
     def __init__(self,sess,dataset):
-        self.conf = reader.config("JCA.properties", "hyperparameters")
+        self.conf = Properties().getProperties(self.properties)
 
         print("JCA arguments: %s " %(self.conf))
         self.hidden_neuron = int(self.conf["hidden_neuron"])

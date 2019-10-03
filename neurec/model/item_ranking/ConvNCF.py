@@ -30,10 +30,9 @@ class ConvNCF(AbstractRecommender):
         "loss_function"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("ConvNCF arguments: %s " %(self.conf))
         self.embedding_size = self.conf["embedding_size"]
         self.topK = self.conf["topk"]
         self.regs = self.conf["regs"]
@@ -48,11 +47,9 @@ class ConvNCF(AbstractRecommender):
         self.lr_net=self.conf["lr_net"]
         self.verbose= self.conf["verbose"]
         self.loss_function = self.conf["loss_function"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
-        self.sess=sess
-
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+    
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")

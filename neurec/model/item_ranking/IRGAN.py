@@ -141,7 +141,7 @@ class IRGAN(AbstractRecommender):
 
     def __init__(self, sess, dataset):
         # super(IRGAN, self).__init__()
-        self.conf = Properties().getProperties(self.properties)
+        super().__init__(**kwds)
 
         train_matrix = dataset.trainMatrix.tocsr()
         self.num_users, self.num_items = train_matrix.shape
@@ -167,8 +167,8 @@ class IRGAN(AbstractRecommender):
         self.user_pos_train = idx_value_dict
 
         self.num_users, self.num_items = dataset.num_users, dataset.num_items
-        self.dataset = dataset
-        self.sess = sess
+
+
         self.all_items = np.arange(self.num_items)
 
     def build_graph(self):

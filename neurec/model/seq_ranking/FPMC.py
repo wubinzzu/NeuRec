@@ -32,10 +32,9 @@ class FPMC(AbstractRecommender):
         "num_neg"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("FPMC arguments: %s " %(self.conf))
         self.learning_rate = self.conf["learning_rate"]
         self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
@@ -47,10 +46,9 @@ class FPMC(AbstractRecommender):
         self.batch_size= self.conf["batch_size"]
         self.verbose= self.conf["verbose"]
         self.num_negatives= self.conf["num_neg"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
-        self.sess=sess
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")

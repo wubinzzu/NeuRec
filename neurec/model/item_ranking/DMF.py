@@ -29,10 +29,9 @@ class DMF(AbstractRecommender):
         "loss_function"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("DMF arguments: %s " %(self.conf))
         self.embedding_size = self.conf["embedding_size"]
         self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
@@ -46,13 +45,11 @@ class DMF(AbstractRecommender):
         self.fist_layer_size = self.layers[0]
         self.last_layer_size = self.layers[1]
         self.neg_sample_size = self.num_negatives
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
         self.user_matrix = self.dataset.trainMatrix.tocsr()
         self.item_matrix = self.dataset.trainMatrix.tocsc()
-        self.dataset_name = dataset.dataset_name
-        self.sess=sess
+        self.dataset_name = self.dataset.dataset_name
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

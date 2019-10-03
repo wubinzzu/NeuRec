@@ -31,10 +31,9 @@ class MF(AbstractRecommender):
         "num_neg"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("MF arguments: %s " %(self.conf))
         self.learning_rate = self.conf["learning_rate"]
         self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
@@ -46,10 +45,8 @@ class MF(AbstractRecommender):
         self.batch_size= self.conf["batch_size"]
         self.verbose= self.conf["verbose"]
         self.num_negatives= self.conf["num_neg"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.sess=sess
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

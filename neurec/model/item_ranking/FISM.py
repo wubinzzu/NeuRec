@@ -33,10 +33,9 @@ class FISM(AbstractRecommender):
         "num_neg"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("FISM arguments: %s " %(self.conf))
         self.verbose = self.conf["verbose"]
         self.batch_size = self.conf["batch_size"]
         self.num_epochs = self.conf["epochs"]
@@ -52,11 +51,9 @@ class FISM(AbstractRecommender):
         self.loss_function = self.conf["loss_function"]
         self.ispairwise = self.conf["ispairwise"]
         self.num_negatives= self.conf["num_neg"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset_name = dataset.dataset_name
-        self.dataset = dataset
-        self.sess=sess
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+        self.dataset_name = self.dataset.dataset_name
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

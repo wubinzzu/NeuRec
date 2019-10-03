@@ -31,8 +31,8 @@ class DAE(AbstractRecommender):
         "corruption_level"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
         self.hidden_neuron = self.conf["hidden_neuron"]
         self.learning_rate = self.conf["learning_rate"]
@@ -46,10 +46,8 @@ class DAE(AbstractRecommender):
         self.h_act = self.conf["h_act"]
         self.g_act = self.conf["g_act"]
         self.corruption_level = self.conf["corruption_level"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
-        self.sess=sess
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

@@ -29,10 +29,9 @@ class NGCF(AbstractRecommender):
         "verbose"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("NGCF arguments: %s " %(self.conf))
         self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
         self.topK = self.conf["topk"]
@@ -48,14 +47,12 @@ class NGCF(AbstractRecommender):
         self.alg_type = self.conf["alg_type"]
         self.n_fold = 100
         self.verbose=self.conf["verbose"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.graph = dataset.trainMatrix.toarray()
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+        self.graph = self.dataset.trainMatrix.toarray()
         self.norm_adj= self.get_adj_mat()
         self.n_nonzero_elems = self.norm_adj.count_nonzero()
         self.pretrain_data = None
-        self.sess=sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

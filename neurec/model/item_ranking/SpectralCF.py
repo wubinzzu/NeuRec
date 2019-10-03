@@ -26,10 +26,9 @@ class SpectralCF(AbstractRecommender):
         "verbose"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("SpectralCF arguments: %s " %(self.conf))
         self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
         self.topK = self.conf["topk"]
@@ -42,16 +41,14 @@ class SpectralCF(AbstractRecommender):
         self.loss_function=self.conf["loss_function"]
         self.dropout=self.conf["dropout"]
         self.verbose=self.conf["verbose"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.graph = dataset.trainMatrix.toarray()
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+        self.graph = self.dataset.trainMatrix.toarray()
         self.A = self.adjacient_matrix(self_connection=True)
         self.D = self.degree_matrix()
         self.L = self.laplacian_matrix(normalized=True)
         self.lamda, self.U = np.linalg.eig(self.L)
         self.lamda = np.diag(self.lamda)
-        self.sess=sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

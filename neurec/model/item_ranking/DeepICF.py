@@ -40,10 +40,9 @@ class DeepICF(AbstractRecommender):
         "learner"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("DeepICF arguments: %s " %(self.conf))
         self.pretrain = self.conf["pretrain"]
         self.verbose = self.conf["verbose"]
         self.batch_choice = self.conf["batch_choice"]
@@ -68,10 +67,9 @@ class DeepICF(AbstractRecommender):
         self.loss_function = self.conf["loss_function"]
         self.algorithm = self.conf["algorithm"]
         self.learner = self.conf["learner"]
-        self.dataset = dataset
-        self.num_items = dataset.num_items
-        self.num_users = dataset.num_users
-        self.sess=sess
+        self.num_items = self.dataset.num_items
+        self.num_users = self.dataset.num_users
+
     # batch norm
     def batch_norm_layer(self,x, train_phase, scope_bn):
         bn_train = batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,

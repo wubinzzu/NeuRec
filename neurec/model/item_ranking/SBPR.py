@@ -43,8 +43,8 @@ class SBPR(AbstractRecommender):
         "verbose"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
         self.socialpath = self.conf["socialpath"]
         self.learning_rate = self.conf["learning_rate"]
@@ -56,18 +56,15 @@ class SBPR(AbstractRecommender):
         self.reg_mf = self.conf["reg_mf"]
         self.batch_size = self.conf["batch_size"]
         self.verbose = self.conf["verbose"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
         self.userids = self.dataset.userids
-        self.dataset_name = dataset.dataset_name
+        self.dataset_name = self.dataset.dataset_name
         self.userouterids = self.userids.keys()
         trainMatrix = self.dataset.trainMatrix.tocsr()
         self.train_dict = {u: set(pos_item.indices) for u, pos_item in enumerate(trainMatrix)}
         self.socialMatrix=self._get_social_data()
         self.userSocialItemsSetList = self._get_SocialItemsSet_sun()
-        logging.info("init finished")
-        self.sess = sess
 
     def _get_social_data(self):
         social_users = np.genfromtxt(self.socialpath, dtype=None, names=["user0", "user1"], delimiter=',')

@@ -67,7 +67,7 @@ def run():
     num_thread = properties.getProperty("rec.number.thread")
 
     with tf.compat.v1.Session(config=config) as sess:
-        model = models[recommender](sess, dataset)
+        model = models[recommender](sess=sess)
         model.build_graph()
         sess.run(tf.compat.v1.global_variables_initializer())
         model.train_model()

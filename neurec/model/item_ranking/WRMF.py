@@ -24,19 +24,18 @@ class WRMF(AbstractRecommender):
     ]
 
     def __init__(self, sess, dataset):
-        self.conf = Properties().getProperties(self.properties)
+        super().__init__(**kwds)
 
-        print("WRMF arguments: %s " %(self.conf))
         self.embedding_size = self.conf["embedding_size"]
         self.alpha = self.conf["alpha"]
         self.topK = self.conf["topk"]
         self.num_epochs= self.conf["epochs"]
         self.reg_mf = self.conf["reg_mf"]
         self.verbose= self.conf["verbose"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.sess = sess
+
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+
         self.Cui = np.zeros(shape=[self.num_users, self.num_items], dtype=np.float32)
         self.Pui = np.zeros(shape=[self.num_users, self.num_items], dtype=np.float32)
         for (u, i) in self.dataset.trainMatrix.keys():

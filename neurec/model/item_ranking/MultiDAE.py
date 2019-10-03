@@ -24,17 +24,15 @@ class MultiDAE(AbstractRecommender):
         "verbose"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("MultiDAE arguments: %s " %(self.conf))
         self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
         self.topK = self.conf["topk"]
         self.batch_size= self.conf["batch_size"]
-        self.dataset = dataset
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
         self.p_dims = self.conf["p_dim"] + [self.num_items]
         self.q_dims = self.p_dims[::-1]
         self.dims = self.q_dims + self.p_dims[1:]
@@ -43,7 +41,6 @@ class MultiDAE(AbstractRecommender):
         self.num_epochs=self.conf["epochs"]
         self.loss_function="multinominal-likelihood"
         self.verbose=self.conf["verbose"]
-        self.sess=sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

@@ -33,10 +33,9 @@ class JCA(AbstractRecommender):
         "num_neg"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("JCA arguments: %s " %(self.conf))
         self.hidden_neuron = self.conf["hidden_neuron"]
         self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
@@ -50,15 +49,14 @@ class JCA(AbstractRecommender):
         self.margin = self.conf["margin"]
         self.corruption_level = self.conf["corruption_level"]
         self.neg_sample_rate = self.conf["num_neg"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
-        self.train_R = dataset.trainMatrix.toarray()
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+
+        self.train_R = self.dataset.trainMatrix.toarray()
         self.U_OH_mat = np.eye(self.num_users, dtype=float)
         self.I_OH_mat = np.eye(self.num_items, dtype=float)
         self.num_batch_U = int(self.num_users / float(self.batch_size)) + 1
         self.num_batch_I = int(self.num_items / float(self.batch_size)) + 1
-        self.sess=sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

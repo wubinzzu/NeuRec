@@ -39,10 +39,9 @@ class NAIS(AbstractRecommender):
         "algorithm"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("NAIS arguments: %s " %(self.conf))
         self.pretrain = self.conf["pretrain"]
         self.verbose = self.conf["verbose"]
         self.batch_size = self.conf["batch_size"]
@@ -64,11 +63,10 @@ class NAIS(AbstractRecommender):
         self.loss_function = self.conf["loss_function"]
         self.algorithm = self.conf["algorithm"]
         self.learner = self.conf["learner"]
-        self.dataset = dataset
-        self.dataset_name= dataset.dataset_name
-        self.num_items = dataset.num_items
-        self.num_users = dataset.num_users
-        self.sess=sess
+        self.dataset_name = self.dataset.dataset_name
+        self.num_items = self.dataset.num_items
+        self.num_users = self.dataset.num_users
+
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None, None], name = "user_input")    #the index of users

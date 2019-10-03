@@ -34,10 +34,9 @@ class NeuMF(AbstractRecommender):
         "mlp_pretrain"
     ]
 
-    def __init__(self,sess,dataset):
-        self.conf = Properties().getProperties(self.properties)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
 
-        print("NeuMF arguments: %s " %(self.conf))
         self.embedding_size = self.conf["embedding_size"]
         self.layers = self.conf["layers"]
         self.reg_mf = self.conf["reg_mf"]
@@ -53,11 +52,9 @@ class NeuMF(AbstractRecommender):
         self.ispairwise = self.conf["ispairwise"]
         self.mf_pretrain = self.conf["mf_pretrain"]
         self.mlp_pretrain = self.conf["mlp_pretrain"]
-        self.num_users = dataset.num_users
-        self.num_items = dataset.num_items
-        self.dataset = dataset
-        self.dataset_name = dataset.dataset_name
-        self.sess=sess
+        self.num_users = self.dataset.num_users
+        self.num_items = self.dataset.num_items
+        self.dataset_name = self.dataset.dataset_name
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):

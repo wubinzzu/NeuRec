@@ -61,10 +61,8 @@ class CFGAN(AbstractRecommender):
     ]
 
     def __init__(self, sess, dataset):
-        self.conf = Properties().getProperties(self.properties)
+        super().__init__(**kwds)
 
-        self.dataset = dataset
-        print("CFGAN arguments: %s " %(self.conf))
         self.epochs = self.conf["epochs"]
         self.topK = self.conf["topk"]
         self.mode = self.conf["mode"]
@@ -96,7 +94,7 @@ class CFGAN(AbstractRecommender):
         self.user_pos_train = csr_to_user_dict(self.train_matrix)
         self.all_items = np.arange(self.num_items)
         self.loss_function = "None"
-        self.sess = sess
+
         # self._build_model()
         # self.sess.run(tf.compat.v1.global_variables_initializer())
 

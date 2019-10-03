@@ -8,7 +8,9 @@ import numpy as np
 from neurec.data.LeaveOneOutDataSplitter import LeaveOneOutDataSplitter
 from neurec.data.HoldOutDataSplitter import HoldOutDataSplitter
 from neurec.data.GivenData import GivenData
-class Dataset(object):
+from neurec.util.singleton import Singleton
+
+class Dataset(metaclass=Singleton):
 
     def __init__(self,path,dataset_name, data_format, splitter,separator,threshold,evaluate_neg,splitterRatio=[0.8,0.2]):
         '''

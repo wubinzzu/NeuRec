@@ -7,6 +7,7 @@ from neurec.model.item_ranking.APR import APR
 from neurec.model.item_ranking.DMF import DMF
 from neurec.model.item_ranking.ConvNCF import ConvNCF
 from neurec.model.item_ranking.CDAE import CDAE
+from neurec.model.item_ranking.CFGAN import CFGAN
 from neurec.model.item_ranking.DAE import DAE
 from neurec.model.seq_ranking.NPE import NPE
 from neurec.model.item_ranking.IRGAN import IRGAN
@@ -17,6 +18,8 @@ from neurec.model.item_ranking.CFGAN import CFGAN
 from neurec.model.item_ranking.SBPR import SBPR
 from neurec.model.item_ranking.WRMF import WRMF
 from neurec.model.item_ranking.SpectralCF import SpectralCF
+from neurec.model.item_ranking.DeepICF import DeepICF
+from neurec.model.item_ranking.NGCF import NGCF
 from neurec.model.seq_ranking.FPMC import FPMC
 from neurec.model.seq_ranking.FPMCplus import FPMCplus
 from neurec.model.seq_ranking.HRM import HRM
@@ -36,6 +39,7 @@ models = {
     "convncf": ConvNCF,
     "transrec": TransRec,
     "cdae": CDAE,
+    "cfgan": CFGAN,
     "dae": DAE,
     "npe": NPE,
     "multidae": MultiDAE,
@@ -45,5 +49,7 @@ models = {
     "jca": JCA,
     "sbpr": SBPR,
     "spectralcf": SpectralCF,
-    "wrmf": WRMF
+    "wrmf": WRMF,
+    "deepicf":DeepICF,
+    "ngcf": NGCF
 }

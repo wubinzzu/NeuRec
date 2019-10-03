@@ -28,21 +28,21 @@ class MultiDAE(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("MultiDAE arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.batch_size= int(self.conf["batch_size"])
+        self.topK = self.conf["topk"]
+        self.batch_size= self.conf["batch_size"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
-        self.p_dims = list(eval(self.conf["p_dim"])) + [self.num_items]
+        self.p_dims = self.conf["p_dim"] + [self.num_items]
         self.q_dims = self.p_dims[::-1]
         self.dims = self.q_dims + self.p_dims[1:]
         self.act = self.conf["activation"]
-        self.reg = float(self.conf["reg"])
-        self.num_epochs=int(self.conf["epochs"])
+        self.reg = self.conf["reg"]
+        self.num_epochs=self.conf["epochs"]
         self.loss_function="multinominal-likelihood"
-        self.verbose=int(self.conf["verbose"])
+        self.verbose=self.conf["verbose"]
         self.sess=sess
 
     def _create_placeholders(self):

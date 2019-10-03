@@ -39,20 +39,20 @@ class FPMCplus(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("FPMCplus arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.weight_size = int(self.conf["weight_size"])
+        self.learning_rate = self.conf["learning_rate"]
+        self.embedding_size = self.conf["embedding_size"]
+        self.weight_size = self.conf["weight_size"]
         self.learner = self.conf["learner"]
         self.loss_function = self.conf["loss_function"]
         self.ispairwise = self.conf["ispairwise"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.reg_mf = float(self.conf["reg_mf"])
-        self.reg_w = float(self.conf["reg_w"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.high_order = int(self.conf["high_order"])
-        self.verbose= int(self.conf["verbose"])
-        self.num_negatives= int(self.conf["num_neg"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.reg_mf = self.conf["reg_mf"]
+        self.reg_w = self.conf["reg_w"]
+        self.batch_size= self.conf["batch_size"]
+        self.high_order = self.conf["high_order"]
+        self.verbose= self.conf["verbose"]
+        self.num_negatives= self.conf["num_neg"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset = dataset
@@ -62,7 +62,7 @@ class FPMCplus(AbstractRecommender):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")
             self.item_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
             self.item_input_recents = tf.compat.v1.placeholder(tf.int32, shape = [None,None], name = "item_input_recent")
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
                 self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
@@ -121,7 +121,7 @@ class FPMCplus(AbstractRecommender):
             # loss for L(Theta)
             # loss for L(Theta)
             UI_u,IU_i,IL_i,LI_l,self.output = self._create_inference(self.item_input)
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 _, IU_j,IL_j,_,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(UI_u)) \
@@ -145,7 +145,7 @@ class FPMCplus(AbstractRecommender):
     def train_model(self):
         for epoch in  range(self.num_epochs):
             # Generate training instances
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 user_input, item_input_pos, item_input_recents, item_input_neg = \
                 data_gen._get_pairwise_all_highorder_data(self.dataset,self.high_order)
             else :
@@ -156,7 +156,7 @@ class FPMCplus(AbstractRecommender):
             training_start_time = time()
 
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.ispairwise.lower() =="true":
+                if self.ispairwise == True:
                     bat_users, bat_items_pos, bat_items_recents,bat_items_neg  = \
                     data_gen._get_pairwise_batch_seqdata(user_input, item_input_pos, \
                     item_input_recents, item_input_neg, num_batch, self.batch_size)

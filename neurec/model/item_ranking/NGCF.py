@@ -33,21 +33,21 @@ class NGCF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("NGCF arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.emb_dim = int(self.conf["embedding_size"])
-        self.weight_size = eval(self.conf["layer_size"])
+        self.topK = self.conf["topk"]
+        self.batch_size= self.conf["batch_size"]
+        self.emb_dim = self.conf["embedding_size"]
+        self.weight_size = self.conf["layer_size"]
         self.n_layers = len(self.weight_size)
-        self.num_epochs=int(self.conf["epochs"])
-        self.decay=float(self.conf["reg"])
+        self.num_epochs=self.conf["epochs"]
+        self.decay=self.conf["reg"]
         self.loss_function=self.conf["loss_function"]
         self.node_dropout_flag = self.conf["node_dropout_flag"]
         self.adj_type = self.conf["adj_type"]
         self.alg_type = self.conf["alg_type"]
         self.n_fold = 100
-        self.verbose=int(self.conf["verbose"])
+        self.verbose=self.conf["verbose"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items

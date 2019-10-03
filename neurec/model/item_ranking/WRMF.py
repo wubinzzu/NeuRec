@@ -27,12 +27,12 @@ class WRMF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("WRMF arguments: %s " %(self.conf))
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.alpha = float(self.conf["alpha"])
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.reg_mf = float(self.conf["reg_mf"])
-        self.verbose= int(self.conf["verbose"])
+        self.embedding_size = self.conf["embedding_size"]
+        self.alpha = self.conf["alpha"]
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.reg_mf = self.conf["reg_mf"]
+        self.verbose= self.conf["verbose"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items

@@ -36,19 +36,19 @@ class APR(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("APR arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
-        self.embedding_size = int(self.conf["embedding_size"])
+        self.learning_rate = self.conf["learning_rate"]
+        self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.eps= float(self.conf["eps"])
-        self.adv = str(self.conf["adv"])
-        self.adver = int(self.conf["adver"])
-        self.adv_epoch = int(self.conf["adv_epoch"])
-        self.reg = float(self.conf["reg"])
-        self.reg_adv = float(self.conf["reg_adv"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.verbose= int(self.conf["verbose"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.eps= self.conf["eps"]
+        self.adv = self.conf["adv"]
+        self.adver = self.conf["adver"]
+        self.adv_epoch = self.conf["adv_epoch"]
+        self.reg = self.conf["reg"]
+        self.reg_adv = self.conf["reg_adv"]
+        self.batch_size= self.conf["batch_size"]
+        self.verbose= self.conf["verbose"]
         self.loss_function = self.conf["loss_function"]
         self.dataset = dataset
         self.num_users = dataset.num_users

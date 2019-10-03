@@ -8,7 +8,7 @@ import tensorflow as tf
 import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-from neurec.util import data_gen
+from neurec.util import data_gen, reader
 from neurec.evaluation import Evaluate
 from neurec.util.properties import Properties
 
@@ -146,16 +146,16 @@ class IRGAN(AbstractRecommender):
         train_matrix = dataset.trainMatrix.tocsr()
         self.num_users, self.num_items = train_matrix.shape
 
-        self.factors_num = eval(self.conf["factors_num"])
-        self.lr = eval(self.conf["lr"])
-        self.g_reg = eval(self.conf["g_reg"])
-        self.d_reg = eval(self.conf["d_reg"])
-        self.epochs = eval(self.conf["epochs"])
-        self.g_epoch = eval(self.conf["g_epoch"])
-        self.d_epoch = eval(self.conf["d_epoch"])
-        self.batch_size = eval(self.conf["batch_size"])
-        self.d_tau = eval(self.conf["d_tau"])
-        self.topK = eval(self.conf["topk"])
+        self.factors_num = self.conf["factors_num"]
+        self.lr = self.conf["lr"]
+        self.g_reg = self.conf["g_reg"]
+        self.d_reg = self.conf["d_reg"]
+        self.epochs = self.conf["epochs"]
+        self.g_epoch = self.conf["g_epoch"]
+        self.d_epoch = self.conf["d_epoch"]
+        self.batch_size = self.conf["batch_size"]
+        self.d_tau = self.conf["d_tau"]
+        self.topK = self.conf["topk"]
         self.pretrain_file = self.conf["pretrain_file"]
         self.loss_function = "None"
 
@@ -172,8 +172,8 @@ class IRGAN(AbstractRecommender):
         self.all_items = np.arange(self.num_items)
 
     def build_graph(self):
-        with open(self.pretrain_file, "rb") as fin:
-            pretrain_params = pickle.load(fin, encoding="latin")
+        file = reader.lines(self.pretrain_file)
+        pretrain_params = pickle.load(file, encoding="latin")
         self.generator = GEN(self.num_items, self.num_users, self.factors_num, self.g_reg, param=pretrain_params,
                              learning_rate=self.lr)
         self.discriminator = DIS(self.num_items, self.num_users, self.factors_num, self.d_reg, param=None,

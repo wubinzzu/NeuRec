@@ -35,34 +35,35 @@ class NAIS(AbstractRecommender):
         "learning_rate",
         "activation",
         "loss_function",
-        "learner"
+        "learner",
+        "algorithm"
     ]
 
     def __init__(self,sess,dataset):
         self.conf = Properties().getProperties(self.properties)
 
         print("NAIS arguments: %s " %(self.conf))
-        self.pretrain = int(self.conf["pretrain"])
-        self.verbose = int(self.conf["verbose"])
-        self.batch_size = int(self.conf["batch_size"])
-        self.num_epochs = int(self.conf["epochs"])
-        self.weight_size = int(self.conf["weight_size"])
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.data_alpha = float(self.conf["data_alpha"])
-        self.regs = eval(self.conf["regs"])
+        self.pretrain = self.conf["pretrain"]
+        self.verbose = self.conf["verbose"]
+        self.batch_size = self.conf["batch_size"]
+        self.num_epochs = self.conf["epochs"]
+        self.weight_size = self.conf["weight_size"]
+        self.embedding_size = self.conf["embedding_size"]
+        self.data_alpha = self.conf["data_alpha"]
+        self.regs = self.conf["regs"]
         self.ispairwise = self.conf["ispairwise"]
-        self.topK = int(self.conf["topk"])
+        self.topK = self.conf["topk"]
         self.lambda_bilinear = self.regs[0]
         self.gamma_bilinear = self.regs[1]
         self.eta_bilinear = self.regs[2]
-        self.alpha = float(self.conf["alpha"])
-        self.beta = float(self.conf["beta"])
-        self.num_negatives= int(self.conf["num_neg"])
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.alpha = self.conf["alpha"]
+        self.beta = self.conf["beta"]
+        self.num_negatives= self.conf["num_neg"]
+        self.learning_rate = self.conf["learning_rate"]
         self.activation = self.conf["activation"]
         self.loss_function = self.conf["loss_function"]
-        self.algorithm = int(self.conf["algorithm"])
-        self.learner = str(self.conf["learner"])
+        self.algorithm = self.conf["algorithm"]
+        self.learner = self.conf["learner"]
         self.dataset = dataset
         self.dataset_name= dataset.dataset_name
         self.num_items = dataset.num_items
@@ -73,7 +74,7 @@ class NAIS(AbstractRecommender):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None, None], name = "user_input")    #the index of users
             self.num_idx = tf.compat.v1.placeholder(tf.float32, shape=[None,],name = "num_idx")    #the number of items rated by users
             self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = "item_input_pos")      #the index of items
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 self.user_input_neg = tf.compat.v1.placeholder(tf.int32, shape=[None, None], name = "user_input_neg")
                 self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
                 self.num_idx_neg = tf.compat.v1.placeholder(tf.float32, shape=[None,],name = "num_idx_neg")
@@ -134,7 +135,7 @@ class NAIS(AbstractRecommender):
         with tf.name_scope("loss"):
 
             p1, q1, self.output = self._create_inference(self.user_input,self.item_input,self.num_idx)
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 _, q2,output_neg = self._create_inference(self.user_input_neg,self.item_input_neg,self.num_idx_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.lambda_bilinear * ( tf.reduce_sum(tf.square(p1))) \
@@ -185,7 +186,7 @@ class NAIS(AbstractRecommender):
     def train_model(self):
 
         for epoch in  range(self.num_epochs):
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 user_input,user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg = \
                 data_gen._get_pairwise_all_likefism_data(self.dataset)
             else :
@@ -195,7 +196,7 @@ class NAIS(AbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.ispairwise.lower() =="true":
+                if self.ispairwise == True:
                     bat_users_pos,bat_users_neg, bat_idx_pos, bat_idx_neg, \
                         bat_items_pos,bat_items_neg= \
                         data_gen._get_pairwise_batch_likefism_data(user_input,\

@@ -37,19 +37,19 @@ class JCA(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("JCA arguments: %s " %(self.conf))
-        self.hidden_neuron = int(self.conf["hidden_neuron"])
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.hidden_neuron = self.conf["hidden_neuron"]
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.reg = float(self.conf["reg"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.verbose= int(self.conf["verbose"])
+        self.topK = self.conf["topk"]
+        self.reg = self.conf["reg"]
+        self.num_epochs= self.conf["epochs"]
+        self.batch_size= self.conf["batch_size"]
+        self.verbose= self.conf["verbose"]
         self.f_act = self.conf["f_act"] # the activation function for the output layer
         self.g_act = self.conf["g_act"] # the activation function for the hidden layer
-        self.margin = float(self.conf["margin"])
-        self.corruption_level = float(self.conf["corruption_level"])
-        self.neg_sample_rate = int(self.conf["num_neg"])
+        self.margin = self.conf["margin"]
+        self.corruption_level = self.conf["corruption_level"]
+        self.neg_sample_rate = self.conf["num_neg"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset = dataset

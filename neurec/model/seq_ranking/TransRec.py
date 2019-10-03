@@ -35,17 +35,17 @@ class TransRec(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("TransRec arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
-        self.embedding_size = int(self.conf["embedding_size"])
+        self.learning_rate = self.conf["learning_rate"]
+        self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
         self.loss_function = self.conf["loss_function"]
         self.ispairwise = self.conf["ispairwise"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.reg_mf = float(self.conf["reg_mf"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.verbose= int(self.conf["verbose"])
-        self.num_negatives= int(self.conf["num_neg"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.reg_mf = self.conf["reg_mf"]
+        self.batch_size= self.conf["batch_size"]
+        self.verbose= self.conf["verbose"]
+        self.num_negatives= self.conf["num_neg"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset = dataset
@@ -55,7 +55,7 @@ class TransRec(AbstractRecommender):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")
             self.item_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
             self.item_input_recent = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_recent")
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
                 self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
@@ -86,7 +86,7 @@ class TransRec(AbstractRecommender):
         with tf.name_scope("loss"):
             # loss for L(Theta)
             p1,r1,q1,b1,self.output = self._create_inference(self.item_input)
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 _,_,q2,b2,output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,self.result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
@@ -109,7 +109,7 @@ class TransRec(AbstractRecommender):
 
         for epoch in  range(self.num_epochs):
             # Generate training instances
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 user_input, item_input_pos, item_input_recents, item_input_neg = \
                 data_gen._get_pairwise_all_firstorder_data(self.dataset)
             else :
@@ -120,7 +120,7 @@ class TransRec(AbstractRecommender):
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.ispairwise.lower() =="true":
+                if self.ispairwise == True:
                     bat_users, bat_items_pos, bat_items_recents,bat_items_neg  = \
                     data_gen._get_pairwise_batch_seqdata(user_input, item_input_pos, \
                     item_input_recents, item_input_neg, num_batch, self.batch_size)

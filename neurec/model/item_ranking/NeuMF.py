@@ -38,21 +38,21 @@ class NeuMF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("NeuMF arguments: %s " %(self.conf))
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.layers = list(eval(self.conf["layers"]))
-        self.reg_mf = float(self.conf["reg_mf"])
-        self.reg_mlp = float(self.conf["reg_mlp"])
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.embedding_size = self.conf["embedding_size"]
+        self.layers = self.conf["layers"]
+        self.reg_mf = self.conf["reg_mf"]
+        self.reg_mlp = self.conf["reg_mlp"]
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
         self.loss_function = self.conf["loss_function"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.num_negatives= int(self.conf["num_neg"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.verbose= int(self.conf["verbose"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.num_negatives= self.conf["num_neg"]
+        self.batch_size= self.conf["batch_size"]
+        self.verbose= self.conf["verbose"]
         self.ispairwise = self.conf["ispairwise"]
-        self.mf_pretrain = str(self.conf["mf_pretrain"])
-        self.mlp_pretrain = str(self.conf["mlp_pretrain"])
+        self.mf_pretrain = self.conf["mf_pretrain"]
+        self.mlp_pretrain = self.conf["mlp_pretrain"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset = dataset
@@ -63,7 +63,7 @@ class NeuMF(AbstractRecommender):
         with tf.name_scope("input_data"):
             self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'user_input')
             self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'item_input')
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
                 self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
@@ -101,7 +101,7 @@ class NeuMF(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             p1, q1,m1,n1,self.output = self._create_inference(self.item_input)
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 _, q2,_,n2,output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
@@ -126,7 +126,7 @@ class NeuMF(AbstractRecommender):
 
         for epoch in  range(self.num_epochs):
             # Generate training instances
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 user_input, item_input_pos, item_input_neg = data_gen._get_pairwise_all_data(self.dataset)
             else :
                 user_input, item_input, lables = data_gen._get_pointwise_all_data(self.dataset, self.num_negatives)
@@ -135,7 +135,7 @@ class NeuMF(AbstractRecommender):
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.ispairwise.lower() =="true":
+                if self.ispairwise == True:
                     bat_users,bat_items_pos,bat_items_neg =\
                      data_gen._get_pairwise_batch_data(user_input,\
                      item_input_pos, item_input_neg, num_batch, self.batch_size)

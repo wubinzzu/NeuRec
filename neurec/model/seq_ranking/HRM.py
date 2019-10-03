@@ -36,19 +36,19 @@ class HRM(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("HRM arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
-        self.embedding_size = int(self.conf["embedding_size"])
+        self.learning_rate = self.conf["learning_rate"]
+        self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.reg_mf = float(self.conf["reg_mf"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.reg_mf = self.conf["reg_mf"]
         self.pre_agg= self.conf["pre_agg"]
         self.loss_function = self.conf["loss_function"]
         self.session_agg= self.conf["session_agg"]
-        self.batch_size= int(self.conf["batch_size"])
-        self.high_order = int(self.conf["high_order"])
-        self.verbose= int(self.conf["verbose"])
-        self.num_negatives= int(self.conf["num_neg"])
+        self.batch_size= self.conf["batch_size"]
+        self.high_order = self.conf["high_order"]
+        self.verbose= self.conf["verbose"]
+        self.num_negatives= self.conf["num_neg"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset = dataset

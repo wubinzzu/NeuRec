@@ -33,15 +33,15 @@ class DMF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("DMF arguments: %s " %(self.conf))
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.embedding_size = self.conf["embedding_size"]
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.num_negatives= int(self.conf["num_neg"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.verbose= int(self.conf["verbose"])
-        self.layers = list(eval(self.conf["layers"]))
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.num_negatives= self.conf["num_neg"]
+        self.batch_size= self.conf["batch_size"]
+        self.verbose= self.conf["verbose"]
+        self.layers = self.conf["layers"]
         self.loss_function = self.conf["loss_function"]
         self.fist_layer_size = self.layers[0]
         self.last_layer_size = self.layers[1]

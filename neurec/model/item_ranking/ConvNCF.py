@@ -34,19 +34,19 @@ class ConvNCF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("ConvNCF arguments: %s " %(self.conf))
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.topK = int(self.conf["topk"])
-        self.regs = eval(self.conf["regs"])
-        self.lambda_bilinear = float( self.regs[0])
-        self.gamma_bilinear = float( self.regs[1])
-        self.lambda_weight = float( self.regs[2])
-        self.keep = float(self.conf["keep"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.nc=eval(self.conf["net_channel"])
-        self.lr_embed=float(self.conf["lr_embed"])
-        self.lr_net=float(self.conf["lr_net"])
-        self.verbose= int(self.conf["verbose"])
+        self.embedding_size = self.conf["embedding_size"]
+        self.topK = self.conf["topk"]
+        self.regs = self.conf["regs"]
+        self.lambda_bilinear =  self.regs[0]
+        self.gamma_bilinear =  self.regs[1]
+        self.lambda_weight =  self.regs[2]
+        self.keep = self.conf["keep"]
+        self.num_epochs= self.conf["epochs"]
+        self.batch_size= self.conf["batch_size"]
+        self.nc=self.conf["net_channel"]
+        self.lr_embed=self.conf["lr_embed"]
+        self.lr_net=self.conf["lr_net"]
+        self.verbose= self.conf["verbose"]
         self.loss_function = self.conf["loss_function"]
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items

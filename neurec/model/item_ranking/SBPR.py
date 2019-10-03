@@ -47,15 +47,15 @@ class SBPR(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         self.socialpath = self.conf["socialpath"]
-        self.learning_rate = eval(self.conf["learning_rate"])
-        self.embedding_size = eval(self.conf["embedding_size"])
+        self.learning_rate = self.conf["learning_rate"]
+        self.embedding_size = self.conf["embedding_size"]
         self.learner = self.conf["learner"]
         self.loss_function = self.conf["loss_function"]
-        self.topK = eval(self.conf["topk"])
-        self.num_epochs= eval(self.conf["num_epochs"])
-        self.reg_mf = eval(self.conf["reg_mf"])
-        self.batch_size = eval(self.conf["batch_size"])
-        self.verbose = eval(self.conf["verbose"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["num_epochs"]
+        self.reg_mf = self.conf["reg_mf"]
+        self.batch_size = self.conf["batch_size"]
+        self.verbose = self.conf["verbose"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items

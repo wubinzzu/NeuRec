@@ -64,28 +64,28 @@ class CFGAN(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         self.dataset = dataset
-        print("CFGAN arguments: %s " %(config))
-        self.epochs = eval(config["epochs"])
-        self.topK = eval(config["topk"])
-        self.mode = config["mode"]
-        self.reg_G = eval(config["reg_g"])
-        self.reg_D = eval(config["reg_d"])
-        self.lr_G = eval(config["lr_g"])
-        self.lr_D = eval(config["lr_d"])
-        self.batchSize_G = eval(config["batchsize_g"])
-        self.batchSize_D = eval(config["batchsize_d"])
+        print("CFGAN arguments: %s " %(self.conf))
+        self.epochs = self.conf["epochs"]
+        self.topK = self.conf["topk"]
+        self.mode = self.conf["mode"]
+        self.reg_G = self.conf["reg_g"]
+        self.reg_D = self.conf["reg_d"]
+        self.lr_G = self.conf["lr_g"]
+        self.lr_D = self.conf["lr_d"]
+        self.batchSize_G = self.conf["batchsize_g"]
+        self.batchSize_D = self.conf["batchsize_d"]
 
-        self.opt_G = config["opt_g"]
-        self.opt_D = config["opt_d"]
-        self.hiddenLayer_G = eval(config["hiddenlayer_g"])
-        self.hiddenLayer_D = eval(config["hiddenlayer_d"])
-        self.step_G = eval(config["step_g"])
-        self.step_D = eval(config["step_d"])
+        self.opt_G = self.conf["opt_g"]
+        self.opt_D = self.conf["opt_d"]
+        self.hiddenLayer_G = self.conf["hiddenlayer_g"]
+        self.hiddenLayer_D = self.conf["hiddenlayer_d"]
+        self.step_G = self.conf["step_g"]
+        self.step_D = self.conf["step_d"]
 
-        self.ZR_ratio = eval(config["zr_ratio"])
-        self.ZP_ratio = eval(config["zp_ratio"])
-        self.ZR_coefficient = eval(config["zr_coefficient"])
-        self.verbose= int(config["verbose"])
+        self.ZR_ratio = self.conf["zr_ratio"]
+        self.ZP_ratio = self.conf["zp_ratio"]
+        self.ZR_coefficient = self.conf["zr_coefficient"]
+        self.verbose= self.conf["verbose"]
 
         train_matrix = dataset.trainMatrix.tocsr()
         self.train_matrix = train_matrix.copy()

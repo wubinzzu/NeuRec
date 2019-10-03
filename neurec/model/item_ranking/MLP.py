@@ -36,38 +36,37 @@ class MLP(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("MLP arguments: %s " %(self.conf))
-        self.layers = list(eval(self.conf["layers"]))
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.layers = self.conf["layers"]
+        self.learning_rate = self.conf["learning_rate"]
         self.ispairwise = self.conf["ispairwise"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.num_epochs= int(self.conf["epochs"])
-        self.num_negatives= int(self.conf["num_neg"])
-        self.reg_mlp = float(self.conf["reg_mlp"])
-        self.batch_size= int(self.conf["batch_size"])
+        self.topK = self.conf["topk"]
+        self.num_epochs= self.conf["epochs"]
+        self.num_negatives= self.conf["num_neg"]
+        self.reg_mlp = self.conf["reg_mlp"]
+        self.batch_size= self.conf["batch_size"]
         self.loss_function = self.conf["loss_function"]
-        self.verbose= int(self.conf["verbose"])
-        self.num_negatives= int(self.conf["num_neg"])
+        self.verbose= self.conf["verbose"]
+        self.num_negatives= self.conf["num_neg"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.dataset_name = dataset.dataset_name
         self.sess=sess
-
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'user_input')
-            self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,],name = 'item_input')
-            if self.ispairwise.lower() =="true":
-                self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
+            self.user_input = tf.placeholder(tf.int32, shape=[None,],name = 'user_input')
+            self.item_input = tf.placeholder(tf.int32, shape=[None,],name = 'item_input')
+            if self.ispairwise == True:
+                self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
-                self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
+                self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            self.mlp_embedding_user = tf.Variable(tf.random.normal(shape = [self.num_users,\
+            self.mlp_embedding_user = tf.Variable(tf.random_normal(shape = [self.num_users,\
              int(self.layers[0]/2)],mean=0.0,stddev=0.01),name = "mlp_embedding_user",dtype=tf.float32)
-            self.mlp_embedding_item = tf.Variable(tf.random.normal(shape = [self.num_items,\
+            self.mlp_embedding_item = tf.Variable(tf.random_normal(shape = [self.num_items,\
              int(self.layers[0]/2)],mean=0.0,stddev=0.01),name = "mlp_embedding_item",dtype=tf.float32)
     def _create_inference(self,item_input):
         with tf.name_scope("inference"):
@@ -88,7 +87,7 @@ class MLP(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             p1, q1,self.output= self._create_inference(self.item_input)
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 _, q2, self.output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - self.output_neg
                 self.loss = learner.pairwise_loss(self.loss_function,result) + self.reg_mf * ( tf.reduce_sum(tf.square(p1)) \
@@ -111,7 +110,7 @@ class MLP(AbstractRecommender):
 
         for epoch in  range(self.num_epochs):
             # Generate training instances
-            if self.ispairwise.lower() =="true":
+            if self.ispairwise == True:
                 user_input, item_input_pos, item_input_neg = data_gen._get_pairwise_all_data(self.dataset)
             else :
                 user_input, item_input, lables = data_gen._get_pointwise_all_data(self.dataset, self.num_negatives)
@@ -120,7 +119,7 @@ class MLP(AbstractRecommender):
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.ispairwise.lower() =="true":
+                if self.ispairwise == True:
                     bat_users,bat_items_pos,bat_items_neg =\
                      data_gen._get_pairwise_batch_data(user_input,\
                      item_input_pos, item_input_neg, num_batch, self.batch_size)

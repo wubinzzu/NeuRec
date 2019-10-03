@@ -30,18 +30,18 @@ class SpectralCF(AbstractRecommender):
         self.conf = Properties().getProperties(self.properties)
 
         print("SpectralCF arguments: %s " %(self.conf))
-        self.learning_rate = float(self.conf["learning_rate"])
+        self.learning_rate = self.conf["learning_rate"]
         self.learner = self.conf["learner"]
-        self.topK = int(self.conf["topk"])
-        self.batch_size= int(self.conf["batch_size"])
-        self.num_layers = int(self.conf["num_layers"])
+        self.topK = self.conf["topk"]
+        self.batch_size= self.conf["batch_size"]
+        self.num_layers = self.conf["num_layers"]
         self.activation = self.conf["activation"]
-        self.embedding_size = int(self.conf["embedding_size"])
-        self.num_epochs=int(self.conf["epochs"])
-        self.reg=float(self.conf["reg"])
+        self.embedding_size = self.conf["embedding_size"]
+        self.num_epochs=self.conf["epochs"]
+        self.reg=self.conf["reg"]
         self.loss_function=self.conf["loss_function"]
-        self.dropout=float(self.conf["dropout"])
-        self.verbose=int(self.conf["verbose"])
+        self.dropout=self.conf["dropout"]
+        self.verbose=self.conf["verbose"]
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items

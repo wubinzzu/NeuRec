@@ -56,6 +56,8 @@ class Properties(metaclass=Singleton):
         try:
             return types[name](value)
         except KeyError:
-            logging.error("Could not convert property " + property + ". Key not found in types. Add property to neurec.util.properties.types")
-
+            logging.error("Could not convert property " + str(property) + ". Key not found in types. Add property to neurec.util.properties.types")
+            raise
+        except ValueError:
+            logging.error("Could not covert the value of " + str(name) + '. ' + value + " does not match type set in neurec.data.properties.type")
             raise

@@ -6,8 +6,9 @@ from neurec.util import reader
 import logging
 
 class HoldOutDataSplitter(object):
-    def __init__(self,path,data_format,separator,threshold,splitterRatio=[0.8,0.2]):
-        self.path =path +".rating"
+    def __init__(self, path, dataset_name, data_format,separator,threshold,splitterRatio=[0.8,0.2]):
+        self.path =path
+        self.dataset_name = dataset_name
         self.separator = separator
         self.data_format = data_format
         self.splitterRatio = splitterRatio
@@ -27,7 +28,7 @@ class HoldOutDataSplitter(object):
         # inverse views of userIds, itemIds,
         idusers = {}
         iditems={}
-        data = reader.lines(self.path)
+        data = reader.lines(self.path, self.dataset_name)
         for line in data:
             if self.data_format == "UIRT":
                 useridx, itemidx,rating,time= line.strip().split(self.separator)

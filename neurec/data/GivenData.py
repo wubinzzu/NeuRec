@@ -4,8 +4,9 @@ from neurec.util import reader
 import logging
 
 class GivenData(object):
-    def __init__(self,path,separator,threshold):
+    def __init__(self, path, dataset_name, separator,threshold):
         self.path =path
+        self.dataset_name = dataset_name
         self.separator = separator
         self.threshold = threshold
         global num_items,num_users,userids,itemids,idusers,iditems
@@ -16,7 +17,7 @@ class GivenData(object):
         userids,itemids,idusers,iditems = {},{},{},{}
         # Get number of users and items
 
-        data = reader.lines(self.path + ".train.rating")
+        data = reader.lines(self.path, self.dataset_name)
 
         for line in data:
             useridx, itemidx, rating, time= line.strip().split(self.separator)

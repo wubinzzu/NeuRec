@@ -1,6 +1,6 @@
 """Functions to handle reading files in the package."""
 from configparser import ConfigParser
-from importlib_resources import open_text
+from importlib_resources import open_text, is_resource
 import logging
 
 logger = logging.getLogger('neurec.util.reader')
@@ -22,11 +22,18 @@ def file(path):
 
     return parser
 
-def lines(file_name, file_path="neurec.dataset"):
+def lines(file_path, file_name):
     """Returns all lines from a file.
 
+    file_path -- location of the file
     file_name -- name of the file to read
-    file_path -- location of the file (default neurec.dataset) [optional]
     """
-    with open_text(file_path, file_name) as file:
+    try:
+        if is_resource(file_path, file_name):
+            with open_text(file_path, file_name) as file:
+                return file.readlines()
+    except TypeError:
+        logger.info(str(file_path) + str(file_name) + " is not a package dataset. Looking for a local dataset.")
+
+    with open(file_name) as file:
         return file.readlines()

@@ -5,8 +5,9 @@ from neurec.util import reader
 import logging
 
 class LeaveOneOutDataSplitter(object):
-    def __init__(self,path,data_format,separator, threshold):
+    def __init__(self, path, dataset_name, data_format, separator, threshold):
         self.path =path
+        self.dataset_name = dataset_name
         self.data_format = data_format
         self.separator = separator
         self.threshold = threshold
@@ -24,7 +25,7 @@ class LeaveOneOutDataSplitter(object):
         idusers = {}
         iditems={}
 
-        data = reader.lines(self.path + ".rating")
+        data = reader.lines(self.path, self.dataset_name)
         for line in data:
             if self.data_format == "UIRT":
                 useridx, itemidx,rating,time= line.strip().split(self.separator)

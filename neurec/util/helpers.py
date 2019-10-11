@@ -1,7 +1,4 @@
 import numpy
-import logging
-
-logger = logging.getLogger("neurec.util.helpers")
 
 def to_list(string):
     """Returns a list from a string.
@@ -15,9 +12,8 @@ def to_list(string):
         array = pipe_split[0]
         array_values = array[1:-1].split(",")
     except IndexError:
-        logger.error("list index out of range for " + str(string) + ". Make sure the list is the form [0,0]|type")
-        raise
-
+        raise IndexError("list index out of range for " + str(string) + ". Make sure the list is the form [0,0]|type")
+        
     return numpy.array(array_values, dtype=cast)
 
 def to_bool(string):

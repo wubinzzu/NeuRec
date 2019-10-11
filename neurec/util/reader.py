@@ -1,9 +1,6 @@
 """Functions to handle reading files in the package."""
-from configparser import ConfigParser
-from importlib_resources import open_text, is_resource
+from configparser import ConfigParser, MissingSectionHeaderError
 import logging
-
-logger = logging.getLogger('neurec.util.reader')
 
 def file(path):
     """Returns the configuration settings for a file.
@@ -16,24 +13,19 @@ def file(path):
         with open(path) as file:
             parser.read_file(file)
     except FileNotFoundError:
-        logger.error("Could not find file " + path + ". Make sure the file path is correct.")
-
-        raise
+        raise FileNotFoundError("Could not find file " + str(path) + ". Make sure the file path is correct.")
+    except MissingSectionHeaderError:
+        raise RuntimeError("Could not find a section header in " + str(path) + '. Added [DEFAULT] to line 1 of this file')
 
     return parser
 
-def lines(file_path, file_name):
+def lines(file_path):
     """Returns all lines from a file.
 
-    file_path -- location of the file
-    file_name -- name of the file to read
+    file_path -- path of the file to read
     """
     try:
-        if is_resource(file_path, file_name):
-            with open_text(file_path, file_name) as file:
-                return file.readlines()
-    except TypeError:
-        logger.info(str(file_path) + str(file_name) + " is not a package dataset. Looking for a local dataset.")
-
-    with open(file_name) as file:
-        return file.readlines()
+        with open(file_path) as file:
+            return file.readlines()
+    except FileNotFoundError:
+        raise FileNotFoundError(str(file_path) + " could not be found. Check the file path is correct.")

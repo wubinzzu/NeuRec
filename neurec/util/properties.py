@@ -7,7 +7,7 @@ class Properties(metaclass=Singleton):
     """A class to handle property settings."""
     def __init__(self, properties="", section="DEFAULT"):
         """Setups the class with an empty properties dictionary."""
-        self.logger = logging.getLogger('neurec.util.properties.Properties')
+        self.logger = logging.getLogger(__name__)
         self.__section = section
         self.__properties = self.setProperties(properties) if properties else {}
 
@@ -30,8 +30,7 @@ class Properties(metaclass=Singleton):
         try:
             value = self.__properties[self.__section][name]
         except KeyError:
-            self.logger.error('Key ' + name + ' not found in properties. Add to properties.')
-            raise
+            raise KeyError('Key ' + str(name) + ' not found in properties. Add to neurec.data.properties')
 
         return self.__convertProperty(name, value)
 
@@ -56,8 +55,6 @@ class Properties(metaclass=Singleton):
         try:
             return types[name](value)
         except KeyError:
-            logging.error("Could not convert property " + str(property) + ". Key not found in types. Add property to neurec.util.properties.types")
-            raise
+            raise KeyError("Could not convert property " + str(name) + ". Key not found in types. Add property to neurec.util.properties.types")
         except ValueError:
-            logging.error("Could not covert the value of " + str(name) + '. ' + value + " does not match type set in neurec.data.properties.type")
-            raise
+            raise ValueError("Could not covert the value of " + str(name) + '. ' + str(value) + " does not match type set in neurec.data.properties.type")

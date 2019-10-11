@@ -8,29 +8,22 @@ from neurec.data.models import models
 import numpy as np
 import tensorflow as tf
 
-logger = logging.getLogger('neurec')
-logger.setLevel(logging.DEBUG)
+properties = Properties()
+dataset = {}
 
-fh = logging.FileHandler("neurec")
-fh.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
 ch.setFormatter(formatter)
-
-logger.addHandler(fh)
 logger.addHandler(ch)
-
-properties = Properties()
-dataset = {}
 
 def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensorflow_seed=2017):
     """Setups initial values for neurec.
 
-    properties -- path to properties file
+    properties_path -- path to properties file
+    properties_section -- section inside the properties files to read (default "DEFAULT")
     numpy_seed -- seed value for numpy random (default 2018)
     tensorflow_seed -- seed value for tensorflow random (default 2017)
     """
@@ -54,13 +47,15 @@ def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensor
 
 def run():
     """Trains and evaluates a model."""
+    logger = logging.getLogger(__name__)
+
     if not isinstance(dataset, Dataset):
-        raise Exception("Dataset not set. Call setup() function and pass a properties file to set the dataset")
+       raise RuntimeError("Dataset not set. Call setup() function and pass a properties file to set the dataset")
 
     recommender = properties.getProperty("recommender")
 
     if not recommender in models:
-        raise Exception("Recommender " + recommender + " not recognised. Add recommender to neurec.util.models")
+        raise KeyError("Recommender " + str(recommender) + " not recognised. Add recommender to neurec.util.models")
 
     config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True

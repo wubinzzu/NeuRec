@@ -9,6 +9,8 @@ from neurec.data.LeaveOneOutDataSplitter import LeaveOneOutDataSplitter
 from neurec.data.HoldOutDataSplitter import HoldOutDataSplitter
 from neurec.data.GivenData import GivenData
 from neurec.util.singleton import Singleton
+from importlib import util
+import os
 
 class Dataset(metaclass=Singleton):
 
@@ -16,6 +18,9 @@ class Dataset(metaclass=Singleton):
         '''
         Constructor
         '''
+        if (dataset_path == 'neurec'):
+            neurec_path = util.find_spec('neurec', package='neurec').submodule_search_locations[0]
+            dataset_path = os.path.join(neurec_path, 'dataset')
         self.path = dataset_path
         self.dataset_name = dataset_name
         self.data_format = data_format

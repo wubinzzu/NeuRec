@@ -28,7 +28,7 @@ class HoldOutDataSplitter(object):
         # inverse views of userIds, itemIds,
         idusers = {}
         iditems={}
-        data = reader.lines(self.path, self.dataset_name)
+        data = reader.lines(self.path + '/' + self.dataset_name)
         for line in data:
             if self.data_format == "UIRT":
                 useridx, itemidx,rating,time= line.strip().split(self.separator)

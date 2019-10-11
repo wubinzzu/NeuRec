@@ -17,7 +17,7 @@ class GivenData(object):
         userids,itemids,idusers,iditems = {},{},{},{}
         # Get number of users and items
 
-        data = reader.lines(self.path, self.dataset_name)
+        data = reader.lines(self.path + '/' + self.dataset_name)
 
         for line in data:
             useridx, itemidx, rating, time= line.strip().split(self.separator)

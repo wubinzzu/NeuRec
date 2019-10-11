@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from neurec.data.properties import types
+from neurec.data.models import models
 from neurec.data.Dataset import Dataset
 from neurec.evaluation import Evaluate
 from neurec.util.properties import Properties
@@ -68,6 +69,10 @@ def run():
         sess.run(tf.compat.v1.global_variables_initializer())
         model.train_model()
         Evaluate.test_model(model, dataset, num_thread)
+
+def listModels():
+    """Returns a list of available models."""
+    return models
 
 def listProperties(model):
     """Returns a list of properties used by the model.

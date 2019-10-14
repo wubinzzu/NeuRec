@@ -6,4 +6,4 @@ WORKDIR /tf/neurec
 
 COPY . .
 
-RUN pip3 install --editable .
+RUN pip3 install .

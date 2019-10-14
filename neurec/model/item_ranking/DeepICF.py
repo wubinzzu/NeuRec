@@ -82,11 +82,11 @@ class DeepICF(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.compat.v1.placeholder(tf.int32, shape=[None, None])  # the index of users
-            self.num_idx = tf.compat.v1.placeholder(tf.float32, shape=[None,])  # the number of items rated by users
-            self.item_input = tf.compat.v1.placeholder(tf.int32, shape=[None,])  # the index of items
-            self.labels = tf.compat.v1.placeholder(tf.float32, shape=[None,])  # the ground truth
-            self.is_train_phase = tf.compat.v1.placeholder(tf.bool)  # mark is training or testing
+            self.user_input = tf.placeholder(tf.int32, shape=[None, None])  # the index of users
+            self.num_idx = tf.placeholder(tf.float32, shape=[None,])  # the number of items rated by users
+            self.item_input = tf.placeholder(tf.int32, shape=[None,])  # the index of items
+            self.labels = tf.placeholder(tf.float32, shape=[None,])  # the ground truth
+            self.is_train_phase = tf.placeholder(tf.bool)  # mark is training or testing
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
@@ -107,18 +107,18 @@ class DeepICF(AbstractRecommender):
 
             # Variables for DeepICF+a
             self.weights = {
-                'out': tf.Variable(tf.random.normal([self.n_hidden[-1], 1], mean=0, stddev=np.sqrt(2.0 / (self.n_hidden[-1] + 1))), name='weights_out')
+                'out': tf.Variable(tf.random_normal([self.n_hidden[-1], 1], mean=0, stddev=np.sqrt(2.0 / (self.n_hidden[-1] + 1))), name='weights_out')
             }
             self.biases = {
-                'out': tf.Variable(tf.random.normal([1]), name='biases_out')
+                'out': tf.Variable(tf.random_normal([1]), name='biases_out')
             }
             n_hidden_0 = self.embedding_size
             for i in range(len(self.n_hidden)):
                 if i > 0:
                     n_hidden_0 = self.n_hidden[i - 1]
                 n_hidden_1 = self.n_hidden[i]
-                self.weights['h%d' % i] = tf.Variable(tf.random.normal([n_hidden_0, n_hidden_1], mean=0, stddev=np.sqrt(2.0 / (n_hidden_0 + n_hidden_1))), name='weights_h%d' % i)
-                self.biases['b%d' % i] = tf.Variable(tf.random.normal([n_hidden_1]), name='biases_b%d' % i)
+                self.weights['h%d' % i] = tf.Variable(tf.random_normal([n_hidden_0, n_hidden_1], mean=0, stddev=np.sqrt(2.0 / (n_hidden_0 + n_hidden_1))), name='weights_h%d' % i)
+                self.biases['b%d' % i] = tf.Variable(tf.random_normal([n_hidden_1]), name='biases_b%d' % i)
 
 
     def _attention_MLP(self, q_):

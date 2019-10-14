@@ -57,16 +57,16 @@ class NGCF(AbstractRecommender):
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             # placeholder definition
-            self.users = tf.compat.v1.placeholder(tf.int32, shape=(None,))
-            self.pos_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
-            self.neg_items = tf.compat.v1.placeholder(tf.int32, shape=(None,))
+            self.users = tf.placeholder(tf.int32, shape=(None,))
+            self.pos_items = tf.placeholder(tf.int32, shape=(None,))
+            self.neg_items = tf.placeholder(tf.int32, shape=(None,))
 
             # dropout: node dropout (adopted on the ego-networks);
             #          ... since the usage of node dropout have higher computational cost,
             #          ... please use the 'node_dropout_flag' to indicate whether use such technique.
             #          message dropout (adopted on the convolution operations).
-            self.node_dropout = tf.compat.v1.placeholder_with_default([0.], shape=[None])
-            self.mess_dropout = tf.compat.v1.placeholder_with_default([0.], shape=[None])
+            self.node_dropout = tf.placeholder_with_default([0.], shape=[None])
+            self.mess_dropout = tf.placeholder_with_default([0.], shape=[None])
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now

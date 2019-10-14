@@ -44,17 +44,17 @@ class WRMF(AbstractRecommender):
         self.lambda_eye = self.reg_mf * tf.eye(self.embedding_size)
 
     def _create_placeholders(self):
-        self.user_id = tf.compat.v1.placeholder(tf.int32, [1])
-        self.Cu = tf.compat.v1.placeholder(tf.float32, [self.num_items, 1])
-        self.Pu = tf.compat.v1.placeholder(tf.float32, [self.num_items, 1])
+        self.user_id = tf.placeholder(tf.int32, [1])
+        self.Cu = tf.placeholder(tf.float32, [self.num_items, 1])
+        self.Pu = tf.placeholder(tf.float32, [self.num_items, 1])
 
-        self.item_id = tf.compat.v1.placeholder(tf.int32, [1])
-        self.Ci = tf.compat.v1.placeholder(tf.float32, [self.num_users, 1])
-        self.Pi = tf.compat.v1.placeholder(tf.float32, [self.num_users, 1])
+        self.item_id = tf.placeholder(tf.int32, [1])
+        self.Ci = tf.placeholder(tf.float32, [self.num_users, 1])
+        self.Pi = tf.placeholder(tf.float32, [self.num_users, 1])
 
     def _create_variables(self):
-        self.user_embeddings = tf.Variable(tf.random.normal([self.num_users, self.embedding_size], stddev=0.01))
-        self.item_embeddings = tf.Variable(tf.random.normal([self.num_items, self.embedding_size], stddev=0.01))
+        self.user_embeddings = tf.Variable(tf.random_normal([self.num_users, self.embedding_size], stddev=0.01))
+        self.item_embeddings = tf.Variable(tf.random_normal([self.num_items, self.embedding_size], stddev=0.01))
 
     def _create_optimizer(self):
         YTY = tf.matmul(self.item_embeddings, self.item_embeddings, transpose_a=True)

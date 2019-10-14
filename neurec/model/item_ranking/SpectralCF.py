@@ -52,22 +52,22 @@ class SpectralCF(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.input_user = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None,])
-            self.input_item = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None,])
-            self.input_item_neg = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None,])
+            self.input_user = tf.placeholder(dtype=tf.int32, shape=[None,])
+            self.input_item = tf.placeholder(dtype=tf.int32, shape=[None,])
+            self.input_item_neg = tf.placeholder(dtype=tf.int32, shape=[None,])
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             self.user_embeddings = tf.Variable(
-            tf.random.normal([self.num_users, self.embedding_size], mean=0, stddev=0.01, dtype=tf.float32),
+            tf.random_normal([self.num_users, self.embedding_size], mean=0, stddev=0.01, dtype=tf.float32),
             name='user_embeddings')
             self.item_embeddings = tf.Variable(
-            tf.random.normal([self.num_items, self.embedding_size], mean=0, stddev=0.01, dtype=tf.float32),
+            tf.random_normal([self.num_items, self.embedding_size], mean=0, stddev=0.01, dtype=tf.float32),
             name='item_embeddings')
 
         self.filters = []
         for _ in range(self.num_layers):
             self.filters.append(
-                tf.Variable(tf.random.normal([self.embedding_size, self.embedding_size],
+                tf.Variable(tf.random_normal([self.embedding_size, self.embedding_size],
                     mean=0, stddev=0.01, dtype=tf.float32)))
 
     def _create_inference(self):

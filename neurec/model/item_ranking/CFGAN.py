@@ -96,23 +96,23 @@ class CFGAN(AbstractRecommender):
         self.loss_function = "None"
 
         # self._build_model()
-        # self.sess.run(tf.compat.v1.global_variables_initializer())
+        # self.sess.run(tf.global_variables_initializer())
 
     def build_graph(self):
         self._create_layer()
 
         # generator
-        self.condition = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])
-        self.G_ZR_dims = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])
+        self.condition = tf.placeholder(tf.float32, [None, self.num_items])
+        self.G_ZR_dims = tf.placeholder(tf.float32, [None, self.num_items])
         self.G_output = self.gen(self.condition)
         self.G_ZR_loss = tf.reduce_mean(tf.reduce_sum(tf.square(self.G_output - 0) * self.G_ZR_dims, 1, keepdims=True))
 
         # discriminator
-        self.mask = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])  # purchased = 1, otherwise 0
+        self.mask = tf.placeholder(tf.float32, [None, self.num_items])  # purchased = 1, otherwise 0
         fakeData = self.G_output * self.mask
         fakeData = tf.concat([self.condition, fakeData], 1)
 
-        self.realData = tf.compat.v1.placeholder(tf.float32, [None, self.num_items])
+        self.realData = tf.placeholder(tf.float32, [None, self.num_items])
         realData = tf.concat([self.condition, self.realData], 1)
 
         D_fake = self.dis(fakeData)

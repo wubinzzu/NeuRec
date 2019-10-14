@@ -61,15 +61,15 @@ class JCA(AbstractRecommender):
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             # input rating vector
-            self.input_R_U = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, self.num_items], name="input_R_U")
-            self.input_R_I = tf.compat.v1.placeholder(dtype=tf.float32, shape=[self.num_users, None], name="input_R_I")
-            self.input_OH_I = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, self.num_items], name="input_OH_I")
-            self.input_P_cor = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, 2], name="input_P_cor")
-            self.input_N_cor = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, 2], name="input_N_cor")
+            self.input_R_U = tf.placeholder(dtype=tf.float32, shape=[None, self.num_items], name="input_R_U")
+            self.input_R_I = tf.placeholder(dtype=tf.float32, shape=[self.num_users, None], name="input_R_I")
+            self.input_OH_I = tf.placeholder(dtype=tf.float32, shape=[None, self.num_items], name="input_OH_I")
+            self.input_P_cor = tf.placeholder(dtype=tf.int32, shape=[None, 2], name="input_P_cor")
+            self.input_N_cor = tf.placeholder(dtype=tf.int32, shape=[None, 2], name="input_N_cor")
 
             # input indicator vector indicator
-            self.row_idx = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, 1], name="row_idx")
-            self.col_idx = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None, 1], name="col_idx")
+            self.row_idx = tf.placeholder(dtype=tf.int32, shape=[None, 1], name="row_idx")
+            self.col_idx = tf.placeholder(dtype=tf.int32, shape=[None, 1], name="col_idx")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now

@@ -51,13 +51,13 @@ class FPMC(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.user_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "user_input")
-            self.item_input = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
-            self.item_input_recent = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_recent")
+            self.user_input = tf.placeholder(tf.int32, shape = [None,], name = "user_input")
+            self.item_input = tf.placeholder(tf.int32, shape = [None,], name = "item_input_pos")
+            self.item_input_recent = tf.placeholder(tf.int32, shape = [None,], name = "item_input_recent")
             if self.ispairwise == True:
-                self.item_input_neg = tf.compat.v1.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
+                self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
             else :
-                self.lables = tf.compat.v1.placeholder(tf.float32, shape=[None,],name="labels")
+                self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
     def _create_variables(self):
         with tf.name_scope("embedding"):
             self.embeddings_UI = tf.Variable(tf.truncated_normal(shape=[self.num_users, self.embedding_size], mean=0.0, stddev=0.01),

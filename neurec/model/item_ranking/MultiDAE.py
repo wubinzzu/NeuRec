@@ -44,8 +44,8 @@ class MultiDAE(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.input_ph = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, self.num_items])
-            self.keep_prob_ph = tf.compat.v1.placeholder_with_default(1.0, shape=None)
+            self.input_ph = tf.placeholder(dtype=tf.float32, shape=[None, self.num_items])
+            self.keep_prob_ph = tf.placeholder_with_default(1.0, shape=None)
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now

@@ -48,10 +48,10 @@ class MultiVAE(AbstractRecommender):
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.input_ph = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, self.num_items])
-            self.keep_prob_ph = tf.compat.v1.placeholder_with_default(1.0, shape=None)
-            self.is_training_ph = tf.compat.v1.placeholder_with_default(0., shape=None)
-            self.anneal_ph = tf.compat.v1.placeholder_with_default(1., shape=None)
+            self.input_ph = tf.placeholder(dtype=tf.float32, shape=[None, self.num_items])
+            self.keep_prob_ph = tf.placeholder_with_default(1.0, shape=None)
+            self.is_training_ph = tf.placeholder_with_default(0., shape=None)
+            self.anneal_ph = tf.placeholder_with_default(1., shape=None)
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
@@ -122,7 +122,7 @@ class MultiVAE(AbstractRecommender):
         with tf.name_scope("inference"):
             # q-network
             mu_q, std_q, self.KL = self.q_graph()
-            epsilon = tf.random.normal(tf.shape(std_q))
+            epsilon = tf.random_normal(tf.shape(std_q))
 
             sampled_z = mu_q + self.is_training_ph *\
                 epsilon * std_q # batch x 200

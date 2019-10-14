@@ -30,7 +30,7 @@ def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensor
     tensorflow_seed -- seed value for tensorflow random (default 2017)
     """
     np.random.seed(numpy_seed)
-    tf.compat.v1.set_random_seed(tensorflow_seed)
+    tf.set_random_seed(tensorflow_seed)
 
     properties.setSection(properties_section)
     properties.setProperties(properties_path)
@@ -59,14 +59,14 @@ def run():
     if not recommender in models:
         raise KeyError("Recommender " + str(recommender) + " not recognised. Add recommender to neurec.util.models")
 
-    config = tf.compat.v1.ConfigProto()
+    config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     num_thread = properties.getProperty("rec.number.thread")
 
-    with tf.compat.v1.Session(config=config) as sess:
+    with tf.Session(config=config) as sess:
         model = models[recommender](sess=sess)
         model.build_graph()
-        sess.run(tf.compat.v1.global_variables_initializer())
+        sess.run(tf.global_variables_initializer())
         model.train_model()
         Evaluate.test_model(model, dataset, num_thread)
 

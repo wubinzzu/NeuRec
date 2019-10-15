@@ -42,7 +42,7 @@ if __name__ == "__main__":
     evaluate_neg = int(conf["rec.evaluate.neg"])
     num_thread = int(conf["rec.number.thread"])
     splitterRatio=list(eval(conf["data.splitterratio"]))
-    dataset = Dataset(data_input_path,dataset_name,splitter,separator,threshold,evaluate_neg,splitterRatio) 
+    dataset = Dataset(data_input_path,dataset_name,dataset_format,splitter,separator,threshold,evaluate_neg,splitterRatio) 
     
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True

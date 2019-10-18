@@ -128,7 +128,7 @@ class DAE(AbstractRecommender):
                     self.input_R: batch_matrix}
                 _, loss = self.sess.run([self.optimizer, self.loss],feed_dict=feed_dict)
                 total_loss+=loss
-            print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
 

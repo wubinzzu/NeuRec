@@ -189,7 +189,7 @@ class JCA(AbstractRecommender):
                             self.row_idx: np.reshape(row_idx, (len(row_idx), 1)),
                             self.col_idx: np.reshape(col_idx, (len(col_idx), 1))})
                 total_loss+=loss
-            print("[iter %d : total_loss : %f, time: %f]" %(epoch+1,total_loss,time()-training_start_time))
+            self.logger.info("[iter %d : total_loss : %f, time: %f]" %(epoch+1,total_loss,time()-training_start_time))
             if epoch %self.verbose == 0:
                 self.eval_rating_matrix()
                 Evaluate.test_model(self,self.dataset)
@@ -215,7 +215,7 @@ class JCA(AbstractRecommender):
             for ns in neg_samp_list:
                 p_input.append([u, obsv_list[1][i]])
                 n_input.append([u, ns])
-        # print('dataset size = ' + str(len(p_input)))
+        # self.logger.info('dataset size = ' + str(len(p_input)))
         return np.array(p_input), np.array(n_input)
 
     def eval_rating_matrix(self):

@@ -171,12 +171,12 @@ class ConvNCF(AbstractRecommender):
                 feed_dict = {self.user_input:bat_users,self.item_input_pos:bat_items_pos,\
                             self.item_input_neg:bat_items_neg,self.keep_prob:0.8}
                 #out_put, out_put_neg = self.sess.run((self.output, self.output_neg), feed_dict=feed_dict)
-                #print("out_put:\t", out_put)
-                #print("out_put_neg:\t", out_put_neg)
+                #self.logger.info("out_put:\t", out_put)
+                #self.logger.info("out_put_neg:\t", out_put_neg)
 
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset,epoch)
 

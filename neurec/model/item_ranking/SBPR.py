@@ -149,7 +149,7 @@ class SBPR(AbstractRecommender):
             training_start_time = time()
             num_training_instances = len(user_input)
             for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-#                 print(num_batch)
+#                 self.logger.info(num_batch)
                 num_training_instances =len(user_input)
                 id_start = num_batch * self.batch_size
                 id_end = (num_batch + 1) *self.batch_size
@@ -166,7 +166,7 @@ class SBPR(AbstractRecommender):
 
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
 

@@ -147,7 +147,7 @@ class NeuMF(AbstractRecommender):
 
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
-            print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
 

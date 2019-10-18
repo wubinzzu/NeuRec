@@ -156,7 +156,7 @@ class NGCF(AbstractRecommender):
                 loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
                 total_loss+=loss
 
-            print("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %(epoch+1,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
 
@@ -263,13 +263,13 @@ class NGCF(AbstractRecommender):
         if self.pretrain_data is None:
             all_weights['user_embedding'] = tf.Variable(initializer([self.num_users, self.emb_dim]), name='user_embedding')
             all_weights['item_embedding'] = tf.Variable(initializer([self.num_items, self.emb_dim]), name='item_embedding')
-            print('using xavier initialization')
+            self.logger.info('using xavier initialization')
         else:
             all_weights['user_embedding'] = tf.Variable(initial_value=self.pretrain_data['user_embed'], trainable=True,
                                                         name='user_embedding', dtype=tf.float32)
             all_weights['item_embedding'] = tf.Variable(initial_value=self.pretrain_data['item_embed'], trainable=True,
                                                         name='item_embedding', dtype=tf.float32)
-            print('using pretrained initialization')
+            self.logger.info('using pretrained initialization')
 
         self.weight_size_list = [self.emb_dim] + self.weight_size
 
@@ -299,7 +299,7 @@ class NGCF(AbstractRecommender):
         d_mat_inv = sp.diags(d_inv)
         norm_adj = d_mat_inv.dot(adj)
         # norm_adj = adj.dot(d_mat_inv)
-        print('generate single-normalized adjacency matrix.')
+        self.logger.info('generate single-normalized adjacency matrix.')
         return norm_adj.tocoo()
     def get_adj_mat(self):
         A = sp.dok_matrix((self.num_users + self.num_items, self.num_users + self.num_items), dtype=np.float32)
@@ -309,16 +309,16 @@ class NGCF(AbstractRecommender):
         A = A.todok()
         if self.adj_type== 'plain':
             adj_mat = A
-            print('use the plain adjacency matrix')
+            self.logger.info('use the plain adjacency matrix')
         elif self.adj_type == 'norm':
             adj_mat = self.normalized_adj_single(A + sp.eye(A.shape[0]))
-            print('use the normalized adjacency matrix')
+            self.logger.info('use the normalized adjacency matrix')
         elif self.adj_type == 'gcmc':
             adj_mat = self.normalized_adj_single(A)
-            print('use the gcmc adjacency matrix')
+            self.logger.info('use the gcmc adjacency matrix')
         else:
             adj_mat = self.normalized_adj_single(A) + sp.eye(A.shape[0])
-            print('use the mean adjacency matrix')
+            self.logger.info('use the mean adjacency matrix')
 
         return adj_mat.tocsr()
 

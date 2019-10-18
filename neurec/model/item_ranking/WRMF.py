@@ -78,21 +78,21 @@ class WRMF(AbstractRecommender):
     def train_model(self):
         for epoch in  range(self.num_epochs):
             training_start_time = time()
-            print('solving for user vectors...')
+            self.logger.info('solving for user vectors...')
             for userid in range(self.num_users):
                 feed = {self.user_id: [userid],
                         self.Pu: self.Pui[userid].T.reshape([-1,1]),
                         self.Cu: self.Cui[userid].T.reshape([-1,1])}
                 self.sess.run(self.update_user, feed_dict=feed)
 
-            print('solving for item vectors...')
+            self.logger.info('solving for item vectors...')
             for itemid in range(self.num_items):
                 feed = {self.item_id: [itemid],
                         self.Pi: self.Pui[:,itemid].reshape([-1,1]),
                         self.Ci: self.Cui[:,itemid].reshape([-1,1])}
                 self.sess.run(self.update_item, feed_dict=feed)
 
-            print ('iteration %i finished in %f seconds' % (epoch + 1, time()-training_start_time))
+            self.logger.info ('iteration %i finished in %f seconds' % (epoch + 1, time()-training_start_time))
             if epoch %self.verbose == 0:
                 Evaluate.test_model(self,self.dataset)
 

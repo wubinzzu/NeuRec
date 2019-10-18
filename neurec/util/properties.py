@@ -30,7 +30,7 @@ class Properties(metaclass=Singleton):
         try:
             value = self.__properties[self.__section][name]
         except KeyError:
-            raise KeyError('Key ' + str(name) + ' not found in properties. Add to neurec.data.properties')
+            raise KeyError('Key ' + str(name) + ' not found in properties. Add to your properties')
 
         return self.__convertProperty(name, value)
 
@@ -55,6 +55,6 @@ class Properties(metaclass=Singleton):
         try:
             return types[name](value)
         except KeyError:
-            raise KeyError("Could not convert property " + str(name) + ". Key not found in types. Add property to neurec.util.properties.types")
+            raise KeyError("Could not convert property " + str(name) + ". Key not found in types. Add to neurec.data.properties.types")
         except ValueError:
-            raise ValueError("Could not covert the value of " + str(name) + '. ' + str(value) + " does not match type set in neurec.data.properties.type")
+            raise ValueError("Could not covert the value of " + str(name) + '. ' + str(value) + " does not match type set in neurec.data.properties.types")

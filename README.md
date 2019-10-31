@@ -11,7 +11,7 @@
 * **State-of-the-art** - 31 neural recommender models available out of the box;
 * **Flexible configuration** - easily change the configuration settings to your exact requirements;
 * **Easy expansion** - quickly include models or datasets into NeuRec;
-* **Fast execution** - naturally supports GPU, with a mutli-thread evaluator;
+* **Fast execution** - naturally support GPU, with a mutli-thread evaluator;
 * **Detailed documentation** - extensive documentation available as Jupyter notebooks at /docs.
 
 ## Architecture

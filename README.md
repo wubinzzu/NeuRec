@@ -55,7 +55,6 @@ The list of available models in NeuRec, along with their paper citations, are sh
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------|
 | GMF, MLP, NeuMF     | Xiangnan He et al., Neural Collaborative Filtering , WWW 2017.                                                                  |
 | BPRMF               | Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.                                     |
-| SBPR                | Tong Zhao et al., Leveraging Social Connections to Improve Personalized Ranking for Collaborative Filtering. CIKM 2014.         |
 | FISM                | Santosh Kabbur et al., FISM: Factored Item Similarity Models for Top-N Recommender Systems. KDD 2013.                           |
 | NAIS                | Xiangnan He et al., NAIS: Neural Attentive Item Similarity Model for Recommendation . TKDE2018.                                 |
 | DeepICF             | Feng Xue et al., Deep Item-based Collaborative Filtering for Top-N Recommendation. TOIS 2019.                                   |
@@ -70,6 +69,13 @@ The list of available models in NeuRec, along with their paper citations, are sh
 | SpectralCF          | Lei Zheng, et al., Spectral Collaborative Filtering. RecSys 2018.                                                               |
 | NGCF                | Xiang Wang, et al., Neural Graph Collaborative Filtering. SIGIR 2019.                                                           |
 | WRMF                | Yifan Hu, et al., Collaborative Filtering for Implicit Feedback Datasets. ICDM 2008.                                            |
+
+| Social Recommender | Paper                                                                                                      |
+|------------------------|------------------------------------------------------------------------------------------------------------|
+| SBPR                | Tong Zhao et al., Leveraging Social Connections to Improve Personalized Ranking for Collaborative Filtering. CIKM 2014.         |
+| DiffNet                    | Le Wu et al., A Neural Influence Diffusion Model for Social Recommendation, SIGIR 2019. |
+| EATNN                    | Chong Chen et al., An Efficient Adaptive Transfer Neural Network for Social-aware Recommendation, SIGIR 2019.        |
+
 
 | Sequential Recommender | Paper                                                                                                      |
 |------------------------|------------------------------------------------------------------------------------------------------------|

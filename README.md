@@ -74,7 +74,7 @@ The list of available models in NeuRec, along with their paper citations, are sh
 |------------------------|------------------------------------------------------------------------------------------------------------|
 | SBPR                | Tong Zhao et al., Leveraging Social Connections to Improve Personalized Ranking for Collaborative Filtering. CIKM 2014.         |
 | DiffNet                    | Le Wu et al., A Neural Influence Diffusion Model for Social Recommendation, SIGIR 2019. |
-| EATNN                    | Chong Chen et al., An Efficient Adaptive Transfer Neural Network for Social-aware Recommendation, SIGIR 2019.        |
+/*| EATNN                    | Chong Chen et al., An Efficient Adaptive Transfer Neural Network for Social-aware Recommendation, SIGIR 2019.        | */
 
 
 | Sequential Recommender | Paper                                                                                                      |

@@ -1,112 +1,60 @@
 import scipy.sparse as sp
-import numpy as np
+from util.Tool import get_data_format
 from util.Logger import logger
+import pandas as pd
+
+
 class GivenData(object):
-    def __init__(self,path,separator,threshold):
-        self.path =path
+    def __init__(self, path, data_format, separator, threshold):
+        self.path = path
+        self.data_format = data_format
         self.separator = separator
         self.threshold = threshold
-        global num_items,num_users,userids,itemids,idusers,iditems
-    
-    def load_pre_splitter_data(self):
-        pos_per_user={}
-        num_items,num_users = 0,0
-        userids,itemids,idusers,iditems = {},{},{},{}
-        # Get number of users and items
-        with open(self.path+".train.rating", 'r') as f:
-            for line in f.readlines():
-                useridx, itemidx, rating, time= line.strip().split(self.separator) 
-                if float(rating)>= self.threshold:     
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
+
+    def load_data(self):
+        logger.info("Loading interaction records from %s "%(self.path))
+        time_matrix = None
+        columns = get_data_format(self.data_format)
+
+        train_data = pd.read_csv(self.path+".train", sep=self.separator, header=None, names=columns)
+        test_data = pd.read_csv(self.path + ".test", sep=self.separator, header=None, names=columns)
         
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],1,int(time)])
-                else:
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
-    
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append((itemids[itemidx],rating,int(time)))
+        if self.data_format == "UIRT" or self.data_format == "UIR":
+            train_data = train_data[train_data["rating"] >= self.threshold]
+            test_data = test_data[test_data["rating"] >= self.threshold]
+
+        all_data = pd.concat([train_data, test_data])
+
+        unique_user = all_data["user"].unique()
+        unique_item = all_data["item"].unique()
+        user2id = pd.Series(data=range(len(unique_user)), index=unique_user)
+        item2id = pd.Series(data=range(len(unique_item)), index=unique_item)
+        all_data["user"] = all_data["user"].map(user2id)
+        train_data["user"] = train_data["user"].map(user2id)
+        test_data["user"] = test_data["user"].map(user2id)
+
+        all_data["item"] = all_data["item"].map(item2id)
+        train_data["item"] = train_data["item"].map(item2id)
+        test_data["item"] = test_data["item"].map(item2id)
+
+        num_users = len(unique_user)
+        num_items = len(unique_item)
+
+        userids = user2id.to_dict()
+        itemids = item2id.to_dict()
+        
+        if self.data_format == "UIRT" or self.data_format == "UIT":
+            time_matrix = sp.csr_matrix((all_data["time"], (all_data["user"], all_data["item"])), shape=(num_users, num_items))  
+        
+        if self.data_format == "UI":
+            train_matrix = sp.csr_matrix(([1]*len(train_data["user"]), (train_data["user"], train_data["item"])), shape=(num_users, num_items))
+            test_matrix = sp.csr_matrix(([1]*len(test_data["user"]), (test_data["user"], test_data["item"])), shape=(num_users, num_items))  
             
-            train_dict = {}
-            for u in range(num_users):
-                pos_per_user[u] =sorted(pos_per_user[u], key=lambda d: d[2])
-                items = []
-                for enlement in pos_per_user[u]:
-                    items.append(enlement[0])
-                train_dict[u] = items
-            
-        with open(self.path+".test.rating", 'r') as f:
-            for line in f.readlines():
-                useridx, itemidx,rating, time= line.strip().split(self.separator)
-                if float(rating)>= self.threshold:     
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
-    
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],1,int(time)])
-                else :
-                    if  itemidx not in itemids:
-                        iditems[num_items]=itemidx
-                        itemids[itemidx] = num_items
-                        num_items+=1
-    
-                    if useridx not in userids:
-                        idusers[num_users]=useridx
-                        userids[useridx]=num_users
-                        num_users+=1
-                        pos_per_user[userids[useridx]]=[]
-                    pos_per_user[userids[useridx]].append([itemids[itemidx],rating,int(time)])
-        for u in range(num_users):
-            pos_per_user[u]=sorted(pos_per_user[u], key=lambda d: d[2])
+        else: 
+            train_matrix = sp.csr_matrix(([1]*len(train_data["rating"]), (train_data["user"], train_data["item"])), shape=(num_users, num_items))
+            test_matrix = sp.csr_matrix(([1]*len(test_data["rating"]), (test_data["user"], test_data["item"])), shape=(num_users, num_items))  
         
-        train_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
-        time_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
-        with open(self.path+".train.rating", "r") as f:
-            line = f.readline()
-            while line != None and line != "":
-                arr = line.split("\t")
-                user, item, rating,time = userids[arr[0]], itemids[arr[1]], float(arr[2]), float(arr[3])
-                if float(rating)>= self.threshold:
-                    train_matrix[user, item] = 1
-                
-                else :
-                    train_matrix[user, item] = rating
-                time_matrix[user, item] = time            
-                line = f.readline()
-        logger.info("already load the trainMatrix...")  
-        
-        test_matrix = sp.dok_matrix((num_users, num_items), dtype=np.float32)
-        with open(self.path+".test.rating", "r") as f:
-            line = f.readline()
-            while line != None and line != "":
-                arr = line.split("\t")
-                user, item, rating, time = userids[arr[0]], itemids[arr[1]], float(arr[2]), float(arr[3])
-                if float(rating)>= self.threshold:
-                    test_matrix[user, item] = 1
-                else :
-                    test_matrix[user, item] = rating
-                time_matrix[user, item] = time            
-                line = f.readline()
-        logger.info("already load the trainMatrix...")
-       
-        return train_matrix,train_dict,test_matrix,pos_per_user,userids,itemids,time_matrix
+        num_ratings = len(train_data["user"]) + len(test_data["user"])
+        sparsity = 1 - num_ratings/(num_users*num_items)
+        logger.info("\"num_users\": %d,\"num_items\":%d, \"num_ratings\":%d, \"sparsity\":%.4f"%(num_users, num_items, num_ratings, sparsity))
+        return train_matrix, test_matrix, time_matrix, userids, itemids

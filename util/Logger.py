@@ -1,3 +1,6 @@
+"""
+@author: Zhongchuan Sun
+"""
 from configparser import ConfigParser
 from collections import OrderedDict
 import logging
@@ -46,7 +49,7 @@ def _create_logger():
     config = ConfigParser()
     config.read("NeuRec.properties")
     lib_config = OrderedDict(config._sections["default"].items())
-    model_name = lib_config["recommender"].upper()
+    model_name = lib_config["recommender"]
 
     model_config_path = os.path.join("./conf", model_name + ".properties")
     config.read(model_config_path)
@@ -65,7 +68,7 @@ def _create_logger():
     logger_name = ''.join(logger_name)
     timestamp = time.time()
 
-    logger_name = logger_name[:200]
+    logger_name = logger_name[:100]
     # data name, model name, param, timestamp
     logger_name = "%s_%s_%s_%d.log" % (data_name, model_name, logger_name, timestamp)
     logger_name = os.path.join(log_dir, logger_name)

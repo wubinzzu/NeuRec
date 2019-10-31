@@ -1,77 +1,58 @@
-'''
+"""
 Created on Aug 8, 2016
 Processing datasets. 
-
 @author: Xiangnan He (xiangnanhe@gmail.com)
-'''
+"""
 import numpy as np
-from data.LeaveOneOutDataSplitter import LeaveOneOutDataSplitter
-from data.HoldOutDataSplitter import HoldOutDataSplitter
+from data.DataSplitter import DataSplitter
 from data.GivenData import GivenData
-class Dataset(object):
+from util.Tool import randint_choice
+import scipy.sparse as sp
 
-    def __init__(self,path,dataset_name, data_format, splitter,separator,threshold,evaluate_neg,splitterRatio=[0.8,0.2]):
-        '''
+
+class Dataset(object):
+    def __init__(self, conf):
+        """
         Constructor
-        '''
-        self.path = path+dataset_name
+        """
+        path = conf["data.input.path"]
+        dataset_name = conf["data.input.dataset"]
+        data_format = conf["data.column.format"]
+        splitter = conf["data.splitter"]
+        self.separator = conf["data.convert.separator"]
+        threshold = conf["data.convert.binarize.threshold"]
+        evaluate_neg = conf["rec.evaluate.neg"]
+        splitter_ratio = conf["data.splitterratio"]
+
+        path = path + dataset_name
         self.dataset_name = dataset_name
-        self.data_format = data_format
-        self.separator= separator
-        self.threshold = threshold
-        self.splitterRatio=splitterRatio
-        self.evaluate_neg = evaluate_neg
-        self.splitter=splitter
-        self.num_users = 0
-        self.num_items = 0
-        self.trainMatrix = None
-        self.trainDict =  None
-        self.testMatrix =  None
-        self.testNegatives =  None
-        self.timeMatrix = None 
-        self.userseq = None
-        self.userids = None
-        self.itemids = None
-        if splitter == "loo" :
-            loo = LeaveOneOutDataSplitter(self.path,self.data_format,self.separator, self.threshold)
-            self.trainMatrix,self.trainDict,self.testMatrix,\
-            self.userseq,self.userids,self.itemids,self.timeMatrix = loo.load_data_by_user_time()
-            self.num_users = self.trainMatrix.shape[0]
-            self.num_items = self.trainMatrix.shape[1]
-        elif splitter == "ratio" :
-            hold_out = HoldOutDataSplitter(self.path,self.data_format, self.separator,self.threshold,self.splitterRatio)
-            self.trainMatrix,self.trainDict,self.testMatrix,\
-            self.userseq,self.userids,self.itemids,self.timeMatrix =\
-            hold_out.load_data_by_user_time()
-            self.num_users = self.trainMatrix.shape[0]
-            self.num_items = self.trainMatrix.shape[1]
-        elif splitter == "given":
-            given = GivenData(self.path,self.separator,self.threshold)
-            self.trainMatrix,self.trainDict,self.testMatrix,\
-            self.userseq,self.userids,self.itemids,self.timeMatrix =\
-            given.load_pre_splitter_data()
-            self.num_users = self.trainMatrix.shape[0]
-            self.num_items = self.trainMatrix.shape[1] 
-        else :
-            print("please choose a splitter")
-       
-        self.testNegatives = self.get_negatives()     
-        self.num_users = self.trainMatrix.shape[0]
-        self.num_items = self.trainMatrix.shape[1]
-               
-    def get_negatives(self):
-        negatives = {}
-        for u in np.arange(self.num_users):
-            negative_per_user =[]
-            if(self.evaluate_neg>0):
-                for _ in np.arange(self.evaluate_neg):
-                    neg_item_id = np.random.randint(0,self.num_items)
-                    while (u,neg_item_id) in self.trainMatrix.keys() or  (u,neg_item_id) in self.testMatrix.keys() \
-                          or neg_item_id in negative_per_user:
-                        neg_item_id = np.random.randint(0, self.num_items)
-                    negative_per_user.append(neg_item_id)
-                negatives[u] = negative_per_user
-                negative_per_user =[]
-            else :
-                negatives=None
-        return  negatives                
+        self.splitter = splitter
+        
+        if splitter == "given":
+            data_splitter = GivenData(path, data_format, self.separator, threshold)
+            
+        elif splitter == "loo" or splitter == "ratio":
+            data_splitter = DataSplitter(path, splitter, data_format, self.separator, threshold, splitter_ratio)
+            
+        else:
+            raise ValueError("please choose a correct splitter")
+        
+        self.train_matrix, self.test_matrix, self.time_matrix, self.userids, self.itemids = data_splitter.load_data()
+   
+        self.num_users, self.num_items = self.train_matrix.shape
+        self.negative_matrix = self.get_negatives(evaluate_neg)
+             
+    def get_negatives(self, evaluate_neg):
+        if evaluate_neg > 0:
+            user_list = []
+            neg_item_list = []
+            for u in np.arange(self.num_users):
+                items_by_u = self.train_matrix[u].indices.tolist() + self.test_matrix[u].indices.tolist()
+                neg_items = randint_choice(self.num_items, evaluate_neg, replace=False, exclusion=items_by_u).tolist()
+                neg_item_list.extend(neg_items)
+                user_list.extend(len(neg_items)*[u])
+            negatives = sp.csr_matrix(([1] * len(user_list), (user_list, neg_item_list)),
+                                      shape=(self.num_users, self.num_items))
+        else:
+            negatives = None
+        return negatives

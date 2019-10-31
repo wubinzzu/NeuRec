@@ -83,6 +83,12 @@ The list of available models in NeuRec, along with their paper citations, are sh
 | HRM                    | Pengfei Wang et al., Learning Hierarchical Representation Model for NextBasket Recommendation, SIGIR 2015. |
 | NPE                    | ThaiBinh Nguyen et al., NPE: Neural Personalized Embedding for Collaborative Filtering, ijcai 2018.        |
 | TransRec               | Ruining He et al., Translation-based Recommendation, SIGIR 2015.                                           |
+| Caser                  | Jiaxi Tang et al., Personalized Top-N Sequential Recommendation via Convolutional Sequence Embedding, WSDM 2018.                                           |
+| Fossil               | Ruining He et al., Fusing similarity models with Markov chains for sparse sequential recommendation, ICDM 2016.                                           |
+| GRU4Rec               | Balázs Hidasi et al., Session-based Recommendations with Recurrent Neural Networks, ICLR 2016.                                           |
+| GRU4RecPlus               | Balázs Hidasi et al., Recurrent Neural Networks with Top-k Gains for Session-based Recommendations, CIKM 2018.                                           |
+| SASRec               | Wangcheng Kang et al., Self-Attentive Sequential Recommendation, ICDM 2018.                                           |
+| SRGNN               |Shu Wu et al., Session-Based Recommendation with Graph Neural Networks, AAAI 2019.                                           |
 
 ## Contributions
 

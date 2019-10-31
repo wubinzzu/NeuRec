@@ -1,17 +1,15 @@
-from datetime import datetime
 import logging
+from neurec.data.Dataset import Dataset
 from neurec.data.properties import types
 from neurec.data.models import models
-from neurec.data.Dataset import Dataset
-from neurec.evaluation import Evaluate
+from neurec.util import tool
 from neurec.util.properties import Properties
-from neurec.util import reader
-from neurec.data.models import models
 import numpy as np
+import os
+import random
 import tensorflow as tf
 
-properties = Properties()
-dataset = {}
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -22,59 +20,66 @@ ch.setLevel(logging.INFO)
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-ch = logging.FileHandler('neurec.log', mode='a')
-ch.setLevel(logging.INFO)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
-def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, tensorflow_seed=2017):
-    """Setups initial values for neurec.
+def setup(properties_path, properties_section="DEFAULT", numpy_seed=2018, random_seed=2018, tensorflow_seed=2018):
+    """Sets up initial values for neurec and loads the dataset.
 
     properties_path -- path to properties file
     properties_section -- section inside the properties files to read (default "DEFAULT")
     numpy_seed -- seed value for numpy random (default 2018)
-    tensorflow_seed -- seed value for tensorflow random (default 2017)
+    random_seed -- seed value for random (default 2018)
+    tensorflow_seed -- seed value for tensorflow random (default 2018)
     """
     np.random.seed(numpy_seed)
+    random.seed(random_seed)
     tf.set_random_seed(tensorflow_seed)
 
-    properties.setSection(properties_section)
-    properties.setProperties(properties_path)
+    Properties().setSection(properties_section)
+    Properties().setProperties(properties_path)
 
-    data_input_path = properties.getProperty("data.input.path")
-    dataset_name = properties.getProperty("data.input.dataset")
-    splitter = properties.getProperty("data.splitter")
-    separator = properties.getProperty("data.convert.separator")
-    threshold = properties.getProperty("data.convert.binarize.threshold")
-    evaluate_neg = properties.getProperty("rec.evaluate.neg")
-    dataset_format = properties.getProperty("data.column.format")
-    splitter_ratio = properties.getProperty("data.splitterratio")
+    properties = Properties().getProperties([
+        "data.input.path",
+        "data.input.dataset",
+        "data.splitter",
+        "data.convert.separator",
+        "data.convert.binarize.threshold",
+        "rec.evaluate.neg",
+        "data.column.format",
+        "data.splitterratio",
+        "gpu_id"
+    ])
 
-    global dataset
-    dataset = Dataset(data_input_path, dataset_name, dataset_format, splitter, separator, threshold, evaluate_neg, splitter_ratio)
+    Dataset(
+        properties["data.input.path"],
+        properties["data.input.dataset"],
+        properties["data.column.format"],
+        properties["data.splitter"],
+        properties["data.convert.separator"],
+        properties["data.convert.binarize.threshold"],
+        properties["rec.evaluate.neg"],
+        properties["data.splitterratio"]
+    )
+
+    if tool.get_available_gpus(properties["gpu_id"]):
+        os.environ["CUDA_VISIBLE_DEVICES"] = properties["gpu_id"]
 
 def run():
     """Trains and evaluates a model."""
     logger = logging.getLogger(__name__)
 
-    if not isinstance(dataset, Dataset):
-       raise RuntimeError("Dataset not set. Call setup() function and pass a properties file to set the dataset")
-
-    recommender = properties.getProperty("recommender")
+    recommender = Properties().getProperty("recommender")    
 
     if not recommender in models:
         raise KeyError("Recommender " + str(recommender) + " not recognised. Add recommender to neurec.util.models")
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    num_thread = properties.getProperty("rec.number.thread")
+    num_thread = Properties().getProperty("rec.number.thread")
 
     with tf.Session(config=config) as sess:
         model = models[recommender](sess=sess)
         model.build_graph()
         sess.run(tf.global_variables_initializer())
         model.train_model()
-        Evaluate.test_model(model, dataset, num_thread)
 
 def listModels():
     """Returns a list of available models."""
@@ -83,7 +88,7 @@ def listModels():
 def listProperties(model):
     """Returns a list of properties used by the model.
 
-    name -- name of a model
+    model -- name of a model
     """
     model_properties = models[model].properties
     list = []

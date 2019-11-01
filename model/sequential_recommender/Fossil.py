@@ -7,10 +7,12 @@ from model.AbstractRecommender import SeqAbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
+from util import Learner, Tool, DataGenerator
 from util.Logger import logger
-from util.Tool import csr_to_user_dict_bytime, randint_choice, timer
+from util.Tool import csr_to_user_dict_bytime, timer,\
+    pad_sequences
 from util import l2_loss
+from util.DataIterator import DataIterator
 
 
 class Fossil(SeqAbstractRecommender):
@@ -55,7 +57,7 @@ class Fossil(SeqAbstractRecommender):
                 self.item_input_neg = tf.placeholder(tf.int32, shape = [None,], name = "item_input_neg")
                 self.num_idx_neg = tf.placeholder(tf.float32, shape=[None,],name = "num_idx_neg")
             else :
-                self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
+                self.labels = tf.placeholder(tf.float32, shape=[None,],name="labels")
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
@@ -96,7 +98,7 @@ class Fossil(SeqAbstractRecommender):
                             self.gamma_bilinear*l2_loss(q2, q1, short) + \
                             self.reg_eta*l2_loss(eta_u, self.eta_bias)
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function, self.lables,self.output)+ \
+                self.loss = Learner.pointwise_loss(self.loss_function, self.labels,self.output)+ \
                             self.lambda_bilinear * l2_loss(p1) + \
                             self.gamma_bilinear * l2_loss(q1, short) + \
                             self.reg_eta * l2_loss(eta_u, self.eta_bias)
@@ -116,33 +118,52 @@ class Fossil(SeqAbstractRecommender):
         self.evaluate()
         for epoch in range(1, self.num_epochs+1):
             if self.is_pairwise.lower() =="true":
-                user_input_id,user_input,user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg,item_input_recents = \
-                self._get_pairwise_all_likefossil_data()
+                user_input_id,user_input,user_input_neg, num_idx_pos,\
+                    num_idx_neg, item_input_pos,item_input_neg,item_input_recents = \
+                    DataGenerator._get_pairwise_all_likefossil_data(self.dataset, self.high_order, self.train_dict)
+                
+                data_iter = DataIterator(user_input_id,user_input,user_input_neg, num_idx_pos,\
+                    num_idx_neg, item_input_pos,item_input_neg,item_input_recents,
+                    batch_size=self.batch_size, shuffle=True)
             else :
-                user_input_id,user_input,num_idx,item_input,item_input_recents,lables = self._get_pointwise_all_likefossil_data()
+                user_input_id,user_input,num_idx,item_input,item_input_recents,labels =\
+                    DataGenerator._get_pointwise_all_likefossil_data(self.dataset, self.high_order, self.num_negatives, self.train_dict)
+                    
+                data_iter = DataIterator(user_input_id,user_input,num_idx,item_input,item_input_recents,labels,
+                    batch_size=self.batch_size, shuffle=True)
            
             num_training_instances = len(user_input)
             total_loss = 0.0
             training_start_time = time()
-            for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.is_pairwise.lower() =="true":
-                    bat_user_input_id,bat_users_pos,bat_users_neg, bat_idx_pos, bat_idx_neg, \
-                        bat_items_pos,bat_items_neg,bat_item_input_recents= \
-                        self._get_pairwise_batch_likefossil_data(user_input_id,user_input,\
-                        user_input_neg,self.dataset.num_items, num_idx_pos, num_idx_neg, item_input_pos,\
-                        item_input_neg,item_input_recents, num_batch, self.batch_size) 
-                    feed_dict = {self.user_input_id:bat_user_input_id,self.user_input:bat_users_pos,self.user_input_neg:bat_users_neg,\
-                                self.num_idx:bat_idx_pos,self.num_idx_neg:bat_idx_neg,
-                                self.item_input:bat_items_pos,self.item_input_neg:bat_items_neg,self.item_input_recents:bat_item_input_recents}
-                else :
-                    bat_user_input_id,bat_users,bat_idx,bat_items,bat_item_input_recents,bat_lables =\
-                        self._get_pointwise_batch_likefossil_data(user_input_id,user_input,self.dataset.num_items,
-                        num_idx,item_input,item_input_recents,lables, num_batch, self.batch_size)
-                    feed_dict = {self.user_input_id:bat_user_input_id,self.user_input:bat_users,self.num_idx:bat_idx, self.item_input:bat_items,
-                                self.item_input_recents:bat_item_input_recents,self.lables:bat_lables}
-    
-                loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
-                total_loss+=loss
+            
+            if self.is_pairwise.lower() == "true":
+                for bat_user_input_id, bat_users_pos, bat_users_neg, bat_idx_pos, bat_idx_neg, \
+                        bat_items_pos,bat_items_neg,bat_item_input_recents in data_iter:
+                    bat_users_pos = pad_sequences(bat_users_pos, value=self.num_items)
+                    bat_users_neg = pad_sequences(bat_users_neg, value=self.num_items)
+                    feed_dict = {self.user_input_id: bat_user_input_id,
+                                 self.user_input: bat_users_pos,
+                                 self.user_input_neg: bat_users_neg,
+                                 self.num_idx: bat_idx_pos,
+                                 self.num_idx_neg: bat_idx_neg,
+                                 self.item_input: bat_items_pos,
+                                 self.item_input_neg: bat_items_neg,
+                                 self.item_input_recents: bat_item_input_recents}
+
+                    loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
+                    total_loss += loss
+            else:
+                for bat_user_input_id,bat_users,bat_idx,bat_items,bat_item_input_recents,bat_labels in data_iter:
+                    bat_users = pad_sequences(bat_users, value=self.num_items)
+                    feed_dict = {self.user_input_id:bat_user_input_id,
+                                 self.user_input:bat_users,
+                                 self.num_idx:bat_idx,
+                                 self.item_input:bat_items,
+                                 self.item_input_recents:bat_item_input_recents,
+                                 self.labels:bat_labels}
+                    
+                    loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
+                    total_loss += loss
                 
             logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
@@ -194,136 +215,3 @@ class Fossil(SeqAbstractRecommender):
                              self.item_input_recents: item_recents}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
         return ratings
-
-    def _get_pairwise_all_likefossil_data(self):
-        user_input_id,user_input_pos,user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg,item_input_recents = [],[], [], [],[],[],[],[]
-        for u in range(self.num_users):
-            items_by_user = self.train_dict[u].copy()
-            num_items_by_u = len(items_by_user)
-            if  num_items_by_u > self.high_order: 
-                negative_items = randint_choice(self.num_items, num_items_by_u, replace=True, exclusion = items_by_user)
-                for idx in range(self.high_order,len(self.train_dict[u])):
-                    i = self.train_dict[u][idx] # item id 
-                    item_input_recent = []
-                    for t in range(1,self.high_order+1):
-                        item_input_recent.append(self.train_dict[u][idx-t])
-                    item_input_recents.append(item_input_recent)
-                    j = negative_items[idx]
-                    user_input_neg.append(items_by_user)
-                    num_idx_neg.append(num_items_by_u)
-                    item_input_neg.append(j)
-                    
-                    items_by_user.remove(i)
-                    user_input_id.append(u)
-                    user_input_pos.append(items_by_user)
-                    num_idx_pos.append(num_items_by_u-1)
-                    item_input_pos.append(i)
-        user_input_id =  np.array(user_input_id)
-        user_input_pos = np.array(user_input_pos)
-        user_input_neg = np.array(user_input_neg)
-        num_idx_pos = np.array(num_idx_pos,dtype=np.int32)
-        num_idx_neg = np.array(num_idx_neg,dtype=np.int32)
-        item_input_pos = np.array(item_input_pos, dtype=np.int32)
-        item_input_neg = np.array(item_input_neg, dtype=np.int32)
-        item_input_recents = np.array(item_input_recents)
-        num_training_instances = len(user_input_pos)
-        shuffle_index = np.arange(num_training_instances,dtype=np.int32)
-        np.random.shuffle(shuffle_index)
-        user_input_id = user_input_id[shuffle_index]
-        user_input_pos = user_input_pos[shuffle_index]
-        item_input_recents = item_input_recents[shuffle_index]
-        user_input_neg = user_input_neg[shuffle_index]
-        num_idx_pos = num_idx_pos[shuffle_index]
-        num_idx_neg = num_idx_neg[shuffle_index]
-        item_input_pos = item_input_pos[shuffle_index]
-        item_input_neg = item_input_neg[shuffle_index]    
-        return user_input_id,user_input_pos,user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg,item_input_recents
-
-    def _get_pointwise_all_likefossil_data(self):
-        user_input_id,user_input,num_idx,item_input,item_input_recents,lables = [],[],[],[],[],[]
-        for u in range(self.num_users):
-            items_by_user = self.train_dict[u].copy()
-            size = len(items_by_user)   
-            for idx in range(self.high_order,len(self.train_dict[u])):
-                i = self.train_dict[u][idx] # item id 
-                item_input_recent = []
-                for t in range(1,self.high_order+1):
-                    item_input_recent.append(self.train_dict[u][idx-t])
-                # negative instances
-                for _ in range(self.num_negatives):
-                    j = np.random.randint(self.num_items)
-                    while (u,j) in self.trainMatrix.keys():
-                        j = np.random.randint(self.num_items)
-                    user_input_id.append(u)
-                    user_input.append(items_by_user)
-                    item_input_recents.append(item_input_recent)
-                    item_input.append(j)
-                    num_idx.append(size)
-                    lables.append(0)
-                items_by_user.remove(i)
-                user_input.append(items_by_user)
-                user_input_id.append(u)
-                item_input_recents.append(item_input_recent)
-                item_input.append(i)
-                num_idx.append(size-1)
-                lables.append(1)
-        user_input_id = np.array(user_input_id)
-        user_input = np.array(user_input)
-        item_input_recents = np.array(item_input_recents)
-        num_idx = np.array(num_idx, dtype=np.int32)
-        item_input = np.array(item_input, dtype=np.int32)
-        lables = np.array(lables, dtype=np.float32)
-        num_training_instances = len(user_input)
-        shuffle_index = np.arange(num_training_instances,dtype=np.int32)
-        np.random.shuffle(shuffle_index)
-        user_input_id = user_input_id[shuffle_index]
-        user_input = user_input[shuffle_index]
-        item_input_recents = item_input_recents[shuffle_index]
-        num_idx = num_idx[shuffle_index]
-        item_input = item_input[shuffle_index]
-        lables = lables[shuffle_index]
-        return user_input_id,user_input,num_idx,item_input,item_input_recents,lables
-    
-    def _get_pairwise_batch_likefossil_data(self,user_input_id,user_input_pos,user_input_neg,num_items, num_idx_pos,\
-         num_idx_neg, item_input_pos,item_input_neg,item_input_recents,num_batch,batch_size):
-        num_training_instances = len(user_input_pos)
-        id_start = num_batch * batch_size
-        id_end = (num_batch + 1) * batch_size
-        if id_end>num_training_instances:
-            id_end=num_training_instances
-        bat_idx_pos = num_idx_pos[id_start:id_end]
-        bat_idx_neg = num_idx_neg[id_start:id_end]
-        max_pos = max(bat_idx_pos)  
-        max_neg = max(bat_idx_neg) 
-        bat_users_pos = user_input_pos[id_start:id_end].tolist()
-        bat_users_neg = user_input_neg[id_start:id_end].tolist()
-        for i in range(len(bat_users_pos)):
-            bat_users_pos[i] = bat_users_pos[i] + \
-            [num_items] * (max_pos - len(bat_users_pos[i]))
-            
-        for i in range(len(bat_users_neg)):
-            bat_users_neg[i] = bat_users_neg[i] + \
-            [num_items] * (max_neg - len(bat_users_neg[i]))  
-        bat_user_input_id = user_input_id[id_start:id_end]
-        bat_items_pos = item_input_pos[id_start:id_end]
-        bat_items_neg = item_input_neg[id_start:id_end]
-        bat_item_input_recents = item_input_recents[id_start:id_end]
-        return bat_user_input_id,bat_users_pos,bat_users_neg,bat_idx_pos,bat_idx_neg,bat_items_pos,bat_items_neg,bat_item_input_recents
-    
-    def _get_pointwise_batch_likefossil_data(self,user_input_id,user_input,num_items,num_idx,item_input,item_input_recents,lables,num_batch,batch_size):
-        num_training_instances =len(user_input) 
-        id_start = num_batch * batch_size
-        id_end = (num_batch + 1) * batch_size
-        if id_end>num_training_instances:
-            id_end=num_training_instances
-        bat_users = user_input[id_start:id_end].tolist()
-        bat_idx = num_idx[id_start:id_end]
-        max_by_user = max(bat_idx)
-        for i in range(len(bat_users)):
-            bat_users[i] = bat_users[i] + \
-            [num_items] * (max_by_user - len(bat_users[i]))
-        bat_user_input_id = user_input_id[id_start:id_end]
-        bat_items = item_input[id_start:id_end]
-        bat_item_input_recents = item_input_recents[id_start:id_end]
-        bat_lables = lables[id_start:id_end]
-        return bat_user_input_id,bat_users,bat_idx,bat_items,bat_item_input_recents,bat_lables

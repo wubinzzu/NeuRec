@@ -12,7 +12,8 @@ from util import timer
 from util.Tool import csr_to_user_dict
 import pickle
 from util import l2_loss
-
+from util import pad_sequences
+from util.DataIterator import DataIterator
 
 class NAIS(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
@@ -181,36 +182,40 @@ class NAIS(AbstractRecommender):
             if self.is_pairwise.lower() == "true":
                 user_input, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos,item_input_neg = \
                     DataGenerator._get_pairwise_all_likefism_data(self.dataset)
+                data_iter = DataIterator(user_input, user_input_neg, num_idx_pos,
+                                         num_idx_neg, item_input_pos, item_input_neg,
+                                         batch_size=self.batch_size, shuffle=True)
             else:
                 user_input,num_idx,item_input,labels = \
-                    DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+                 DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+                data_iter = DataIterator(user_input, num_idx, item_input, labels, batch_size=self.batch_size, shuffle=True)
            
             num_training_instances = len(user_input)
             total_loss = 0.0
             training_start_time = time()
-            for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                if self.is_pairwise.lower() == "true":
-                    bat_users_pos,bat_users_neg, bat_idx_pos, bat_idx_neg, bat_items_pos, bat_items_neg = \
-                        DataGenerator._get_pairwise_batch_likefism_data(user_input,user_input_neg,self.dataset.num_items,
-                                                                   num_idx_pos, num_idx_neg, item_input_pos,
-                                                                   item_input_neg, num_batch, self.batch_size)
+            if self.is_pairwise.lower() == "true":
+                for bat_users_pos, bat_users_neg, bat_idx_pos, bat_idx_neg, bat_items_pos, bat_items_neg in data_iter:
+                    bat_users_pos = pad_sequences(bat_users_pos, value=self.num_items)
+                    bat_users_neg = pad_sequences(bat_users_neg, value=self.num_items)
                     feed_dict = {self.user_input: bat_users_pos,
                                  self.user_input_neg: bat_users_neg,
                                  self.num_idx: bat_idx_pos,
                                  self.num_idx_neg: bat_idx_neg,
                                  self.item_input: bat_items_pos,
                                  self.item_input_neg: bat_items_neg}
-                else :
-                    bat_users,bat_idx,bat_items,bat_labels = \
-                        DataGenerator._get_pointwise_batch_likefism_data(user_input, self.dataset.num_items, num_idx,
-                                                                    item_input, labels, num_batch, self.batch_size)
+
+                    loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
+                    total_loss += loss
+            else:
+                for bat_users, bat_idx, bat_items, bat_labels in data_iter:
+                    bat_users = pad_sequences(bat_users, value=self.num_items)
                     feed_dict = {self.user_input: bat_users,
                                  self.num_idx: bat_idx,
                                  self.item_input: bat_items,
                                  self.labels: bat_labels}
+                    loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
+                    total_loss += loss
 
-                loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
-                total_loss+=loss
             logger.info("[iter %d : loss : %f, time: %f]" %(epoch,total_loss/num_training_instances,time()-training_start_time))
             if epoch %self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
@@ -249,4 +254,4 @@ class NAIS(AbstractRecommender):
                              self.num_idx: item_idx, 
                              self.item_input: eval_items}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
-        return np.array(ratings)
+        return ratings

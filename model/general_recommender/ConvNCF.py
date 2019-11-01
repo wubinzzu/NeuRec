@@ -204,4 +204,4 @@ class ConvNCF(AbstractRecommender):
                 users = np.full(self.num_items, u, dtype=np.int32)
                 feed_dict = {self.user_input: users, self.item_input_pos: np.arange(self.num_items)}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
-        return np.array(ratings)
+        return ratings

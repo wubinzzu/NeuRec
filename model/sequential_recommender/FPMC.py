@@ -108,7 +108,7 @@ class FPMC(SeqAbstractRecommender):
                                          batch_size=self.batch_size, shuffle=True)
             else:
                 user_input, item_input, item_input_recent, labels = \
-                    DataGenerator._get_pointwise_all_firstorder_data(self.dataset, self.num_negatives)
+                    DataGenerator._get_pointwise_all_firstorder_data(self.dataset, self.num_negatives, self.train_dict)
                 data_iter = DataIterator(user_input, item_input, item_input_recent, labels,
                                          batch_size=self.batch_size, shuffle=True)
            

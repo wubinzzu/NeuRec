@@ -189,7 +189,7 @@ def pad_sequences(array, value=0, max_len=None, padding='post', truncating='post
     array = tf.keras.preprocessing.sequence.pad_sequences(array, maxlen=max_len, value=value, dtype='int32',
                                                           padding=padding, truncating=truncating)
 
-    return array.tolist()
+    return array
 
 
 def inner_product(a, b, name="inner_product"):

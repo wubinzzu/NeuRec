@@ -179,4 +179,4 @@ class FISM(AbstractRecommender):
                              self.num_idx: item_idx, 
                              self.item_input: eval_items}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
-        return np.array(ratings)
+        return ratings

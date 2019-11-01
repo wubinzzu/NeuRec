@@ -11,9 +11,9 @@ from util.Logger import logger
 from util import timer
 import pickle
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
-from util.Tool import csr_to_user_dict
+from util.Tool import csr_to_user_dict, pad_sequences
 from util import l2_loss
-
+from util.DataIterator import DataIterator
 
 class DeepICF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
@@ -198,23 +198,22 @@ class DeepICF(AbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             user_input,num_idx,item_input,labels = \
-                    DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+                DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+            data_iter = DataIterator(user_input, num_idx, item_input, labels,
+                                         batch_size=self.batch_size, shuffle=True)
                     
             num_training_instances = len(user_input)
             total_loss = 0.0
             training_start_time = time()
-            for num_batch in np.arange(int(num_training_instances/self.batch_size)):
-                bat_users,bat_idx,bat_items,bat_labels = \
-                        DataGenerator._get_pointwise_batch_likefism_data(user_input, self.dataset.num_items, num_idx,
-                                                                         item_input, labels, num_batch, self.batch_size)
-                feed_dict = {self.user_input: bat_users,
-                             self.num_idx: bat_idx,
-                             self.item_input: bat_items,
-                             self.labels: bat_labels,
-                             self.is_train_phase: True}
-
-                loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
-                total_loss += loss
+            for bat_users, bat_idx, bat_items, bat_labels in data_iter:
+                    bat_users = pad_sequences(bat_users, value=self.num_items)
+                    feed_dict = {self.user_input: bat_users,
+                                 self.num_idx: bat_idx,
+                                 self.item_input: bat_items,
+                                 self.labels: bat_labels,
+                                 self.is_train_phase: True}
+                    loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
+                    total_loss += loss
             logger.info("[iter %d : loss : %f, time: %f]" %(epoch,total_loss/num_training_instances,time()-training_start_time))
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
@@ -251,4 +250,4 @@ class DeepICF(AbstractRecommender):
                              self.item_input: eval_items,
                              self.is_train_phase: False}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
-        return np.array(ratings)
+        return ratings

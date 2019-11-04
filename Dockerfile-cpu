@@ -1,0 +1,19 @@
+FROM tensorflow/tensorflow:1.12.3-py3
+
+LABEL maintainer="jonathanstaniforth@gmail.com"
+
+RUN apt-get install software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.6
+
+WORKDIR /tf/neurec
+
+COPY . .
+
+RUN pip3 install neurec && \
+    pip3 install -r requirements.txt
+
+WORKDIR /tf
+
+EXPOSE 8888

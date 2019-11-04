@@ -1,0 +1,11 @@
+[DEFAULT]
+data.input.path=neurec
+data.input.dataset=Ciao.rating
+data.column.format=UIRT
+data.convert.separator=','
+data.convert.binarize.threshold=0
+data.splitter=ratio
+data.splitterratio=[0.8,0.2]|float
+rec.number.thread=20
+rec.evaluate.neg=0
+recommender=apr

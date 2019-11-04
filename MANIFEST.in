@@ -1,0 +1,2 @@
+recursive-include neurec *.py
+include neurec/dataset/*

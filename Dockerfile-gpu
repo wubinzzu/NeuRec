@@ -11,4 +11,9 @@ WORKDIR /tf/neurec
 
 COPY . .
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install neurec && \
+    pip3 install -r requirements.txt
+
+WORKDIR /tf
+
+EXPOSE 8888

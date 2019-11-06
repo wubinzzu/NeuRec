@@ -39,13 +39,13 @@ class FoldOutEvaluator(AbstractEvaluator):
         self.metrics_num = 5
 
     def metrics_info(self):
-        Precision = '\t'.join(["Precision@"+str(k) for k in self.top_show])
-        Recall = '\t'.join(["Recall@" + str(k) for k in self.top_show])
-        MAP = '\t'.join(["MAP@" + str(k) for k in self.top_show])
-        NDCG = '\t'.join(["NDCG@" + str(k) for k in self.top_show])
-        MRR = '\t'.join(["MRR@" + str(k) for k in self.top_show])
-        mertic = '\t'.join([Precision, Recall, MAP, NDCG, MRR])
-        return mertic
+        Precision = '\t'.join([("Precision@"+str(k)).ljust(12) for k in self.top_show])
+        Recall = '\t'.join([("Recall@" + str(k)).ljust(12) for k in self.top_show])
+        MAP = '\t'.join([("MAP@" + str(k)).ljust(12) for k in self.top_show])
+        NDCG = '\t'.join([("NDCG@" + str(k)).ljust(12) for k in self.top_show])
+        MRR = '\t'.join([("MRR@" + str(k)).ljust(12) for k in self.top_show])
+        metric = '\t'.join([Precision, Recall, MAP, NDCG, MRR])
+        return "metrics:\t%s" % metric
 
     def evaluate(self, model):
         # B: batch size
@@ -88,7 +88,7 @@ class FoldOutEvaluator(AbstractEvaluator):
         final_result = np.reshape(final_result, newshape=[self.metrics_num, self.max_top])
         final_result = final_result[:, self.top_show-1]
         final_result = np.reshape(final_result, newshape=[-1])
-        buf = '\t'.join(["%.8f" % x for x in final_result])
+        buf = '\t'.join([("%.8f" % x).ljust(12) for x in final_result])
         return buf
 
 
@@ -109,11 +109,11 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
         self.metrics_num = 3
 
     def metrics_info(self):
-        HR = '\t'.join(["HR@"+str(k) for k in self.top_show])
-        NDCG = '\t'.join(["NDCG@" + str(k) for k in self.top_show])
-        MRR = '\t'.join(["MRR@" + str(k) for k in self.top_show])
-        mertic = '\t'.join([HR, NDCG, MRR])
-        return mertic
+        HR = '\t'.join([("HitRatio@"+str(k)).ljust(12) for k in self.top_show])
+        NDCG = '\t'.join([("NDCG@" + str(k)).ljust(12) for k in self.top_show])
+        MRR = '\t'.join([("MRR@" + str(k)).ljust(12) for k in self.top_show])
+        metric = '\t'.join([HR, NDCG, MRR])
+        return "metrics:\t%s" % metric
 
     def evaluate(self, model):
         # B: batch size
@@ -157,5 +157,5 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
         final_result = np.reshape(final_result, newshape=[self.metrics_num, self.max_top])
         final_result = final_result[:, self.top_show-1]
         final_result = np.reshape(final_result, newshape=[-1])
-        buf = '\t'.join(["%.8f" % x for x in final_result])
+        buf = '\t'.join([("%.8f" % x).ljust(12) for x in final_result])
         return buf

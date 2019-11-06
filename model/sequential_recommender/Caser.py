@@ -192,7 +192,7 @@ class Caser(SeqAbstractRecommender):
     def evaluate_model(self):
         return self.evaluator.evaluate(self)
 
-    def predict_for_eval(self, users, items=None):
+    def predict(self, users, items=None):
         users = DataIterator(users, batch_size=512, shuffle=False, drop_last=False)
         all_ratings = []
         for bat_user in users:

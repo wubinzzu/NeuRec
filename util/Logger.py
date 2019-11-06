@@ -29,20 +29,29 @@ class Logger(object):
         self.logger.addHandler(fh)
         self.logger.addHandler(sh)
 
+    def _flush(self):
+        for handler in self.logger.handlers:
+            handler.flush()
+
     def debug(self, message):
         self.logger.debug(message)
+        self._flush()
 
     def info(self, message):
         self.logger.info(message)
+        self._flush()
 
     def warning(self, message):
         self.logger.warning(message)
+        self._flush()
 
     def error(self, message):
         self.logger.error(message)
+        self._flush()
 
     def critical(self, message):
         self.logger.critical(message)
+        self._flush()
 
 
 def _create_logger():

@@ -86,7 +86,7 @@ class DataSplitter(object):
         for user, u_data in user_grouped:
             u_data_len = len(u_data)
             if u_data_len <= 3:
-                train_actions = train_actions.append(u_data)
+                train_actions.append(u_data)
             else:
                 if self.data_format == "UIR" or self.data_format == "UI":
                     u_data = u_data.sample(frac=1)

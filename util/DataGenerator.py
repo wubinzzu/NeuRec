@@ -72,7 +72,7 @@ def _get_pointwise_all_data(dataset, num_negatives):
                 user_input.extend([u]*num_negatives)
                 item_input.extend(negative_items[index:index+num_negatives])
                 labels.extend([0]*num_negatives)
-                index = index +1
+                index = index + num_negatives
     return user_input, item_input, labels
 
 def _get_pointwise_all_highorder_data(dataset, high_order, num_negatives, train_dict):
@@ -97,7 +97,7 @@ def _get_pointwise_all_highorder_data(dataset, high_order, num_negatives, train_
                 item_input.extend(negative_items[index:index+num_negatives])
                 item_input_recents.extend([items_by_u[idx-high_order:idx]]*num_negatives)
                 labels.extend([0]*num_negatives)
-                index = index +1
+                index = index + num_negatives
                 
     return user_input, item_input, item_input_recents, labels 
 
@@ -121,7 +121,7 @@ def _get_pointwise_all_firstorder_data(dataset, num_negatives, train_dict):
             item_input.extend(negative_items[index:index+num_negatives])
             item_input_recent.extend([items_by_user[idx-1]]*num_negatives)
             labels.extend([0]*num_negatives)
-            index = index +1
+            index = index + num_negatives
     return user_input,item_input,item_input_recent,labels
 
 def _get_pairwise_all_likefism_data(dataset):

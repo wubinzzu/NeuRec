@@ -199,7 +199,7 @@ class SASRec(SeqAbstractRecommender):
                                                    shape=[self.max_len, self.hidden_units],
                                                    regularizer=l2_regularizer)
 
-    def _build_model(self):
+    def build_graph(self):
         self._create_variable()
         # embedding layer
         batch_size = tf.shape(self.item_seq_ph)[0]
@@ -310,7 +310,7 @@ class SASRec(SeqAbstractRecommender):
     def evaluate_model(self):
         return self.evaluator.evaluate(self)
 
-    def predict_for_eval(self, users, items=None):
+    def predict(self, users, items=None):
         users = DataIterator(users, batch_size=512, shuffle=False, drop_last=False)
         all_ratings = []
         for bat_user in users:

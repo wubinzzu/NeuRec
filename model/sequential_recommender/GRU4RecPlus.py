@@ -256,7 +256,7 @@ class GRU4RecPlus(SeqAbstractRecommender):
         self.cur_item_embeddings, self.cur_item_biases = self.sess.run([self.item_embeddings, self.item_biases])
         return self.evaluator.evaluate(self)
 
-    def predict_for_eval(self, users, items=None):
+    def predict(self, users, items=None):
         user_embeddings = self.cur_user_embeddings[users]
         all_ratings = np.matmul(user_embeddings, self.cur_item_embeddings.T) + self.cur_item_biases
 

@@ -2,6 +2,7 @@
 @author: Zhongchuan Sun
 """
 import numpy as np
+import sys
 from util import typeassert, argmax_top_k
 from concurrent.futures import ThreadPoolExecutor
 
@@ -30,18 +31,27 @@ def map(rank, ground_truth):
 
 def ndcg(rank, ground_truth):
     len_rank = len(rank)
-    idcg = np.cumsum(1.0/np.log2(np.arange(2, len_rank+2)))
+    len_gt = len(ground_truth)
+    idcg_len = min(len_gt, len_rank)
+
+    # calculate idcg
+    idcg = np.cumsum(1.0 / np.log2(np.arange(2, len_rank + 2)))
+    idcg[idcg_len:] = idcg[idcg_len-1]
+
+    # idcg = np.cumsum(1.0/np.log2(np.arange(2, len_rank+2)))
     dcg = np.cumsum([1.0/np.log2(idx+2) if item in ground_truth else 0.0 for idx, item in enumerate(rank)])
     result = dcg/idcg
     return result
 
 
 def mrr(rank, ground_truth):
+    last_idx = sys.maxsize
     for idx, item in enumerate(rank):
         if item in ground_truth:
+            last_idx = idx
             break
     result = np.zeros(len(rank), dtype=np.float32)
-    result[idx:] = 1.0/(idx+1)
+    result[last_idx:] = 1.0/(last_idx+1)
     return result
 
 

@@ -79,7 +79,10 @@ vector<float> ndcg(int *rank, int top_k, int *truth, int truth_len)
         {
             DCG += 1.0/log2(i+2);
         }
-        iDCG += 1.0/log2(i+2);
+        if(i<truth_len)
+        {
+            iDCG += 1.0/log2(i+2);
+        }
         result[i] = DCG/iDCG;
     }
     return result;

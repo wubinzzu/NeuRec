@@ -15,7 +15,7 @@ if __name__ == "__main__":
     conf = Configurer()
 
     recommender = str(conf["recommender"])
-    num_thread = int(conf["rec.number.thread"])
+    # num_thread = int(conf["rec.number.thread"])
     gpu_id = str(conf["gpu_id"])
     if Tool.get_available_gpus(gpu_id):
         os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id

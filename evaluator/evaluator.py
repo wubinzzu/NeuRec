@@ -146,9 +146,9 @@ class SparsityEvaluator(AbstractEvaluator):
     @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
     def __init__(self, train_matrix, test_matrix, config):
         super(SparsityEvaluator, self).__init__()
-        if config["evaluator"] == "ratio":
+        if config["splitter"] == "ratio":
             self.evaluator = FoldOutEvaluator(train_matrix, test_matrix, config)
-        elif config["evaluator"] == "loo":
+        elif config["splitter"] == "loo":
             self.evaluator = LeaveOneOutEvaluator(train_matrix, test_matrix, config)
         else:
             raise ValueError("There is not evaluator named '%s'" % config["evaluator"])

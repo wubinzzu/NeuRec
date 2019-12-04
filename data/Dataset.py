@@ -4,8 +4,10 @@ Processing datasets.
 @author: Xiangnan He (xiangnanhe@gmail.com)
 """
 
+import os
 import pandas as pd
 from scipy.sparse import csr_matrix
+from data.DataSplitter import Splitter
 
 
 class Dataset(object):
@@ -22,15 +24,23 @@ class Dataset(object):
         self.num_items = None
         self.dataset_name = conf["data.input.dataset"]
 
+        # self._split_data(conf)
         self._load_data(conf)
+
+    def _split_data(self, conf):
+        splitter = Splitter(conf)
+        splitter.split()
 
     def _load_data(self, config):
         path = config["data.input.path"]
         dataset_name = config["data.input.dataset"]
-        path = path + dataset_name
+        saved_path = os.path.join(path, dataset_name)
+        file_prefix = "%s_%s_u%d_i%d" % (dataset_name, config["splitter"], config["user_min"], config["item_min"])
+        train_file = os.path.join(saved_path, file_prefix+".train")
+        test_file = os.path.join(saved_path, file_prefix + ".test")
 
-        train_file = path + ".train"
-        test_file = path + ".test"
+        if not os.path.isfile(train_file) or not os.path.isfile(test_file):
+            self._split_data(config)
 
         file_format = config["data.column.format"]
         sep = config["data.convert.separator"]

@@ -9,13 +9,14 @@ import os
 
 class Splitter(object):
     def __init__(self, config):
-        self.filename = config["data_file"]
-        self.ratio = eval(config["ratio"])
-        self.file_format = config["file_format"]
-        self.sep = eval(config["separator"])
-        self.user_min = eval(config["user_min"])
-        self.item_min = eval(config["item_min"])
-        self.by_time = eval(config["by_time"])
+        self.filename = os.path.join(config["data.input.path"], config["data.input.dataset"])
+        self.filename += ".rating"
+        self.ratio = config["ratio"]
+        self.file_format = config["data.column.format"]
+        self.sep = config["data.convert.separator"]
+        self.user_min = config["user_min"]
+        self.item_min = config["item_min"]
+        self.by_time = config["by_time"]
         self.spliter = config["splitter"]
 
     def split(self):
@@ -55,8 +56,8 @@ class Splitter(object):
         filename = "%s_%s_u%d_i%d" % (base_name, self.spliter, self.user_min, self.item_min)
 
         filename = os.path.join(dir_name, filename)
-        train_data.to_csv(filename+".train", header=False, index=False)
-        test_data.to_csv(filename + ".test", header=False, index=False)
+        train_data.to_csv(filename+".train", header=False, index=False, sep=self.sep)
+        test_data.to_csv(filename + ".test", header=False, index=False, sep=self.sep)
 
         user2id.to_csv(filename+".user2id", header=False, index=True)
         item2id.to_csv(filename + ".item2id", header=False, index=True)

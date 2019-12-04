@@ -11,7 +11,7 @@ import os
 
 class Logger(object):
     def __init__(self, filename):
-        self.logger = logging.getLogger("NeuRec")
+        self.logger = logging.getLogger(filename)
         self.logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 

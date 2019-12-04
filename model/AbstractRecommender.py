@@ -7,12 +7,12 @@ import scipy.sparse as sp
 class AbstractRecommender(object):
     def __init__(self, dataset, conf):
         if conf["evaluator"] == "ratio":
-            self.evaluator = FoldOutEvaluator(dataset.train_matrix, dataset.test_matrix, top_k=conf["topk"])
+            self.evaluator = FoldOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
         elif conf["evaluator"] == "loo":
-            self.evaluator = LeaveOneOutEvaluator(dataset.train_matrix, dataset.test_matrix, top_k=conf["topk"])
+            self.evaluator = LeaveOneOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
         else:
-            raise ValueError("There is not evaluator named '%s'" % conf["data.splitter"])
-    
+            raise ValueError("There is not evaluator named '%s'" % conf["evaluator"])
+
     def build_graph(self):
         raise NotImplementedError
 

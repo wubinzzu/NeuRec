@@ -227,5 +227,5 @@ def get_available_gpus(gpu_id):
     for x in local_device_protos:
         if x.device_type == 'GPU' and gpu_id in x.name:
             return True
-        else:
-            return False
+    else:
+        return False

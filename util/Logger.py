@@ -82,10 +82,10 @@ def _create_logger():
     logger_name = "%s_%s_%s_%d.log" % (data_name, model_name, logger_name, timestamp)
     logger_name = os.path.join(log_dir, logger_name)
     logger = Logger(logger_name)
-    logger.info("Recommender:%s" % model_name)
-    logger.info("Dataset name:%s" % data_name)
-    argument = '\n'.join(["{}={}".format(arg, value) for arg, value in model_config.items()])
-    logger.info("\nHyperparameters:\n%s " % argument)
+    # logger.info("Recommender:%s" % model_name)
+    # logger.info("Dataset name:%s" % data_name)
+    # argument = '\n'.join(["{}={}".format(arg, value) for arg, value in model_config.items()])
+    # logger.info("\nHyperparameters:\n%s " % argument)
 
     return logger
 

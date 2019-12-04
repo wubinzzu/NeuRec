@@ -22,6 +22,7 @@ if __name__ == "__main__":
     dataset = Dataset(conf)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
+    config.gpu_options.per_process_gpu_memory_fraction = conf["gpu_mem"]
     with tf.Session(config=config) as sess:
         if importlib.util.find_spec("model.general_recommender." + recommender) is not None:
             my_module = importlib.import_module("model.general_recommender." + recommender)

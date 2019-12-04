@@ -5,8 +5,9 @@ from util import csr_to_user_dict
 from scipy.sparse import csr_matrix
 from util import DataIterator, typeassert
 import numpy as np
+import pandas as pd
+from collections import OrderedDict
 from evaluator.backend import eval_score_matrix_foldout, eval_score_matrix_loo
-from util import pad_sequences
 
 
 class AbstractEvaluator(object):
@@ -18,16 +19,19 @@ class AbstractEvaluator(object):
     def metrics_info(self):
         raise NotImplementedError
 
-    def evaluate(self, ranking_score):
+    def evaluate(self, model):
         raise NotImplementedError
 
 
 class FoldOutEvaluator(AbstractEvaluator):
     """Evaluator for generic ranking task.
     """
-    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix, top_k=(int, list, tuple))
-    def __init__(self, train_matrix, test_matrix, top_k=50):
+    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
+    def __init__(self, train_matrix, test_matrix, config):
         super(FoldOutEvaluator, self).__init__()
+        top_k = config["topk"]
+        self.batch_size = config["test_batch_size"]
+
         self.max_top = top_k if isinstance(top_k, int) else max(top_k)
         if isinstance(top_k, int):
             self.top_show = np.arange(top_k)+1
@@ -49,7 +53,7 @@ class FoldOutEvaluator(AbstractEvaluator):
     def evaluate(self, model):
         # B: batch size
         # N: the number of items
-        test_users = DataIterator(list(self.user_pos_test.keys()), batch_size=2048, shuffle=False, drop_last=False)
+        test_users = DataIterator(list(self.user_pos_test.keys()), batch_size=self.batch_size, shuffle=False, drop_last=False)
         batch_result = []
         for batch_users in test_users:
             test_items = []
@@ -81,9 +85,12 @@ class FoldOutEvaluator(AbstractEvaluator):
 class LeaveOneOutEvaluator(AbstractEvaluator):
     """Evaluator for leave one out ranking task.
     """
-    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix, top_k=(int, list, tuple))
-    def __init__(self, train_matrix, test_matrix, top_k=50):
+    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
+    def __init__(self, train_matrix, test_matrix, config):
         super(LeaveOneOutEvaluator, self).__init__()
+        top_k = config["topk"]
+        self.batch_size = config["test_batch_size"]
+
         self.max_top = top_k if isinstance(top_k, int) else max(top_k)
         if isinstance(top_k, int):
             self.top_show = np.arange(top_k)+1
@@ -103,7 +110,7 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
     def evaluate(self, model):
         # B: batch size
         # N: the number of items
-        test_users = DataIterator(list(self.user_pos_test.keys()), batch_size=2048, shuffle=False, drop_last=False)
+        test_users = DataIterator(list(self.user_pos_test.keys()), batch_size=self.batch_size, shuffle=False, drop_last=False)
         batch_result = []
         for batch_users in test_users:
             test_items = []
@@ -133,3 +140,47 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
         final_result = np.reshape(final_result, newshape=[-1])
         buf = '\t'.join([("%.8f" % x).ljust(12) for x in final_result])
         return buf
+
+
+class SparsityEvaluator(AbstractEvaluator):
+    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
+    def __init__(self, train_matrix, test_matrix, config):
+        super(SparsityEvaluator, self).__init__()
+        if config["evaluator"] == "ratio":
+            self.evaluator = FoldOutEvaluator(train_matrix, test_matrix, config)
+        elif config["evaluator"] == "loo":
+            self.evaluator = LeaveOneOutEvaluator(train_matrix, test_matrix, config)
+        else:
+            raise ValueError("There is not evaluator named '%s'" % config["evaluator"])
+
+        self.user_pos_train = self.evaluator.user_pos_train
+        self.user_pos_test = self.evaluator.user_pos_test
+
+        group_list = config["group_list"]
+        all_test_user = list(self.user_pos_test.keys())
+        num_interaction = [len(self.user_pos_train[u]) for u in all_test_user]
+        group_idx = np.searchsorted(group_list, num_interaction)
+        user_group = pd.DataFrame(zip(all_test_user, group_idx), columns=["user", "group"])
+        grouped = user_group.groupby(by=["group"])
+        group_list = [0] + group_list
+        group_list = ["(%d,%d]" % (g_l, g_h) for g_l, g_h in zip(group_list[:-1], group_list[1:])]
+
+        self.grouped_user = OrderedDict()
+        for idx, users in grouped:
+            if idx < len(group_list):
+                self.grouped_user[group_list[idx]] = users["user"].tolist()
+
+    def metrics_info(self):
+        return self.evaluator.metrics_info()
+
+    def evaluate(self, model):
+        if not self.grouped_user:
+            return "The group of user split is not suitable!"
+
+        result_to_show = ""
+        for group, users in self.grouped_user.items():
+            self.evaluator.user_pos_test = {u: self.user_pos_test[u] for u in users}
+            tmp_result = self.evaluator.evaluate(model)
+            result_to_show = "%s\n%s:\t%s" % (result_to_show, group, tmp_result)
+
+        return result_to_show

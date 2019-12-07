@@ -18,8 +18,9 @@ class Dataset(object):
         self.train_matrix = None
         self.test_matrix = None
         self.time_matrix = None
-        # self.userids = None
-        # self.itemids = None
+        self.negative_matrix = None
+        self.userids = None
+        self.itemids = None
         self.num_users = None
         self.num_items = None
         self.dataset_name = conf["data.input.dataset"]
@@ -38,6 +39,9 @@ class Dataset(object):
         file_prefix = "%s_%s_u%d_i%d" % (dataset_name, config["splitter"], config["user_min"], config["item_min"])
         train_file = os.path.join(saved_path, file_prefix+".train")
         test_file = os.path.join(saved_path, file_prefix + ".test")
+        neg_item_file = os.path.join(saved_path, file_prefix + ".neg")
+        user_map_file = os.path.join(saved_path, file_prefix + ".user2id")
+        item_map_file = os.path.join(saved_path, file_prefix + ".item2id")
 
         if not os.path.isfile(train_file) or not os.path.isfile(test_file):
             self._split_data(config)
@@ -63,6 +67,11 @@ class Dataset(object):
         self.num_items = len(all_data["item"].unique())
         self.num_ratings = len(all_data)
 
+        user_map = pd.read_csv(user_map_file, sep=sep, header=None, names=["user", "id"])
+        item_map = pd.read_csv(item_map_file, sep=sep, header=None, names=["item", "id"])
+        self.userids = {user: uid for user, uid in zip(user_map["user"], user_map["id"])}
+        self.itemids = {item: iid for item, iid in zip(item_map["item"], item_map["id"])}
+
         if file_format == "UI":
             self.train_matrix = csr_matrix(([1.0]*len(train_data["user"]), (train_data["user"], train_data["item"])),
                                            shape=(self.num_users, self.num_items))
@@ -76,3 +85,23 @@ class Dataset(object):
         if file_format == "UIRT":
             self.time_matrix = csr_matrix((train_data["time"], (train_data["user"], train_data["item"])),
                                           shape=(self.num_users, self.num_items))
+
+        if os.path.isfile(neg_item_file) and config["rec.evaluate.neg"] > 0:
+            user_list, item_list = [], []
+            neg_items = pd.read_csv(neg_item_file, sep=sep, header=None)
+            for line in neg_items.values:
+                user_list.extend([line[0]]*(len(line)-1))
+                item_list.extend(line[1:])
+            self.negative_matrix = csr_matrix(([1]*len(user_list), (user_list, item_list)),
+                                              shape=(self.num_users, self.num_items))
+
+    def __str__(self):
+        num_users, num_items = self.num_users, self.num_items
+        num_ratings = self.train_matrix.nnz+self.test_matrix.nnz
+
+        data_info = "Dataset statistics:\nusers:\t%d\nitems:\t%d\nsparsity:%.4f%%" % \
+                    (num_users, num_items, num_ratings/(num_items*num_users)*100)
+        return data_info
+
+    def __repr__(self):
+        return self.__str__()

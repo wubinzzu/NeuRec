@@ -7,11 +7,11 @@ import scipy.sparse as sp
 class AbstractRecommender(object):
     def __init__(self, dataset, conf):
         if conf["test_view"] is not None:
-            self.evaluator = SparsityEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
+            self.evaluator = SparsityEvaluator(dataset.train_matrix, dataset.test_matrix, dataset.negative_matrix, conf)
         elif conf["splitter"] == "ratio":
-            self.evaluator = FoldOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
+            self.evaluator = FoldOutEvaluator(dataset.train_matrix, dataset.test_matrix, dataset.negative_matrix, conf)
         elif conf["splitter"] == "loo":
-            self.evaluator = LeaveOneOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
+            self.evaluator = LeaveOneOutEvaluator(dataset.train_matrix, dataset.test_matrix, dataset.negative_matrix, conf)
         else:
             raise ValueError("There is not evaluator named '%s'" % conf["splitter"])
 

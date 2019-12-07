@@ -7,6 +7,7 @@ import sys
 from configparser import ConfigParser
 from collections import OrderedDict
 
+
 class Configurer(object):
     def __init__(self):
         # get argument
@@ -14,9 +15,6 @@ class Configurer(object):
         self.lib_arg = self._load_lib_arg()
         self.alg_arg = self._load_alg_arg()
 
-        self._load_lib_arg()
-        self._load_alg_arg()
-        self._load_cmd_arg()
         self._set_info()
 
     def _set_info(self):
@@ -27,23 +25,24 @@ class Configurer(object):
         lib_file = "NeuRec.properties"
         config = ConfigParser()
         config.optionxform = str
-        config.read(lib_file)
+        config.read(lib_file, encoding="utf-8")
         lib_arg = OrderedDict(config["default"].items())
-
         for arg in self.cmd_arg:
             if arg in lib_arg:
                 lib_arg[arg] = self.cmd_arg[arg]
+
         return lib_arg
 
     def _load_alg_arg(self):
         alg_file = os.path.join("./conf", self.lib_arg["recommender"] + ".properties")
         config = ConfigParser()
         config.optionxform = str
-        config.read(alg_file)
+        config.read(alg_file, encoding="utf-8")
         alg_arg = OrderedDict(config["hyperparameters"].items())
         for arg in self.cmd_arg:
             if arg in alg_arg:
                 alg_arg[arg] = self.cmd_arg[arg]
+
         return alg_arg
 
     def _load_cmd_arg(self):
@@ -68,7 +67,7 @@ class Configurer(object):
         # convert param from str to value, i.e. int, float or list etc.
         try:
             value = eval(param)
-            if not isinstance(value, (str, int, float, list, tuple)):
+            if not isinstance(value, (str, int, float, list, tuple, bool, None.__class__)):
                 value = param
         except:
             value = param

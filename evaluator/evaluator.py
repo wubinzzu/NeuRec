@@ -187,7 +187,7 @@ class SparsityEvaluator(AbstractEvaluator):
         all_test_user = list(self.user_pos_test.keys())
         num_interaction = [len(self.user_pos_train[u]) for u in all_test_user]
         group_idx = np.searchsorted(group_list, num_interaction)
-        user_group = pd.DataFrame(zip(all_test_user, group_idx), columns=["user", "group"])
+        user_group = pd.DataFrame(list(zip(all_test_user, group_idx)), columns=["user", "group"])
         grouped = user_group.groupby(by=["group"])
         group_list = [0] + group_list
         group_list = [("(%d,%d]:" % (g_l, g_h)).ljust(12) for g_l, g_h in zip(group_list[:-1], group_list[1:])]

@@ -1,4 +1,4 @@
-from evaluator import FoldOutEvaluator, LeaveOneOutEvaluator
+from evaluator import FoldOutEvaluator, LeaveOneOutEvaluator, SparsityEvaluator
 import pandas as pd
 import numpy as np
 import scipy.sparse as sp
@@ -6,7 +6,9 @@ import scipy.sparse as sp
 
 class AbstractRecommender(object):
     def __init__(self, dataset, conf):
-        if conf["splitter"] == "ratio":
+        if conf["test_view"] is not None:
+            self.evaluator = SparsityEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
+        elif conf["splitter"] == "ratio":
             self.evaluator = FoldOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)
         elif conf["splitter"] == "loo":
             self.evaluator = LeaveOneOutEvaluator(dataset.train_matrix, dataset.test_matrix, conf)

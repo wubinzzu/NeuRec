@@ -156,14 +156,14 @@ class SparsityEvaluator(AbstractEvaluator):
         self.user_pos_train = self.evaluator.user_pos_train
         self.user_pos_test = self.evaluator.user_pos_test
 
-        group_list = config["group_list"]
+        group_list = config["test_view"]
         all_test_user = list(self.user_pos_test.keys())
         num_interaction = [len(self.user_pos_train[u]) for u in all_test_user]
         group_idx = np.searchsorted(group_list, num_interaction)
         user_group = pd.DataFrame(zip(all_test_user, group_idx), columns=["user", "group"])
         grouped = user_group.groupby(by=["group"])
         group_list = [0] + group_list
-        group_list = ["(%d,%d]" % (g_l, g_h) for g_l, g_h in zip(group_list[:-1], group_list[1:])]
+        group_list = [("(%d,%d]:" % (g_l, g_h)).ljust(12) for g_l, g_h in zip(group_list[:-1], group_list[1:])]
 
         self.grouped_user = OrderedDict()
         for idx, users in grouped:
@@ -181,6 +181,6 @@ class SparsityEvaluator(AbstractEvaluator):
         for group, users in self.grouped_user.items():
             self.evaluator.user_pos_test = {u: self.user_pos_test[u] for u in users}
             tmp_result = self.evaluator.evaluate(model)
-            result_to_show = "%s\n%s:\t%s" % (result_to_show, group, tmp_result)
+            result_to_show = "%s\n%s\t%s" % (result_to_show, group, tmp_result)
 
         return result_to_show

@@ -14,7 +14,6 @@ from util import timer
 class DMF(AbstractRecommender):
     def __init__(self,sess,dataset,conf):  
         super(DMF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]
         self.num_epochs = conf["epochs"]

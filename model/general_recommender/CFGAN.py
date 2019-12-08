@@ -19,7 +19,6 @@ from util.DataIterator import DataIterator
 class CFGAN(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(CFGAN, self).__init__(dataset, conf)
-        logger.info(conf)
         self.dataset = dataset
         self.epochs = conf["epochs"]
         self.mode = conf["mode"]

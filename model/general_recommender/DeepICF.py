@@ -18,7 +18,6 @@ from util.DataIterator import DataIterator
 class DeepICF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(DeepICF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.pretrain_file = conf["pretrain_file"]
         self.verbose = conf["verbose"]
         self.batch_size = conf["batch_size"]

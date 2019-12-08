@@ -18,7 +18,6 @@ from util import l2_loss
 class NGCF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(NGCF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]
         self.batch_size = conf["batch_size"]

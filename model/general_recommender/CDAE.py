@@ -18,7 +18,6 @@ from util.DataIterator import DataIterator
 class CDAE(AbstractRecommender):
     def __init__(self, sess, dataset, conf):  
         super(CDAE, self).__init__(dataset, conf)
-        logger.info(conf)
         self.hidden_neuron = conf["hidden_neuron"]
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]

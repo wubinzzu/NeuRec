@@ -18,7 +18,6 @@ from util.DataIterator import DataIterator
 class Fossil(SeqAbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(Fossil, self).__init__(dataset, conf)
-        logger.info(conf)
         self.verbose = conf["verbose"]
         self.batch_size = conf["batch_size"]
         self.num_epochs = conf["epochs"]

@@ -18,7 +18,6 @@ from util import l2_loss
 class FPMCplus(SeqAbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(FPMCplus, self).__init__(dataset, conf)
-        logger.info(conf)
         self.learning_rate = conf["learning_rate"]
         self.embedding_size = conf["embedding_size"]
         self.weight_size = conf["weight_size"]

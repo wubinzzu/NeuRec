@@ -18,7 +18,6 @@ from util.DataIterator import DataIterator
 class NAIS(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(NAIS, self).__init__(dataset, conf)
-        logger.info(conf)
         self.pretrain = conf["pretrain"]
         self.verbose = conf["verbose"]
         self.batch_size = conf["batch_size"]

@@ -13,7 +13,6 @@ from util import timer, Tool
 class WRMF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(WRMF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.embedding_size = conf["embedding_size"]
         self.alpha = conf["alpha"]
         self.topK = conf["topk"]

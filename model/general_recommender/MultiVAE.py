@@ -16,7 +16,6 @@ from util.Tool import csr_to_user_dict
 class MultiVAE(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(MultiVAE, self).__init__(dataset, conf)
-        logger.info(conf)
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]
         self.batch_size = conf["batch_size"]

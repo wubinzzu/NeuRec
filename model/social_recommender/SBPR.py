@@ -18,7 +18,6 @@ from util import l2_loss
 class SBPR(SocialAbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(SBPR, self).__init__(dataset, conf)
-        logger.info(conf)
         self.learning_rate = conf["learning_rate"]
         self.embedding_size = conf["embedding_size"]
         self.learner = conf["learner"]

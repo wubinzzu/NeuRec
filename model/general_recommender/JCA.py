@@ -16,7 +16,6 @@ from util import l2_loss
 class JCA(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(JCA, self).__init__(dataset, conf)
-        logger.info(conf)
         self.hidden_neuron = conf["hidden_neuron"]
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]

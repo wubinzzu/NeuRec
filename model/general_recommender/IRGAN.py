@@ -126,7 +126,6 @@ class DIS(object):
 class IRGAN(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(IRGAN, self).__init__(dataset, conf)
-        logger.info(conf)
 
         train_matrix = dataset.trainMatrix.tocsr()
         self.num_users, self.num_items = train_matrix.shape

@@ -77,7 +77,7 @@ class Configurer(object):
     def __str__(self):
         lib_info = '\n'.join(["{}={}".format(arg, value) for arg, value in self.lib_arg.items()])
         alg_info = '\n'.join(["{}={}".format(arg, value) for arg, value in self.alg_arg.items()])
-        info = "\nNeuRec hyperparameters:\n%s\n\nRecommender's hyperparameters:\n%s" % (lib_info, alg_info)
+        info = "\n\nNeuRec hyperparameters:\n%s\n\n%s's hyperparameters:\n%s" % (lib_info, self["recommender"], alg_info)
         return info
 
     def __repr__(self):

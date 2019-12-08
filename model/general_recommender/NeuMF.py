@@ -17,7 +17,6 @@ from util import l2_loss
 class NeuMF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(NeuMF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.embedding_size = conf["embedding_size"]
         self.layers = conf["layers"]
         self.reg_mf = conf["reg_mf"]

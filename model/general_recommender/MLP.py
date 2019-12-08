@@ -16,7 +16,6 @@ from util import l2_loss
 class MLP(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(MLP, self).__init__(dataset, conf)
-        logger.info(conf)
         self.layers = conf["layers"]
         self.learning_rate = conf["learning_rate"]
         self.is_pairwise = conf["is_pairwise"]

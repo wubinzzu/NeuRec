@@ -99,8 +99,8 @@ class Dataset(object):
         num_users, num_items = self.num_users, self.num_items
         num_ratings = self.train_matrix.nnz+self.test_matrix.nnz
 
-        data_info = "Dataset statistics:\nusers:\t%d\nitems:\t%d\nsparsity:%.4f%%" % \
-                    (num_users, num_items, num_ratings/(num_items*num_users)*100)
+        data_info = "\n\nDataset statistics:\nusers:\t%d\nitems:\t%d\nsparsity:%.4f%%" % \
+                    (num_users, num_items, (1-num_ratings/(num_items*num_users))*100)
         return data_info
 
     def __repr__(self):

@@ -2,11 +2,15 @@ from evaluator import ProxyEvaluator
 import pandas as pd
 import numpy as np
 import scipy.sparse as sp
+from util.Logger import logger
 
 
 class AbstractRecommender(object):
     def __init__(self, dataset, conf):
         self.evaluator = ProxyEvaluator(dataset.train_matrix, dataset.test_matrix, dataset.negative_matrix, conf)
+
+        logger.info(dataset)
+        logger.info(conf)
 
     def build_graph(self):
         raise NotImplementedError

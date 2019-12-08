@@ -17,7 +17,6 @@ from util import l2_loss
 class ConvNCF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):  
         super(ConvNCF, self).__init__(dataset, conf)
-        logger.info(conf)
         self.embedding_size = conf["embedding_size"]
         regs = conf["regs"]
         self.lambda_bilinear = regs[0]

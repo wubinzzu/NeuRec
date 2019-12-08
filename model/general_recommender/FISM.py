@@ -18,7 +18,6 @@ from util import pad_sequences
 class FISM(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
         super(FISM, self).__init__(dataset, conf)
-        logger.info(conf)
         self.batch_size = conf["batch_size"]
         self.num_epochs = conf["epochs"]
         self.embedding_size = conf["embedding_size"]

@@ -24,11 +24,36 @@ class AbstractEvaluator(object):
         raise NotImplementedError
 
 
+class ProxyEvaluator(AbstractEvaluator):
+    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
+    def __init__(self, train_matrix, test_matrix, negative_matrix, config):
+        super(ProxyEvaluator, self).__init__()
+
+        user_pos_train = csr_to_user_dict(train_matrix)
+        user_pos_test = csr_to_user_dict(test_matrix)
+        user_neg_test = csr_to_user_dict(negative_matrix) if negative_matrix is not None else None
+
+        if config["test_view"] is not None:
+            self.evaluator = SparsityEvaluator(user_pos_train, user_pos_test, user_neg_test, config)
+        elif config["splitter"] == "ratio":
+            self.evaluator = FoldOutEvaluator(user_pos_train, user_pos_test, user_neg_test, config)
+        elif config["splitter"] == "loo":
+            self.evaluator = LeaveOneOutEvaluator(user_pos_train, user_pos_test, user_neg_test, config)
+        else:
+            raise ValueError("'test_view' is None and there is not splitter named '%s'" % config["splitter"])
+
+    def metrics_info(self):
+        return self.evaluator.metrics_info()
+
+    def evaluate(self, model):
+        return self.evaluator.evaluate(model)
+
+
 class FoldOutEvaluator(AbstractEvaluator):
     """Evaluator for generic ranking task.
     """
-    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
-    def __init__(self, train_matrix, test_matrix, negative_matrix, config):
+    @typeassert(user_pos_train=dict, user_pos_test=dict)
+    def __init__(self, user_pos_train, user_pos_test, user_neg_test, config):
         super(FoldOutEvaluator, self).__init__()
         top_k = config["topk"]
         self.batch_size = config["test_batch_size"]
@@ -38,9 +63,10 @@ class FoldOutEvaluator(AbstractEvaluator):
             self.top_show = np.arange(top_k)+1
         else:
             self.top_show = np.sort(top_k)
-        self.user_pos_train = csr_to_user_dict(train_matrix)
-        self.user_pos_test = csr_to_user_dict(test_matrix)
-        self.user_neg_test = csr_to_user_dict(negative_matrix) if negative_matrix is not None else None
+
+        self.user_pos_train = user_pos_train
+        self.user_pos_test = user_pos_test
+        self.user_neg_test = user_neg_test
         self.metrics_num = 5
 
     def metrics_info(self):
@@ -100,8 +126,8 @@ class FoldOutEvaluator(AbstractEvaluator):
 class LeaveOneOutEvaluator(AbstractEvaluator):
     """Evaluator for leave one out ranking task.
     """
-    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
-    def __init__(self, train_matrix, test_matrix, negative_matrix, config):
+    @typeassert(user_pos_train=dict, user_pos_test=dict)
+    def __init__(self, user_pos_train, user_pos_test, user_neg_test, config):
         super(LeaveOneOutEvaluator, self).__init__()
         top_k = config["topk"]
         self.batch_size = config["test_batch_size"]
@@ -111,9 +137,9 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
             self.top_show = np.arange(top_k)+1
         else:
             self.top_show = np.sort(top_k)
-        self.user_pos_train = csr_to_user_dict(train_matrix)
-        self.user_pos_test = csr_to_user_dict(test_matrix)
-        self.user_neg_test = csr_to_user_dict(negative_matrix) if negative_matrix is not None else None
+        self.user_pos_train = user_pos_train
+        self.user_pos_test = user_pos_test
+        self.user_neg_test = user_neg_test
         self.metrics_num = 3
 
     def metrics_info(self):
@@ -170,18 +196,18 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
 
 
 class SparsityEvaluator(AbstractEvaluator):
-    @typeassert(train_matrix=csr_matrix, test_matrix=csr_matrix)
-    def __init__(self, train_matrix, test_matrix, negative_matrix, config):
+    @typeassert(user_pos_train=dict, user_pos_test=dict)
+    def __init__(self, user_pos_train, user_pos_test, user_neg_test, config):
         super(SparsityEvaluator, self).__init__()
         if config["splitter"] == "ratio":
-            self.evaluator = FoldOutEvaluator(train_matrix, test_matrix, negative_matrix, config)
+            self.evaluator = FoldOutEvaluator(user_pos_train, user_pos_test, user_neg_test, config)
         elif config["splitter"] == "loo":
-            self.evaluator = LeaveOneOutEvaluator(train_matrix, test_matrix, negative_matrix, config)
+            self.evaluator = LeaveOneOutEvaluator(user_pos_train, user_pos_test, user_neg_test, config)
         else:
-            raise ValueError("There is not evaluator named '%s'" % config["evaluator"])
+            raise ValueError("There is not evaluator named '%s'" % config["splitter"])
 
-        self.user_pos_train = self.evaluator.user_pos_train
-        self.user_pos_test = self.evaluator.user_pos_test
+        self.user_pos_train = user_pos_train
+        self.user_pos_test = user_pos_test
 
         group_list = config["test_view"]
         all_test_user = list(self.user_pos_test.keys())

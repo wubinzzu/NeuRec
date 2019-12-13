@@ -6,6 +6,7 @@ from .utils import split_by_ratio, split_by_loo
 from util.Logger import Logger
 from util import randint_choice
 import pandas as pd
+import numpy as np
 import os
 
 
@@ -76,13 +77,21 @@ class Splitter(object):
         filename = "%s_%s_u%d_i%d" % (base_name, self.spliter, self.user_min, self.item_min)
 
         filename = os.path.join(dir_name, filename)
-        train_data.to_csv(filename + ".train", header=False, index=False, sep=self.sep)
-        test_data.to_csv(filename + ".test", header=False, index=False, sep=self.sep)
-        if neg_items is not None:
-            neg_items.to_csv(filename + ".neg", header=False, index=False, sep=self.sep)
+        np.savetxt(filename + ".train", train_data, fmt='%d', delimiter=self.sep)
+        np.savetxt(filename + ".test", test_data, fmt='%d', delimiter=self.sep)
 
-        user2id.to_csv(filename+".user2id", header=False, index=True, sep=self.sep)
-        item2id.to_csv(filename + ".item2id", header=False, index=True, sep=self.sep)
+        # train_data.to_csv(filename + ".train", header=False, index=False, sep=self.sep)
+        # test_data.to_csv(filename + ".test", header=False, index=False, sep=self.sep)
+        if neg_items is not None:
+            np.savetxt(filename + ".neg", neg_items, fmt='%d', delimiter=self.sep)
+            # neg_items.to_csv(filename + ".neg", header=False, index=False, sep=self.sep)
+
+        user2id = [[user, id] for user, id in user2id.to_dict().items()]
+        item2id = [[item, id] for item, id in item2id.to_dict().items()]
+        np.savetxt(filename + ".user2id", user2id, fmt='%s', delimiter=self.sep)
+        np.savetxt(filename + ".item2id", item2id, fmt='%s', delimiter=self.sep)
+        # user2id.to_csv(filename+".user2id", header=False, index=True, sep=self.sep)
+        # item2id.to_csv(filename + ".item2id", header=False, index=True, sep=self.sep)
 
         logger = Logger(filename+".info")
         logger.info(self.filename)

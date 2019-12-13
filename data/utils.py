@@ -11,6 +11,7 @@ def load_data(filename, sep, columns):
 
 
 def filter_data(data, user_min=None, item_min=None):
+    data.dropna(how="any", inplace=True)
     if item_min is not None and item_min > 0:
         item_count = data["item"].value_counts(sort=False)
         filtered_idx = data["item"].map(lambda x: item_count[x] >= item_min)

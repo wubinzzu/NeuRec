@@ -4,12 +4,20 @@
 
 import os
 import sys
+import threading
+import time
 from configparser import ConfigParser
 from collections import OrderedDict
 
 
 class Configurer(object):
+    _instance_lock = threading.Lock()
+
     def __init__(self):
+        time.sleep(1)
+        pass
+
+    def _init(self):
         # get argument
         self.cmd_arg = self._load_cmd_arg()
         self.lib_arg = self._load_lib_arg()
@@ -20,6 +28,18 @@ class Configurer(object):
     def _set_info(self):
         # parse the train file name to get dataset name
         self.lib_arg["data_name"] = self.lib_arg["data.input.dataset"]
+
+        params_id = '_'.join(["{}={}".format(arg, value) for arg, value in self.alg_arg.items() if len(value) < 20])
+        special_char = {'/', '\\', '\"', ':', '*', '?', '<', '>', '|', '\t'}
+        params_id = [c if c not in special_char else '_' for c in params_id]
+        params_id = ''.join(params_id)
+        self._params_id = params_id[:100]
+
+        data_name = self["data_name"]
+        model_name = self["recommender"]
+        timestamp = time.time()
+        # data name, model name, param, timestamp
+        self._run_id = "%s_%s_%s_%.8f" % (data_name, model_name, self._params_id, timestamp)
 
     def _load_lib_arg(self):
         lib_file = "NeuRec.properties"
@@ -52,6 +72,22 @@ class Configurer(object):
             cmd_arg[arg_name[2:]] = arg_value
 
         return cmd_arg
+
+    @property
+    def run_id(self):
+        return self._run_id
+
+    @property
+    def params_id(self):
+        return self._params_id
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(Configurer, "_instance"):
+            with Configurer._instance_lock:
+                if not hasattr(Configurer, "_instance"):
+                    Configurer._instance = object.__new__(cls)
+                    Configurer._instance._init()
+        return Configurer._instance
 
     def __getitem__(self, item):
         if not isinstance(item, str):

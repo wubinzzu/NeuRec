@@ -7,6 +7,7 @@ import logging
 import time
 import sys
 import os
+from util import Configurer
 
 
 class Logger(object):
@@ -55,39 +56,51 @@ class Logger(object):
 
 
 def _create_logger():
-    config = ConfigParser()
-    config.read("NeuRec.properties")
-    lib_config = OrderedDict(config._sections["default"].items())
-    model_name = lib_config["recommender"]
-
-    model_config_path = os.path.join("./conf", model_name + ".properties")
-    config.read(model_config_path)
-    model_config = OrderedDict(config._sections["hyperparameters"].items())
-
-    data_name = lib_config["data.input.dataset"]
-
+    config = Configurer()
+    data_name = config["data_name"]
+    model_name = config["recommender"]
     log_dir = os.path.join("log", data_name, model_name)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    logger_name = '_'.join(["{}={}".format(arg, value) for arg, value in model_config.items()
-                            if len(value) < 20])
-    special_char = {'/', '\\', '\"', ':', '*', '?', '<', '>', '|', '\t'}
-    logger_name = [c if c not in special_char else '_' for c in logger_name]
-    logger_name = ''.join(logger_name)
-    timestamp = time.time()
+    run_id = config.run_id
 
-    logger_name = logger_name[:100]
-    # data name, model name, param, timestamp
-    logger_name = "%s_%s_%s_%d.log" % (data_name, model_name, logger_name, timestamp)
-    logger_name = os.path.join(log_dir, logger_name)
-    logger = Logger(logger_name)
-    # logger.info("Recommender:%s" % model_name)
-    # logger.info("Dataset name:%s" % data_name)
-    # argument = '\n'.join(["{}={}".format(arg, value) for arg, value in model_config.items()])
-    # logger.info("\nHyperparameters:\n%s " % argument)
+    logger_name = os.path.join(log_dir, run_id + ".log")
+    _logger = Logger(logger_name)
 
-    return logger
+    # # config = ConfigParser()
+    # config.read("NeuRec.properties")
+    # lib_config = OrderedDict(config._sections["default"].items())
+    # model_name = lib_config["recommender"]
+    #
+    # model_config_path = os.path.join("./conf", model_name + ".properties")
+    # config.read(model_config_path)
+    # model_config = OrderedDict(config._sections["hyperparameters"].items())
+    #
+    # data_name = lib_config["data.input.dataset"]
+    #
+    # log_dir = os.path.join("log", data_name, model_name)
+    # if not os.path.exists(log_dir):
+    #     os.makedirs(log_dir)
+    #
+    # logger_name = '_'.join(["{}={}".format(arg, value) for arg, value in model_config.items()
+    #                         if len(value) < 20])
+    # special_char = {'/', '\\', '\"', ':', '*', '?', '<', '>', '|', '\t'}
+    # logger_name = [c if c not in special_char else '_' for c in logger_name]
+    # logger_name = ''.join(logger_name)
+    # timestamp = time.time()
+    #
+    # logger_name = logger_name[:100]
+    # # data name, model name, param, timestamp
+    # logger_name = "%s_%s_%s_%d.log" % (data_name, model_name, logger_name, timestamp)
+    # logger_name = os.path.join(log_dir, logger_name)
+    # logger = Logger(logger_name)
+    # # logger.info("Recommender:%s" % model_name)
+    # # logger.info("Dataset name:%s" % data_name)
+    # # argument = '\n'.join(["{}={}".format(arg, value) for arg, value in model_config.items()])
+    # # logger.info("\nHyperparameters:\n%s " % argument)
+
+    return _logger
 
 
 logger = _create_logger()

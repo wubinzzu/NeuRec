@@ -177,7 +177,7 @@ class SASRec(SeqAbstractRecommender):
         self.num_blocks = conf["num_blocks"]
         self.num_heads = conf["num_heads"]
 
-        self.user_pos_train = csr_to_user_dict_bytime(train_matrix, time_matrix)
+        self.user_pos_train = csr_to_user_dict_bytime(time_matrix, train_matrix)
 
         self.sess = sess
 

@@ -31,7 +31,7 @@ class SRGNN(SeqAbstractRecommender):
         self.epochs = conf["epochs"]
 
         self.all_items = np.arange(self.items_num)
-        self.user_pos_train = csr_to_user_dict_bytime(self.train_matrix, self.dataset.time_matrix)
+        self.user_pos_train = csr_to_user_dict_bytime(self.dataset.time_matrix, self.train_matrix)
 
         self.sess = sess
 

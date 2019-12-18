@@ -124,7 +124,7 @@ class Caser(SeqAbstractRecommender):
 
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        self.user_pos_train = csr_to_user_dict_bytime(self.dataset.train_matrix, self.dataset.time_matrix)
+        self.user_pos_train = csr_to_user_dict_bytime(self.dataset.time_matrix, self.dataset.train_matrix)
         users_list, item_seq_list, item_pos_list = self._generate_sequences()
         for epoch in range(self.epochs):
             item_neg_list = self._sample_negative(users_list)

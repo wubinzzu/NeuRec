@@ -17,8 +17,8 @@ if __name__ == "__main__":
     recommender = str(conf["recommender"])
     # num_thread = int(conf["rec.number.thread"])
     gpu_id = str(conf["gpu_id"])
-    if Tool.get_available_gpus(gpu_id):
-        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
+    # if Tool.get_available_gpus(gpu_id):
+    #     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
     dataset = Dataset(conf)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True

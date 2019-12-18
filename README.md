@@ -91,7 +91,9 @@ The list of available models in NeuRec, along with their paper citations, are sh
 
 ## Contributions
 
-Please let us know if you experience any issues or have suggestions for new features by submitting an issue under the Issues tab.
+Please let us know if you experience any issues or have suggestions for new features by submitting an issue under the Issues tab or joining our WeChat Group.
+
+<img src="WeChat_QR_Code.jpg" width = "30%" height = "30%"/>
 
 ## Acknowledgements
 

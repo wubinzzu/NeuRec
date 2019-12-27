@@ -1,14 +1,14 @@
-'''
+"""
 Reference: Xiangnan He, et al., Adversarial Personalized Ranking for Recommendation" in SIGIR2018
 @author: wubin
-'''
+"""
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
+from util import learner, data_generator, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.DataIterator import DataIterator
-from util.Logger import logger
+from util.data_iterator import DataIterator
+from util.logger import logger
 from util import timer
 from util import l2_loss
 
@@ -33,7 +33,7 @@ class APR(AbstractRecommender):
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
-        self.sess=sess  
+        self.sess = sess
     
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
@@ -43,11 +43,11 @@ class APR(AbstractRecommender):
             
     def _create_variables(self):
         with tf.name_scope("embedding"):
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.embedding_P = tf.Variable(initializer([self.num_users, self.embedding_size]),
-                name='embedding_P', dtype=tf.float32)  # (users, embedding_size)
+                                           name='embedding_P', dtype=tf.float32)  # (users, embedding_size)
             self.embedding_Q = tf.Variable(initializer([self.num_items, self.embedding_size]),
-                name='embedding_Q', dtype=tf.float32)  # (items, embedding_size)
+                                           name='embedding_Q', dtype=tf.float32)  # (items, embedding_size)
 
             self.delta_P = tf.Variable(tf.zeros(shape=[self.num_users, self.embedding_size]),
                                        name='delta_P', dtype=tf.float32, trainable=False)  # (users, embedding_size)
@@ -120,7 +120,7 @@ class APR(AbstractRecommender):
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -132,11 +132,11 @@ class APR(AbstractRecommender):
     # ---------- training process -------
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in  range(1,self.num_epochs+1):
+        for epoch in range(1, self.num_epochs+1):
             # Generate training instances
-            user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
             data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
+                                     batch_size=self.batch_size, shuffle=True)
             
             total_loss = 0.0
             training_start_time = time()

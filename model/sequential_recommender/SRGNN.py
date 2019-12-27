@@ -8,10 +8,10 @@ Reference: https://github.com/CRIPAC-DIG/SR-GNN
 import numpy as np
 from model.AbstractRecommender import SeqAbstractRecommender
 from util import DataIterator
-from util.Tool import csr_to_user_dict_bytime
+from util.tool import csr_to_user_dict_bytime
 import tensorflow as tf
 from util import pad_sequences
-from util.Logger import logger
+from util.logger import logger
 import math
 
 

@@ -1,6 +1,6 @@
 import scipy.sparse as sp
-from util.Tool import get_data_format
-from util.Logger import logger
+from util.tool import get_data_format
+from util.logger import logger
 import pandas as pd
 
 

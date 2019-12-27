@@ -5,12 +5,12 @@ Reference: Dawen, Liang, et al. "Variational autoencoders for collaborative filt
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
+from util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
-from util.Logger import logger
+from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
 from util import timer
-from util.Tool import csr_to_user_dict
+from util.tool import csr_to_user_dict
 
 
 class MultiVAE(AbstractRecommender):
@@ -47,8 +47,8 @@ class MultiVAE(AbstractRecommender):
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now   
             self.weights_q, self.biases_q = [], []
-            weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
-            bias_initializer = Tool.get_initializer(self.bias_init_method, self.stddev)
+            weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
+            bias_initializer = tool.get_initializer(self.bias_init_method, self.stddev)
             for i, (d_in, d_out) in enumerate(zip(self.q_dims[:-1], self.q_dims[1:])):
                 if i == len(self.q_dims[:-1]) - 1:
                     # we need two sets of parameters for mean and variance,
@@ -81,7 +81,7 @@ class MultiVAE(AbstractRecommender):
             h = tf.matmul(h, w) + b
             
             if i != len(self.weights_q) - 1:
-                h = Tool.activation_function(self.act, h)
+                h = tool.activation_function(self.act, h)
             else:
                 mu_q = h[:, :self.q_dims[-1]]
                 logvar_q = h[:, self.q_dims[-1]:]  # log sigmod^2  batch x 200
@@ -97,7 +97,7 @@ class MultiVAE(AbstractRecommender):
             self.h = tf.matmul(self.h, w) + b
             
             if i != len(self.weights_p) - 1:
-                self.h = Tool.activation_function(self.act,self.h)
+                self.h = tool.activation_function(self.act, self.h)
         return self.h
 
     def _create_inference(self):
@@ -126,7 +126,7 @@ class MultiVAE(AbstractRecommender):
                 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)     
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -158,15 +158,17 @@ class MultiVAE(AbstractRecommender):
                     anneal = self.anneal_cap
                 
                 batch_uid = 0
-                for userid in batch_set_idx:
-                    items_by_userid = self.train_dict[userid]
-                    for itemid in items_by_userid:
-                        batch_matrix[batch_uid,itemid] = 1
+                for user_id in batch_set_idx:
+                    items_by_user_id = self.train_dict[user_id]
+                    for item_id in items_by_user_id:
+                        batch_matrix[batch_uid, item_id] = 1
                         
-                    batch_uid=batch_uid+1
+                    batch_uid = batch_uid+1
                  
-                feed_dict={self.input_ph: batch_matrix, self.keep_prob_ph: 0.8,
-                           self.anneal_ph: anneal, self.is_training_ph: 1}
+                feed_dict = {self.input_ph: batch_matrix,
+                             self.keep_prob_ph: 0.8,
+                             self.anneal_ph: anneal,
+                             self.is_training_ph: 1}
                 _, loss = self.sess.run([self.optimizer, self.loss],feed_dict=feed_dict)
                 total_loss += loss
                 
@@ -175,28 +177,29 @@ class MultiVAE(AbstractRecommender):
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+
     @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is not None:
-            rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-            for userid, candidate_items_userid in zip(user_ids, candidate_items_userids):
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
-                output = self.sess.run(self.h, feed_dict={self.input_ph:rating_matrix})
-                ratings.append(output[0, candidate_items_userid])
+        if candidate_items_user_ids is not None:
+            rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
+            for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
+                output = self.sess.run(self.h, feed_dict={self.input_ph: rating_matrix})
+                ratings.append(output[0, candidate_items_user_id])
                 
         else:
-            rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
-                output = self.sess.run(self.h, feed_dict={self.input_ph:rating_matrix})
-                ratings.append(output[0, allitems])
+            rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
+                output = self.sess.run(self.h, feed_dict={self.input_ph: rating_matrix})
+                ratings.append(output[0, all_items])
         return ratings

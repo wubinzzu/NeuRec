@@ -1,14 +1,14 @@
-'''
+"""
 Reference: Ziwei Zhu, et al. "Improving Top-K Recommendation via Joint
 Collaborative Autoencoders." in WWW2019
 @author: wubin
-'''
+"""
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
-from util.Logger import logger
+from util import learner, tool
+from util.logger import logger
 from util import timer
 from util import l2_loss
 
@@ -23,8 +23,8 @@ class JCA(AbstractRecommender):
         self.num_epochs = conf["epochs"]
         self.batch_size = conf["batch_size"]
         self.verbose = conf["verbose"]
-        self.f_act = conf["f_act"] # the activation function for the output layer
-        self.g_act = conf["g_act"] # the activation function for the hidden layer
+        self.f_act = conf["f_act"]  # the activation function for the output layer
+        self.g_act = conf["g_act"]  # the activation function for the hidden layer
         self.margin = conf["margin"]
         self.corruption_level = conf["corruption_level"]
         self.init_method = conf["init_method"]
@@ -55,7 +55,7 @@ class JCA(AbstractRecommender):
             
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             # user component
             # first layer weights
             self.UV = tf.Variable(initializer([self.num_items, self.hidden_neuron]), name="UV", dtype=tf.float32)
@@ -82,20 +82,20 @@ class JCA(AbstractRecommender):
         with tf.name_scope("inference"):
             
             # user component
-            U_pre_Encoder = tf.matmul(self.input_R_U, self.UV) + self.Ub1  # input to the hidden layer
-            self.U_Encoder = Tool.activation_function(self.g_act,U_pre_Encoder)  # output of the hidden layer
-            U_pre_Decoder = tf.matmul(self.U_Encoder, self.UW) + self.Ub2  # input to the output layer
-            self.U_Decoder = Tool.activation_function(self.f_act,U_pre_Decoder)  # output of the output layer
+            u_pre_encoder = tf.matmul(self.input_R_U, self.UV) + self.Ub1  # input to the hidden layer
+            self.u_encoder = tool.activation_function(self.g_act, u_pre_encoder)  # output of the hidden layer
+            u_pre_decoder = tf.matmul(self.u_encoder, self.UW) + self.Ub2  # input to the output layer
+            self.u_decoder = tool.activation_function(self.f_act, u_pre_decoder)  # output of the output layer
     
             # item component
-            I_pre_mul = tf.transpose(tf.matmul(self.I_factor_vector, tf.transpose(self.input_OH_I)))
-            I_pre_Encoder = tf.matmul(tf.transpose(self.input_R_I), self.IV) + self.Ib1  # input to the hidden layer
-            self.I_Encoder = Tool.activation_function(self.g_act,I_pre_Encoder * I_pre_mul)  # output of the hidden layer
-            I_pre_Decoder = tf.matmul(self.I_Encoder, self.IW) + self.Ib2  # input to the output layer
-            self.I_Decoder = Tool.activation_function(self.f_act,I_pre_Decoder)  # output of the output layer
+            i_pre_mul = tf.transpose(tf.matmul(self.I_factor_vector, tf.transpose(self.input_OH_I)))
+            i_pre_encoder = tf.matmul(tf.transpose(self.input_R_I), self.IV) + self.Ib1  # input to the hidden layer
+            self.I_Encoder = tool.activation_function(self.g_act, i_pre_encoder * i_pre_mul)  # output of the hidden layer
+            i_pre_decoder = tf.matmul(self.I_Encoder, self.IW) + self.Ib2  # input to the output layer
+            self.I_Decoder = tool.activation_function(self.f_act, i_pre_decoder)  # output of the output layer
     
             # final output
-            self.Decoder = ((tf.transpose(tf.gather_nd(tf.transpose(self.U_Decoder), self.col_idx)))
+            self.Decoder = ((tf.transpose(tf.gather_nd(tf.transpose(self.u_decoder), self.col_idx)))
                             + tf.gather_nd(tf.transpose(self.I_Decoder), self.row_idx)) / 2.0
     
             pos_data = tf.gather_nd(self.Decoder, self.input_P_cor)
@@ -114,7 +114,7 @@ class JCA(AbstractRecommender):
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.cost, self.learning_rate) 
+            self.optimizer = learner.optimizer(self.learner, self.cost, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
@@ -146,13 +146,13 @@ class JCA(AbstractRecommender):
                     input_tmp = self.train_R[row_idx, :]
                     input_tmp = input_tmp[:, col_idx]
     
-                    input_R_U = self.train_R[row_idx, :]
-                    input_R_I = self.train_R[:, col_idx]
+                    input_r_u = self.train_R[row_idx, :]
+                    input_r_i = self.train_R[:, col_idx]
                     _, loss = self.sess.run(  # do the optimization by the minibatch
                         [self.optimizer, self.cost],
                         feed_dict={
-                            self.input_R_U: input_R_U,
-                            self.input_R_I: input_R_I,
+                            self.input_R_U: input_r_u,
+                            self.input_R_I: input_r_i,
                             self.input_OH_I: self.I_OH_mat[col_idx, :],
                             self.input_P_cor: p_input,
                             self.input_N_cor: n_input,
@@ -174,7 +174,7 @@ class JCA(AbstractRecommender):
                      self.row_idx: np.reshape(range(self.num_users), (self.num_users, 1)),
                      self.col_idx: np.reshape(range(self.num_items), (self.num_items, 1))}
 
-        self.allRatings = self.sess.run(self.Decoder, feed_dict=feed_dict)
+        self.all_ratings = self.sess.run(self.Decoder, feed_dict=feed_dict)
         return self.evaluator.evaluate(self)
                 
     def pairwise_neg_sampling(self,row_idx, col_idx):
@@ -194,21 +194,21 @@ class JCA(AbstractRecommender):
             u = obsv_list[0][i]
             # negative instances
             unobsv_list = unobsv_mat[u]
-            neg_samp_list = np.random.choice(unobsv_list, size=self.neg_sample_rate, replace=False)
-            for ns in neg_samp_list:
+            neg_sample_list = np.random.choice(unobsv_list, size=self.neg_sample_rate, replace=False)
+            for ns in neg_sample_list:
                 p_input.append([u, obsv_list[1][i]])
                 n_input.append([u, ns])
         return np.array(p_input), np.array(n_input)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids == None:
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                ratings.append(self.allRatings[userid, allitems])
+        if candidate_items_user_ids is None:
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                ratings.append(self.all_ratings[user_id, all_items])
              
-        else :
-            for userid, candidate_items_userid in zip(user_ids, candidate_items_userids):
-                ratings.append(self.allRatings[userid, candidate_items_userid])
+        else:
+            for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
+                ratings.append(self.all_ratings[user_id, candidate_items_user_id])
              
         return ratings

@@ -3,8 +3,8 @@ import random
 import numpy as np
 import tensorflow as tf
 import importlib
-from data.Dataset import Dataset
-from util import Configurer, Tool
+from data.dataset import Dataset
+from util import Configurer, tool
 
 np.random.seed(2018)
 random.seed(2018)

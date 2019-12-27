@@ -7,7 +7,7 @@ Processing datasets.
 import os
 import pandas as pd
 from scipy.sparse import csr_matrix
-from data.DataSplitter import Splitter
+from data.data_splitter import Splitter
 
 
 class Dataset(object):

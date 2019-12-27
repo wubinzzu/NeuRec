@@ -6,9 +6,9 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import DataGenerator, Learner, Tool
-from util.Logger import logger
-from util.DataIterator import DataIterator
+from util import data_generator, learner, tool
+from util.logger import logger
+from util.data_iterator import DataIterator
 from util import timer
 from util import l2_loss
 
@@ -20,7 +20,6 @@ class MLP(AbstractRecommender):
         self.learning_rate = conf["learning_rate"]
         self.is_pairwise = conf["is_pairwise"]
         self.learner = conf["learner"]
-        self.topK = conf["topk"]
         self.num_epochs = conf["epochs"]
         self.num_negatives = conf["num_neg"]
         self.reg_mlp = conf["reg_mlp"]
@@ -33,7 +32,7 @@ class MLP(AbstractRecommender):
         self.dataset = dataset
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items  
-        self.sess=sess                                       
+        self.sess = sess
         
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
@@ -46,45 +45,42 @@ class MLP(AbstractRecommender):
     
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.mlp_embedding_user = tf.Variable(initializer([self.num_users, int(self.layers[0]/2)]), 
                                                   name="mlp_embedding_user", dtype=tf.float32)
             self.mlp_embedding_item = tf.Variable(initializer([self.num_items, int(self.layers[0]/2)]),
                                                   name="mlp_embedding_item", dtype=tf.float32)
 
-    def _create_inference(self,item_input):
+    def _create_inference(self, item_input):
         with tf.name_scope("inference"):
             # Crucial to flatten an embedding vector!
-            mlp_user_latent = tf.nn.embedding_lookup(self.mlp_embedding_user,self.user_input)
-            mlp_item_latent = tf.nn.embedding_lookup(self.mlp_embedding_item,item_input)   
+            mlp_user_latent = tf.nn.embedding_lookup(self.mlp_embedding_user, self.user_input)
+            mlp_item_latent = tf.nn.embedding_lookup(self.mlp_embedding_item, item_input)
             # The 0-th layer is the concatenation of embedding layers
-            mlp_vector = tf.concat([mlp_user_latent, mlp_item_latent],axis=1)
+            mlp_vector = tf.concat([mlp_user_latent, mlp_item_latent], axis=1)
             # MLP layers
             for idx in np.arange(len(self.layers)):
                 mlp_vector = tf.layers.dense(mlp_vector, units=self.layers[idx],
                                              activation=tf.nn.relu, name="layer%d" % idx)
                 
             # Final prediction layer
-        predict = tf.reduce_sum(mlp_vector,1)
+        predict = tf.reduce_sum(mlp_vector, 1)
         return mlp_user_latent, mlp_item_latent, predict
              
     def _create_loss(self):
         with tf.name_scope("loss"):  
-            p1, q1,self.output= self._create_inference(self.item_input)
+            p1, q1, self.output = self._create_inference(self.item_input)
             if self.is_pairwise.lower() == "true":
                 _, q2, self.output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - self.output_neg
-                self.loss = Learner.pairwise_loss(self.loss_function, result) + \
-                            self.reg_mf * l2_loss(p1, q2, q1)
-
-                
+                self.loss = learner.pairwise_loss(self.loss_function, result) + self.reg_mlp * l2_loss(p1, q2, q1)
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
+                self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
                             self.reg_mlp * l2_loss(p1, q1)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate) 
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
@@ -97,11 +93,11 @@ class MLP(AbstractRecommender):
         for epoch in range(1,self.num_epochs+1):
             # Generate training instances
             if self.is_pairwise.lower() == "true":
-                user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+                user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
-            else :
-                user_input, item_input, labels = DataGenerator._get_pointwise_all_data(self.dataset, self.num_negatives)
+            else:
+                user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
                 data_iter = DataIterator(user_input, item_input, labels,
                                          batch_size=self.batch_size, shuffle=True)
             
@@ -126,10 +122,6 @@ class MLP(AbstractRecommender):
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
-                
-        # params = self.sess.run([self.mlp_embedding_user, self.mlp_embedding_item])
-        # with open("pretrained/%s_epochs=%d_embedding=%d_MLP.pkl" % (self.dataset.dataset_name, self.num_epochs,self.embedding_size), "wb") as fout:
-        #         pickle.dump(params, fout)        
                 
     @timer
     def evaluate(self):

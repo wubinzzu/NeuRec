@@ -6,12 +6,12 @@ Personalized Ranking for Collaborative Filtering." in CIKM 2014
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, randint_choice, Tool
+from util import learner, randint_choice, tool
 from model.AbstractRecommender import SocialAbstractRecommender
-from util.Logger import logger
+from util.logger import logger
 from util import timer
-from util.DataIterator import DataIterator
-from util.Tool import csr_to_user_dict
+from util.data_iterator import DataIterator
+from util.tool import csr_to_user_dict
 from util import l2_loss
 
 
@@ -59,7 +59,7 @@ class SBPR(SocialAbstractRecommender):
 
     def _create_variables(self):
         with tf.name_scope("embedding"):
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.user_embeddings = tf.Variable(initializer([self.num_users, self.embedding_size]),
                                                name='user_embeddings', dtype=tf.float32)  # (users, embedding_size)
             self.item_embeddings = tf.Variable(initializer([self.num_items, self.embedding_size]),
@@ -84,13 +84,13 @@ class SBPR(SocialAbstractRecommender):
             _, q3, b3, output_neg = self._create_inference(self.item_input_neg)
             result1 = tf.divide(self.output - output_social, self.suk)
             result2 = output_social - output_neg
-            self.loss = Learner.pairwise_loss(self.loss_function, result1) +\
-                        Learner.pairwise_loss(self.loss_function, result2) + \
+            self.loss = learner.pairwise_loss(self.loss_function, result1) + \
+                        learner.pairwise_loss(self.loss_function, result2) + \
                         self.reg_mf * l2_loss(p1, q2, q1, q3, b1, b2, b3)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -104,7 +104,7 @@ class SBPR(SocialAbstractRecommender):
         for epoch in range(self.num_epochs):
             user_input, item_input_pos, item_input_social, item_input_neg, suk_input = self._get_pairwise_all_data()
             data_iter = DataIterator(user_input, item_input_pos, item_input_social, item_input_neg, suk_input,
-                                         batch_size=self.batch_size, shuffle=True)
+                                     batch_size=self.batch_size, shuffle=True)
             total_loss = 0.0
             training_start_time = time()
             num_training_instances = len(user_input)
@@ -159,9 +159,9 @@ class SBPR(SocialAbstractRecommender):
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                user_embed = self._cur_user_embeddings[userid]
-                items_embed = self._cur_item_embeddings[items_by_userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                user_embed = self._cur_user_embeddings[user_id]
+                items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))
             
         return ratings

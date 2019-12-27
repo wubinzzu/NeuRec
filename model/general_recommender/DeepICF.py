@@ -1,19 +1,21 @@
-'''
+"""
 Reference: Feng Xue et al., "Deep Item-based Collaborative Filtering for Top-N Recommendation" in TOIS2019
 @author: wubin
-'''
+"""
+
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner,DataGenerator, Tool
-from util.Logger import logger
+from util import learner,data_generator, tool
+from util.logger import logger
 from util import timer
 import pickle
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
-from util.Tool import csr_to_user_dict, pad_sequences
+from util.tool import csr_to_user_dict, pad_sequences
 from util import l2_loss
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
+
 
 class DeepICF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
@@ -49,26 +51,26 @@ class DeepICF(AbstractRecommender):
         self.sess = sess
 
     # batch norm
-    def batch_norm_layer(self,x, train_phase, scope_bn):
+    def batch_norm_layer(self, x, train_phase, scope_bn):
         bn_train = batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,
-            is_training=True, reuse=None, trainable=True, scope=scope_bn)
+                              is_training=True, reuse=None, trainable=True, scope=scope_bn)
         bn_inference = batch_norm(x, decay=0.9, center=True, scale=True, updates_collections=None,
-            is_training=False, reuse=True, trainable=True, scope=scope_bn)
+                                  is_training=False, reuse=True, trainable=True, scope=scope_bn)
         z = tf.cond(train_phase, lambda: bn_train, lambda: bn_inference)
         return z
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
             self.user_input = tf.placeholder(tf.int32, shape=[None, None])  # the index of users
-            self.num_idx = tf.placeholder(tf.float32, shape=[None,])  # the number of items rated by users
-            self.item_input = tf.placeholder(tf.int32, shape=[None,])  # the index of items
-            self.labels = tf.placeholder(tf.float32, shape=[None,])  # the ground truth
+            self.num_idx = tf.placeholder(tf.float32, shape=[None, ])  # the number of items rated by users
+            self.item_input = tf.placeholder(tf.int32, shape=[None, ])  # the index of items
+            self.labels = tf.placeholder(tf.float32, shape=[None, ])  # the ground truth
             self.is_train_phase = tf.placeholder(tf.bool)  # mark is training or testing
 
     def _create_variables(self, params=None):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             if params is None:
-                embed_initializer = Tool.get_initializer(self.embed_init_method, self.stddev)
+                embed_initializer = tool.get_initializer(self.embed_init_method, self.stddev)
                 
                 self.c1 = tf.Variable(embed_initializer([self.num_items, self.embedding_size]),
                                       name='c1', dtype=tf.float32)
@@ -76,7 +78,7 @@ class DeepICF(AbstractRecommender):
                                                name='embedding_Q', dtype=tf.float32)
                 self.bias = tf.Variable(tf.zeros(self.num_items), name='bias')
             else:
-                self.c1 = tf.Variable = tf.Variable(params[0], name='c1', dtype=tf.float32)
+                self.c1 = tf.Variable(params[0], name='c1', dtype=tf.float32)
                 self.embedding_Q = tf.Variable(params[1], name='embedding_Q', dtype=tf.float32)
                 self.bias = tf.Variable(params[2], name="bias", dtype=tf.float32)
                 
@@ -84,15 +86,16 @@ class DeepICF(AbstractRecommender):
             self.embedding_Q_ = tf.concat([self.c1, self.c2], axis=0, name='embedding_Q_')
             
             # Variables for attention
-            weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
-            bias_initializer = Tool.get_initializer(self.bias_init_method, self.stddev)
+            weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
+            bias_initializer = tool.get_initializer(self.bias_init_method, self.stddev)
             if self.algorithm == 0:
                 self.W = tf.Variable(weight_initializer([self.embedding_size, self.weight_size]),
                                      name='Weights_for_MLP', dtype=tf.float32, trainable=True)
             else:
                 self.W = tf.Variable(weight_initializer([2 * self.embedding_size, self.weight_size]), 
                                      name='Weights_for_MLP', dtype=tf.float32, trainable=True)
-            self.b = tf.Variable(bias_initializer([1, self.weight_size]), name='Bias_for_MLP', dtype=tf.float32, trainable=True)
+            self.b = tf.Variable(bias_initializer([1, self.weight_size]), name='Bias_for_MLP',
+                                 dtype=tf.float32, trainable=True)
             self.h = tf.Variable(tf.ones([self.weight_size, 1]), name='H_for_MLP', dtype=tf.float32)
 
             # Variables for DeepICF+a
@@ -103,7 +106,8 @@ class DeepICF(AbstractRecommender):
                 if i > 0:
                     n_hidden_0 = self.n_hidden[i - 1]
                 n_hidden_1 = self.n_hidden[i]
-                self.weights['h%d' % i] = tf.Variable(weight_initializer([n_hidden_0, n_hidden_1]), name='weights_h%d' % i)
+                self.weights['h%d' % i] = tf.Variable(weight_initializer([n_hidden_0, n_hidden_1]),
+                                                      name='weights_h%d' % i)
                 self.biases['b%d' % i] = tf.Variable(tf.random_normal([n_hidden_1]), name='biases_b%d' % i)
 
     def _attention_MLP(self, q_):
@@ -112,15 +116,15 @@ class DeepICF(AbstractRecommender):
             n = tf.shape(q_)[1]
             r = (self.algorithm + 1) * self.embedding_size
 
-            MLP_output = tf.matmul(tf.reshape(q_, [-1, r]), self.W) + self.b  # (b*n, e or 2*e) * (e or 2*e, w) + (1, w)
+            mlp_output = tf.matmul(tf.reshape(q_, [-1, r]), self.W) + self.b  # (b*n, e or 2*e) * (e or 2*e, w) + (1, w)
             if self.activation == 0:
-                MLP_output = tf.nn.relu(MLP_output)
+                mlp_output = tf.nn.relu(mlp_output)
             elif self.activation == 1:
-                MLP_output = tf.nn.sigmoid(MLP_output)
+                mlp_output = tf.nn.sigmoid(mlp_output)
             elif self.activation == 2:
-                MLP_output = tf.nn.tanh(MLP_output)
+                mlp_output = tf.nn.tanh(mlp_output)
 
-            A_ = tf.reshape(tf.matmul(MLP_output, self.h), [b, n])  # (b*n, w) * (w, 1) => (None, 1) => (b, n)
+            A_ = tf.reshape(tf.matmul(mlp_output, self.h), [b, n])  # (b*n, w) * (w, 1) => (None, 1) => (b, n)
 
             # softmax for not mask features
             exp_A_ = tf.exp(A_)
@@ -140,23 +144,26 @@ class DeepICF(AbstractRecommender):
             self.embedding_q = tf.nn.embedding_lookup(self.embedding_Q, self.item_input)  # (b, 1, e)
 
             if self.algorithm == 0:  # prod
-                self.A, self.embedding_p = self._attention_MLP(self.embedding_q_ * tf.expand_dims(self.embedding_q,1))  # (?, k)
+                # (?, k)
+                self.A, self.embedding_p = self._attention_MLP(self.embedding_q_ * tf.expand_dims(self.embedding_q, 1))
             else:  # concat
                 n = tf.shape(self.user_input)[1]
-                self.A, self.embedding_p = self._attention_MLP(tf.concat([self.embedding_q_, tf.tile(tf.expand_dims(self.embedding_q,1), tf.stack([1, n, 1]))], 2))  # (?, k)
+                self.A, self.embedding_p = self._attention_MLP(tf.concat([self.embedding_q_,
+                                                                          tf.tile(tf.expand_dims(self.embedding_q, 1),
+                                                                                  tf.stack([1, n, 1]))], 2))  # (?, k)
 
             self.bias_i = tf.nn.embedding_lookup(self.bias, self.item_input)
-            self.coeff = tf.pow(tf.expand_dims(self.num_idx,1), tf.constant(self.alpha, tf.float32, [1]))
+            self.coeff = tf.pow(tf.expand_dims(self.num_idx, 1), tf.constant(self.alpha, tf.float32, [1]))
             self.embedding_p = self.coeff * self.embedding_p  # (?, k)
 
             # DeepICF+a
             layer1 = tf.multiply(self.embedding_p, self.embedding_q)  # (?, k)
-            for i in range(0,len(self.n_hidden)):
+            for i in range(0, len(self.n_hidden)):
                 layer1 = tf.add(tf.matmul(layer1, self.weights['h%d' % i]), self.biases['b%d' % i])
                 if self.use_batch_norm:
                     layer1 = self.batch_norm_layer(layer1, train_phase=self.is_train_phase, scope_bn='bn_%d' % i)
                 layer1 = tf.nn.relu(layer1)
-            out_layer = tf.reduce_sum(tf.matmul(layer1, self.weights['out']) + self.biases['out'],1) # (?, 1)
+            out_layer = tf.reduce_sum(tf.matmul(layer1, self.weights['out']) + self.biases['out'], 1)  # (?, 1)
 
             self.output = tf.sigmoid(tf.add_n([out_layer, self.bias_i]))  # (?, 1)
 
@@ -169,19 +176,19 @@ class DeepICF(AbstractRecommender):
 
             for i in range(min(len(self.n_hidden), len(self.reg_W))):
                 if self.reg_W[i] > 0:
-                    self.loss = self.loss + self.reg_W[i] * l2_loss(self.weights['h%d'%i])
+                    self.loss = self.loss + self.reg_W[i] * l2_loss(self.weights['h%d' % i])
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
         try:
             pretrained_params = []
-            with open(self.pretrain_file,"rb") as fin:
+            with open(self.pretrain_file, "rb") as fin:
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
-            with open(self.mlp_pretrain,"rb") as fin:
+            with open(self.mlp_pretrain, "rb") as fin:
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
             logger.info("load pretrained params successful!")
         except:
@@ -196,10 +203,10 @@ class DeepICF(AbstractRecommender):
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
-            user_input,num_idx,item_input,labels = \
-                DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+            user_input, num_idx, item_input, labels = \
+                data_generator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
             data_iter = DataIterator(user_input, num_idx, item_input, labels,
-                                         batch_size=self.batch_size, shuffle=True)
+                                     batch_size=self.batch_size, shuffle=True)
                     
             num_training_instances = len(user_input)
             total_loss = 0.0
@@ -213,7 +220,8 @@ class DeepICF(AbstractRecommender):
                                  self.is_train_phase: True}
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" %(epoch,total_loss/num_training_instances,time()-training_start_time))
+            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+                                                             time()-training_start_time))
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     

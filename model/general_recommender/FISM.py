@@ -6,12 +6,12 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
-from util.Logger import logger
+from util import learner, data_generator, tool
+from util.logger import logger
 from util import timer
-from util.Tool import csr_to_user_dict
+from util.tool import csr_to_user_dict
 from util import l2_loss
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 from util import pad_sequences
 
 
@@ -55,7 +55,7 @@ class FISM(AbstractRecommender):
 
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.c1 = tf.Variable(initializer([self.num_items, self.embedding_size]),
                                   name='c1', dtype=tf.float32)
             self.c2 = tf.constant(0.0, tf.float32, [1, self.embedding_size], name='c2')
@@ -79,18 +79,18 @@ class FISM(AbstractRecommender):
             if self.is_pairwise.lower() == "true":
                 _, q2, output_neg = self._create_inference(self.user_input_neg, self.item_input_neg, self.num_idx_neg)
                 self.result = self.output - output_neg
-                self.loss = Learner.pairwise_loss(self.loss_function, self.result) + \
+                self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
                             self.lambda_bilinear * l2_loss(p1) + \
                             self.gamma_bilinear * l2_loss(q2, q1)
             
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function, self.labels,self.output) + \
+                self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
                             self.lambda_bilinear * l2_loss(p1) + \
                             self.gamma_bilinear * l2_loss(q1)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
               
     def build_graph(self):
         self._create_placeholders()
@@ -103,13 +103,13 @@ class FISM(AbstractRecommender):
         for epoch in range(1,self.num_epochs+1):
             if self.is_pairwise.lower() == "true":
                 user_input, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos, item_input_neg = \
-                    DataGenerator._get_pairwise_all_likefism_data(self.dataset)
+                    data_generator._get_pairwise_all_likefism_data(self.dataset)
                 data_iter = DataIterator(user_input, user_input_neg, num_idx_pos,
                                          num_idx_neg, item_input_pos, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
             else:
                 user_input, num_idx, item_input, labels = \
-                DataGenerator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
+                data_generator._get_pointwise_all_likefism_data(self.dataset, self.num_negatives, self.train_dict)
                 data_iter = DataIterator(user_input, num_idx, item_input, labels,
                                          batch_size=self.batch_size, shuffle=True)
 

@@ -1,36 +1,36 @@
-'''
+"""
 Reference: Jun Wang, et al., "IRGAN: A Minimax Game for Unifying Generative and 
 Discriminative Information Retrieval Models." SIGIR 2017.
 @author: Zhongchuan Sun
-'''
+"""
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-from util.Logger import logger
+from util.logger import logger
 from util import l2_loss
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 
 
 class GEN(object):
-    def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
-        self.itemNum = itemNum
-        self.userNum = userNum
+    def __init__(self, item_num, user_num, emb_dim, lamda, param=None, init_delta=0.05, learning_rate=0.05):
+        self.itemNum = item_num
+        self.userNum = user_num
         self.emb_dim = emb_dim
         self.lamda = lamda  # regularization parameters
         self.param = param
-        self.initdelta = initdelta
+        self.init_delta = init_delta
         self.learning_rate = learning_rate
         self.g_params = []
 
         with tf.variable_scope('generator'):
-            if self.param == None:
+            if self.param is None:
                 self.user_embeddings = tf.Variable(
-                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.init_delta, maxval=self.init_delta,
                                       dtype=tf.float32))
                 self.item_embeddings = tf.Variable(
-                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.init_delta, maxval=self.init_delta,
                                       dtype=tf.float32))
                 self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
             else:
@@ -65,23 +65,23 @@ class GEN(object):
 
 
 class DIS(object):
-    def __init__(self, itemNum, userNum, emb_dim, lamda, param=None, initdelta=0.05, learning_rate=0.05):
-        self.itemNum = itemNum
-        self.userNum = userNum
+    def __init__(self, item_num, user_num, emb_dim, lamda, param=None, init_delta=0.05, learning_rate=0.05):
+        self.itemNum = item_num
+        self.userNum = user_num
         self.emb_dim = emb_dim
         self.lamda = lamda  # regularization parameters
         self.param = param
-        self.initdelta = initdelta
+        self.init_delta = init_delta
         self.learning_rate = learning_rate
         self.d_params = []
 
         with tf.variable_scope('discriminator'):
-            if self.param == None:
+            if self.param is None:
                 self.user_embeddings = tf.Variable(
-                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                    tf.random_uniform([self.userNum, self.emb_dim], minval=-self.init_delta, maxval=self.init_delta,
                                       dtype=tf.float32))
                 self.item_embeddings = tf.Variable(
-                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.initdelta, maxval=self.initdelta,
+                    tf.random_uniform([self.itemNum, self.emb_dim], minval=-self.init_delta, maxval=self.init_delta,
                                       dtype=tf.float32))
                 self.item_bias = tf.Variable(tf.zeros([self.itemNum]))
             else:
@@ -101,8 +101,7 @@ class DIS(object):
         self.i_bias = tf.gather(self.item_bias, self.i)
 
         self.pre_logits = tf.reduce_sum(tf.multiply(self.u_embedding, self.i_embedding), 1) + self.i_bias
-        self.pre_loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=self.label,
-                                                                logits=self.pre_logits) + \
+        self.pre_loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=self.label, logits=self.pre_logits) + \
                         self.lamda * l2_loss(self.u_embedding, self.i_embedding, self.i_bias)
 
         d_opt = tf.train.GradientDescentOptimizer(self.learning_rate)

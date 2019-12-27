@@ -6,8 +6,8 @@ import numpy as np
 from time import time
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
-from util.Logger import logger
-from util import timer, Tool
+from util.logger import logger
+from util import timer, tool
 
 
 class WRMF(AbstractRecommender):
@@ -28,8 +28,8 @@ class WRMF(AbstractRecommender):
         self.Cui = np.zeros(shape=[self.num_users, self.num_items], dtype=np.float32)
         self.Pui = np.zeros(shape=[self.num_users, self.num_items], dtype=np.float32)
         for u in np.arange(self.num_users):
-            items_by_userid = self.dataset.train_matrix[u].indices
-            for i in items_by_userid:
+            items_by_user_id = self.dataset.train_matrix[u].indices
+            for i in items_by_user_id:
                 self.Cui[u, i] = self.alpha
                 self.Pui[u, i] = 1.0
         self.lambda_eye = self.reg_mf * tf.eye(self.embedding_size)
@@ -44,7 +44,7 @@ class WRMF(AbstractRecommender):
         self.Pi = tf.placeholder(tf.float32, [self.num_users, 1])
     
     def _create_variables(self):
-        initializer = Tool.get_initializer(self.init_method, self.stddev)
+        initializer = tool.get_initializer(self.init_method, self.stddev)
         self.user_embeddings = tf.Variable(initializer([self.num_users, self.embedding_size]), name='user_embeddings', dtype=tf.float32)
         self.item_embeddings = tf.Variable(initializer([self.num_items, self.embedding_size]), name='item_embeddings', dtype=tf.float32)
         
@@ -69,20 +69,20 @@ class WRMF(AbstractRecommender):
     # ---------- training process -------
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in  range(1, self.num_epochs+1):
+        for epoch in range(1, self.num_epochs+1):
             training_start_time = time()
             print('solving for user vectors...')
-            for userid in range(self.num_users):
-                feed = {self.user_id: [userid],
-                        self.Pu: self.Pui[userid].T.reshape([-1, 1]),
-                        self.Cu: self.Cui[userid].T.reshape([-1, 1])}
+            for user_id in range(self.num_users):
+                feed = {self.user_id: [user_id],
+                        self.Pu: self.Pui[user_id].T.reshape([-1, 1]),
+                        self.Cu: self.Cui[user_id].T.reshape([-1, 1])}
                 self.sess.run(self.update_user, feed_dict=feed)
 
             print('solving for item vectors...')
-            for itemid in range(self.num_items):
-                feed = {self.item_id: [itemid],
-                        self.Pi: self.Pui[:,itemid].reshape([-1, 1]),
-                        self.Ci: self.Cui[:,itemid].reshape([-1, 1])}
+            for item_id in range(self.num_items):
+                feed = {self.item_id: [item_id],
+                        self.Pi: self.Pui[:,item_id].reshape([-1, 1]),
+                        self.Ci: self.Cui[:,item_id].reshape([-1, 1])}
                 self.sess.run(self.update_item, feed_dict=feed)
            
             logger.info('iteration %i finished in %f seconds' % (epoch, time()-training_start_time))
@@ -100,8 +100,8 @@ class WRMF(AbstractRecommender):
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                user_embed = self._cur_user_embeddings[userid]
-                items_embed = self._cur_item_embeddings[items_by_userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                user_embed = self._cur_user_embeddings[user_id]
+                items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))
         return ratings

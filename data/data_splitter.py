@@ -3,7 +3,7 @@
 """
 from .utils import load_data, filter_data, remap_id
 from .utils import split_by_ratio, split_by_loo
-from util.Logger import Logger
+from util.logger import Logger
 from util import randint_choice
 import pandas as pd
 import numpy as np

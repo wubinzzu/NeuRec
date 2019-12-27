@@ -10,7 +10,7 @@ import numpy as np
 from model.AbstractRecommender import SeqAbstractRecommender
 import tensorflow as tf
 from util import l2_loss
-from util.Logger import logger
+from util.logger import logger
 
 
 class GRU4RecPlus(SeqAbstractRecommender):

@@ -7,10 +7,10 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 from time import time
-from util import DataGenerator, Learner, Tool
-from util.Logger import logger
+from util import data_generator, learner, tool
+from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 from util import timer
 from util import l2_loss
 
@@ -42,7 +42,7 @@ class NGCF(AbstractRecommender):
         self.graph = dataset.train_matrix.toarray()
         self.norm_adj = self.get_adj_mat()
         self.n_nonzero_elems = self.norm_adj.count_nonzero()
-        self.pretrain_data = None
+        self.pre_train_data = None
         self.sess = sess
 
     def _create_placeholders(self):
@@ -113,7 +113,7 @@ class NGCF(AbstractRecommender):
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -126,9 +126,9 @@ class NGCF(AbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in  range(1,self.num_epochs+1):
             # Generate training instances
-            user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
             data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
+                                     batch_size=self.batch_size, shuffle=True)
             
             total_loss = 0.0
             training_start_time = time()
@@ -255,26 +255,28 @@ class NGCF(AbstractRecommender):
         
     def _init_weights(self):
         all_weights = dict()
-        embed_initializer = Tool.get_initializer(self.embed_init_method, self.stddev)
-        weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
+        embed_initializer = tool.get_initializer(self.embed_init_method, self.stddev)
+        weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
 
-        if self.pretrain_data is None:
-            all_weights['user_embedding'] = tf.Variable(embed_initializer([self.num_users, self.emb_dim]), name='user_embedding')
-            all_weights['item_embedding'] = tf.Variable(embed_initializer([self.num_items, self.emb_dim]), name='item_embedding')
+        if self.pre_train_data is None:
+            all_weights['user_embedding'] = tf.Variable(embed_initializer([self.num_users, self.emb_dim]),
+                                                        name='user_embedding')
+            all_weights['item_embedding'] = tf.Variable(embed_initializer([self.num_items, self.emb_dim]),
+                                                        name='item_embedding')
             logger.info('using xavier initialization')
         else:
-            all_weights['user_embedding'] = tf.Variable(initial_value=self.pretrain_data['user_embed'], trainable=True,
+            all_weights['user_embedding'] = tf.Variable(initial_value=self.pre_train_data['user_embed'], trainable=True,
                                                         name='user_embedding', dtype=tf.float32)
-            all_weights['item_embedding'] = tf.Variable(initial_value=self.pretrain_data['item_embed'], trainable=True,
+            all_weights['item_embedding'] = tf.Variable(initial_value=self.pre_train_data['item_embed'], trainable=True,
                                                         name='item_embedding', dtype=tf.float32)
             logger.info('using pretrained initialization')
 
         self.weight_size_list = [self.emb_dim] + self.weight_size
 
         for k in range(self.n_layers):
-            all_weights['W_gc_%d' %k] = tf.Variable(
+            all_weights['W_gc_%d' % k] = tf.Variable(
                 weight_initializer([self.weight_size_list[k], self.weight_size_list[k+1]]), name='W_gc_%d' % k)
-            all_weights['b_gc_%d' %k] = tf.Variable(
+            all_weights['b_gc_%d' % k] = tf.Variable(
                 weight_initializer([1, self.weight_size_list[k+1]]), name='b_gc_%d' % k)
 
             all_weights['W_bi_%d' % k] = tf.Variable(

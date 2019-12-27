@@ -1,5 +1,5 @@
 import numpy as np
-from util.Tool import randint_choice
+from util.tool import randint_choice
 def _get_pairwise_all_data(dataset):
     user_input, item_input_pos, item_input_neg = [], [], []
     train_matrix = dataset.train_matrix

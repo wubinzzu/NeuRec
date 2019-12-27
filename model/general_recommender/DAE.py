@@ -1,17 +1,17 @@
-'''
+"""
 Reference: Wu, Yao, et al. "Collaborative denoising auto-encoders for top-n recommender systems." in WSDM2016
 @author: wubin
-'''
+"""
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
-from util.Logger import logger
+from util import learner, tool
+from util.logger import logger
 from util import timer
-from util.Tool import csr_to_user_dict
+from util.tool import csr_to_user_dict
 from util import l2_loss
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 
 
 class DAE(AbstractRecommender):
@@ -42,7 +42,7 @@ class DAE(AbstractRecommender):
             
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.V = tf.Variable(initializer([self.num_users, self.hidden_neuron]))
              
             self.weights = {'encoder': tf.Variable(initializer([self.num_items, self.hidden_neuron])),
@@ -53,27 +53,26 @@ class DAE(AbstractRecommender):
     def _create_inference(self):
         with tf.name_scope("inference"):
             
-            corrupted_input = tf.multiply(self.input_R,self.mask_corruption)
-            encoder_op = Tool.activation_function(self.h_act,\
-            tf.matmul(corrupted_input, self.weights['encoder'])+self.biases['encoder'])
+            corrupted_input = tf.multiply(self.input_R, self.mask_corruption)
+            encoder_op = tool.activation_function(self.h_act, tf.matmul(corrupted_input, self.weights['encoder']) +
+                                                  self.biases['encoder'])
               
             self.decoder_op = tf.matmul(encoder_op, self.weights['decoder'])+self.biases['decoder']
-            self.output = Tool.activation_function(self.g_act,self.decoder_op)
+            self.output = tool.activation_function(self.g_act, self.decoder_op)
             
     def _create_loss(self):
         with tf.name_scope("loss"):
-            self.loss = - tf.reduce_sum(self.input_R* tf.log(self.output) + (1 - self.input_R) * tf.log(1 - self.output))
+            self.loss = - tf.reduce_sum(self.input_R * tf.log(self.output) +
+                                        (1 - self.input_R) * tf.log(1 - self.output))
  
-            self.reg_loss = self.reg*l2_loss(self.weights['encoder'],
-                                             self.weights['decoder'],
-                                             self.biases['encoder'],
-                                             self.biases['decoder'])
+            self.reg_loss = self.reg*l2_loss(self.weights['encoder'], self.weights['decoder'],
+                                             self.biases['encoder'], self.biases['decoder'])
 
             self.loss = self.loss + self.reg_loss
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate) 
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
@@ -94,9 +93,9 @@ class DAE(AbstractRecommender):
             training_start_time = time()
             for batch_set_idx in users_iter:
                 batch_matrix = np.zeros((len(batch_set_idx), self.num_items))
-                for idx, userid in enumerate(batch_set_idx):
-                    items_by_userid = self.train_dict[userid]
-                    batch_matrix[idx, items_by_userid] = 1
+                for idx, user_id in enumerate(batch_set_idx):
+                    items_by_user_id = self.train_dict[user_id]
+                    batch_matrix[idx, items_by_user_id] = 1
 
                 feed_dict = {self.mask_corruption: mask_corruption_np[batch_set_idx, :],
                              self.input_R: batch_matrix}
@@ -111,29 +110,31 @@ class DAE(AbstractRecommender):
     def evaluate(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        mask = np.ones((1,self.num_items), dtype=np.int32)
-        if candidate_items_userids is not None:
-            rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-            for userid, candidate_items_userid in zip(user_ids, candidate_items_userids):
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
-                output = self.sess.run(self.output, 
-                                       feed_dict={self.mask_corruption:mask,
-                                                  self.input_R:rating_matrix})
-                ratings.append(output[0, candidate_items_userid])
+        mask = np.ones((1, self.num_items), dtype=np.int32)
+        if candidate_items_user_ids is not None:
+            rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
+            for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
+
+                feed_dict = {self.mask_corruption: mask,
+                             self.input_R: rating_matrix}
+                output = self.sess.run(self.output, feed_dict=feed_dict)
+                ratings.append(output[0, candidate_items_user_id])
                 
         else:
             rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
-                output = self.sess.run(self.output, 
-                                       feed_dict={self.mask_corruption:mask,
-                                                  self.input_R:rating_matrix})
-                ratings.append(output[0, allitems])
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
+
+                feed_dict = {self.mask_corruption: mask,
+                             self.input_R: rating_matrix}
+                output = self.sess.run(self.output, feed_dict=feed_dict)
+                ratings.append(output[0, all_items])
         return ratings

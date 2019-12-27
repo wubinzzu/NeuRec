@@ -7,10 +7,10 @@ from model.AbstractRecommender import SeqAbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
-from util.Logger import logger
-from util.DataIterator import DataIterator
-from util.Tool import csr_to_user_dict_bytime
+from util import learner, data_generator, tool
+from util.logger import logger
+from util.data_iterator import DataIterator
+from util.tool import csr_to_user_dict_bytime
 from util import timer
 from util import l2_loss
 
@@ -49,7 +49,7 @@ class TransRec(SeqAbstractRecommender):
 
     def _create_variables(self):
         with tf.name_scope("embedding"):
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.user_embeddings = tf.Variable(initializer([self.num_users, self.embedding_size]),
                                                name='user_embeddings', dtype=tf.float32)  # (users, embedding_size)
             self.item_embeddings = tf.Variable(initializer([self.num_items, self.embedding_size]),
@@ -79,15 +79,15 @@ class TransRec(SeqAbstractRecommender):
             if self.is_pairwise.lower() == "true":
                 _, _, q2, b2, output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
-                self.loss = Learner.pairwise_loss(self.loss_function,self.result) + \
+                self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
                             self.reg_mf * l2_loss(p1, r1, q2, q1, b1, b2, self.global_embedding)
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
+                self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
                             self.reg_mf * l2_loss(p1, r1, q1, b1, self.global_embedding)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
                 
     def build_graph(self):
         self._create_placeholders()
@@ -102,12 +102,12 @@ class TransRec(SeqAbstractRecommender):
             # Generate training instances
             if self.is_pairwise.lower() == "true":
                 user_input, item_input_pos, item_input_recent, item_input_neg = \
-                    DataGenerator._get_pairwise_all_firstorder_data(self.dataset, self.train_dict)
+                    data_generator._get_pairwise_all_firstorder_data(self.dataset, self.train_dict)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_recent, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
             else:
                 user_input, item_input, item_input_recent, labels = \
-                    DataGenerator._get_pointwise_all_firstorder_data(self.dataset, self.num_negatives)
+                    data_generator._get_pointwise_all_firstorder_data(self.dataset, self.num_negatives)
                 data_iter = DataIterator(user_input, item_input, item_input_recent, labels,
                                          batch_size=self.batch_size, shuffle=True)
            
@@ -147,26 +147,26 @@ class TransRec(SeqAbstractRecommender):
     def predict(self, user_ids, candidate_items_userids):
         ratings = []
         if candidate_items_userids is None:
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                cand_items = self.train_dict[userid]
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                cand_items = self.train_dict[user_id]
                 item_recent = np.full(self.num_items, cand_items[-1], dtype=np.int32)
     
-                users = np.full(self.num_items, userid, dtype=np.int32)
+                users = np.full(self.num_items, user_id, dtype=np.int32)
                 feed_dict = {self.user_input: users,
                              self.item_input_recent: item_recent,
-                             self.item_input: allitems}
+                             self.item_input: all_items}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))   
                 
-        else :
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                cand_items = self.train_dict[userid]
+        else:
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                cand_items = self.train_dict[user_id]
                 item_recent = np.full(len(candidate_items_userids), cand_items[-1], dtype=np.int32)
     
-                users = np.full(len(items_by_userid), userid, dtype=np.int32)
+                users = np.full(len(items_by_user_id), user_id, dtype=np.int32)
                 feed_dict = {self.user_input: users,
                              self.item_input_recent: item_recent,
-                             self.item_input: items_by_userid}
+                             self.item_input: items_by_user_id}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
 
         return ratings

@@ -1,18 +1,18 @@
-'''
+"""
 Reference: Hong-Jian Xue et al., "Deep Matrix Factorization Models for Recommender Systems." In IJCAI2017.  
 @author: wubin
-'''
+"""
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
+from util import learner, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.Logger import logger
+from util.logger import logger
 from util import timer
 
 
 class DMF(AbstractRecommender):
-    def __init__(self,sess,dataset,conf):  
+    def __init__(self, sess, dataset, conf):
         super(DMF, self).__init__(dataset, conf)
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]
@@ -37,22 +37,22 @@ class DMF(AbstractRecommender):
         
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.one_hot_u = tf.placeholder(tf.float32, shape=[None,None],name = 'user_input')
-            self.one_hot_v = tf.placeholder(tf.float32, shape=[None,None],name = 'item_input')
-            self.lables = tf.placeholder(tf.float32, shape=[None,],name="labels")
+            self.one_hot_u = tf.placeholder(tf.float32, shape=[None, None], name='user_input')
+            self.one_hot_v = tf.placeholder(tf.float32, shape=[None, None], name='item_input')
+            self.labels = tf.placeholder(tf.float32, shape=[None, ], name="labels")
             
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
             self.u_w1 = tf.Variable(initializer([self.num_items, self.fist_layer_size]), name="u_w1")
-            self.u_b1 = tf.Variable(initializer([self.fist_layer_size]), name = "u_b1")
-            self.u_w2 = tf.Variable(initializer([self.fist_layer_size, self.last_layer_size]), name = "u_w2")
-            self.u_b2 = tf.Variable(initializer([self.last_layer_size]), name = "u_b2")
+            self.u_b1 = tf.Variable(initializer([self.fist_layer_size]), name="u_b1")
+            self.u_w2 = tf.Variable(initializer([self.fist_layer_size, self.last_layer_size]), name="u_w2")
+            self.u_b2 = tf.Variable(initializer([self.last_layer_size]), name="u_b2")
         
-            self.v_w1 = tf.Variable(initializer([self.num_users, self.fist_layer_size]), name = "v_w1")
-            self.v_b1 = tf.Variable(initializer([self.fist_layer_size]), name = "v_b1")
-            self.v_w2 = tf.Variable(initializer([self.fist_layer_size, self.last_layer_size]), name = "v_w2")
-            self.v_b2 = tf.Variable(initializer([self.last_layer_size]), name = "v_b2")
+            self.v_w1 = tf.Variable(initializer([self.num_users, self.fist_layer_size]), name="v_w1")
+            self.v_b1 = tf.Variable(initializer([self.fist_layer_size]), name="v_b1")
+            self.v_w2 = tf.Variable(initializer([self.fist_layer_size, self.last_layer_size]), name="v_w2")
+            self.v_b2 = tf.Variable(initializer([self.last_layer_size]), name="v_b2")
 
     def _create_inference(self):
         with tf.name_scope("inference"):
@@ -71,11 +71,11 @@ class DMF(AbstractRecommender):
             
     def _create_loss(self):
         with tf.name_scope("loss"):
-            self.loss = Learner.pointwise_loss(self.loss_function, self.lables, self.output)
+            self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate) 
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
@@ -97,14 +97,14 @@ class DMF(AbstractRecommender):
                 num_training_instances = len(user_input)
                 id_start = num_batch * self.batch_size
                 id_end = (num_batch + 1) * self.batch_size
-                if id_end>num_training_instances:
-                    id_end=num_training_instances
+                if id_end > num_training_instances:
+                    id_end = num_training_instances
                 bat_users = user_input[id_start:id_end].tolist()
                 bat_items = item_input[id_start:id_end].tolist()
-                bat_lables = np.array(labels[id_start:id_end])
-                feed_dict = {self.one_hot_u:bat_users, self.one_hot_v:bat_items,
-                             self.lables:bat_lables}
-                loss, _ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
+                bat_labels = np.array(labels[id_start:id_end])
+                feed_dict = {self.one_hot_u: bat_users, self.one_hot_v: bat_items,
+                             self.labels: bat_labels}
+                loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                 total_loss += loss
             logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
@@ -115,45 +115,46 @@ class DMF(AbstractRecommender):
     def evaluate(self):
         return self.evaluator.evaluate(self)
     
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is not None:
-            for userid, candidate_items_userid in zip(user_ids, candidate_items_userids):
+        if candidate_items_user_ids is not None:
+            for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
                 user_input, item_input = [], []
-                u_vector = np.reshape(self.user_matrix.getrow(userid.toarray(),[self.num_items]))
-                for i in candidate_items_userid:
+                u_vector = np.reshape(self.user_matrix.getrow(user_id.toarray(), [self.num_items]))
+                for i in candidate_items_user_id:
                     user_input.append(u_vector)
-                    i_vector = np.reshape(self.item_matrix.getcol(i).toarray(),[self.num_users])
+                    i_vector = np.reshape(self.item_matrix.getcol(i).toarray(), [self.num_users])
                     item_input.append(i_vector)
-                    ratings.append(self.sess.run(self.output, feed_dict={self.one_hot_u: user_input, self.one_hot_v: item_input}))
-        
-        else :
+                    feed_dict = {self.one_hot_u: user_input, self.one_hot_v: item_input}
+                    ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
+        else:
             user_input, item_input = [], []
-            u_vector = np.reshape(self.user_matrix.getrow(userid.toarray(),[self.num_items]))
+            u_vector = np.reshape(self.user_matrix.getrow(user_id.toarray(), [self.num_items]))
             for i in range(self.num_items):
                 user_input.append(u_vector)
-                i_vector = np.reshape(self.item_matrix.getcol(i).toarray(),[self.num_users])
+                i_vector = np.reshape(self.item_matrix.getcol(i).toarray(), [self.num_users])
                 item_input.append(i_vector)
-                ratings.append(self.sess.run(self.output, feed_dict={self.one_hot_u: user_input, self.one_hot_v: item_input}))
+                feed_dict = {self.one_hot_u: user_input, self.one_hot_v: item_input}
+                ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
         return ratings
 
     def _get_input_all_data(self):
-        user_input,item_input,labels = [],[],[]
+        user_input, item_input, labels = [], [], []
         for u in range(self.num_users):
             # positive instance
             items_by_user = self.user_matrix[u].indices
-            u_vector = np.reshape(self.user_matrix.getrow(u).toarray(),[self.num_items])
+            u_vector = np.reshape(self.user_matrix.getrow(u).toarray(), [self.num_items])
             for i in items_by_user:
-                i_vector = np.reshape(self.item_matrix.getcol(i).toarray(),[self.num_users])
+                i_vector = np.reshape(self.item_matrix.getcol(i).toarray(), [self.num_users])
                 user_input.append(u_vector)
                 item_input.append(i_vector)
                 labels.append(1)
-            # negative instance
+                # negative instance
                 for _ in range(self.num_negatives):
                     j = np.random.randint(self.num_items)
                     while (u, j) in self.trainMatrix.keys():
                         j = np.random.randint(self.num_items)
-                    j_vector = np.reshape(self.item_matrix.getcol(i).toarray(),[self.num_users])
+                    j_vector = np.reshape(self.item_matrix.getcol(i).toarray(), [self.num_users])
                     user_input.append(u_vector)
                     item_input.append(j_vector)
                     labels.append(0)
@@ -161,9 +162,9 @@ class DMF(AbstractRecommender):
         item_input = np.array(item_input, dtype=np.int32)
         labels = np.array(labels, dtype=np.float32)
         num_training_instances = len(user_input)
-        shuffle_index = np.arange(num_training_instances,dtype=np.int32)
+        shuffle_index = np.arange(num_training_instances, dtype=np.int32)
         np.random.shuffle(shuffle_index)
-        user_input=user_input[shuffle_index]
-        item_input=item_input[shuffle_index]
+        user_input = user_input[shuffle_index]
+        item_input = item_input[shuffle_index]
         labels = labels[shuffle_index]
         return user_input, item_input, labels

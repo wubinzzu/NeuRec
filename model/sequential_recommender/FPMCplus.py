@@ -7,10 +7,10 @@ from model.AbstractRecommender import SeqAbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
-from util.Logger import logger
-from util.DataIterator import DataIterator
-from util.Tool import csr_to_user_dict_bytime
+from util import learner, data_generator, tool
+from util.logger import logger
+from util.data_iterator import DataIterator
+from util.tool import csr_to_user_dict_bytime
 from util import timer
 from util import l2_loss
 
@@ -53,8 +53,8 @@ class FPMCplus(SeqAbstractRecommender):
 
     def _create_variables(self):
         with tf.name_scope("embedding"):
-            embed_initializer = Tool.get_initializer(self.embed_init_method, self.stddev)
-            weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
+            embed_initializer = tool.get_initializer(self.embed_init_method, self.stddev)
+            weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
             
             self.embeddings_UI = tf.Variable(embed_initializer([self.num_users, self.embedding_size]), 
                                              name='embeddings_UI', dtype=tf.float32)  # (users, embedding_size)
@@ -66,12 +66,12 @@ class FPMCplus(SeqAbstractRecommender):
                                              name='embeddings_LI', dtype=tf.float32)  # (items, embedding_size)
             
             self.W = tf.Variable(weight_initializer([3*self.embedding_size, self.weight_size]),
-                                name='Weights_for_MLP', dtype=tf.float32, trainable=True)
+                                 name='Weights_for_MLP', dtype=tf.float32, trainable=True)
             self.b = tf.Variable(weight_initializer([1, self.weight_size]),
                                  name='Bias_for_MLP', dtype=tf.float32, trainable=True)
             self.h = tf.Variable(tf.ones([self.weight_size, 1]), name='H_for_MLP', dtype=tf.float32)
 
-    def _attention_MLP(self,embeddings_UI_u, embeddings_IL_i,item_embedding_recent):
+    def _attention_mlp(self, embeddings_UI_u, embeddings_IL_i, item_embedding_recent):
         with tf.name_scope("attention_MLP"):
             UI_u = tf.tile(tf.expand_dims(embeddings_UI_u, 1), tf.stack([1, self.high_order, 1]))
             IL_i = tf.tile(tf.expand_dims(embeddings_IL_i, 1), tf.stack([1, self.high_order, 1]))
@@ -100,8 +100,9 @@ class FPMCplus(SeqAbstractRecommender):
             embeddings_IU_i = tf.nn.embedding_lookup(self.embeddings_IU, item_input)
             embeddings_IL_i = tf.nn.embedding_lookup(self.embeddings_IL, item_input)
             embeddings_LI_l = tf.nn.embedding_lookup(self.embeddings_LI, self.item_input_recent)
-            item_embedding_short = self._attention_MLP(embeddings_UI_u, embeddings_IL_i, embeddings_LI_l)
-            predict_vector = tf.multiply(embeddings_UI_u, embeddings_IU_i)+tf.multiply(embeddings_IL_i, item_embedding_short)
+            item_embedding_short = self._attention_mlp(embeddings_UI_u, embeddings_IL_i, embeddings_LI_l)
+            predict_vector = tf.multiply(embeddings_UI_u, embeddings_IU_i) + \
+                             tf.multiply(embeddings_IL_i, item_embedding_short)
             predict = tf.reduce_sum(predict_vector, 1)
             return embeddings_UI_u, embeddings_IU_i, embeddings_IL_i, embeddings_LI_l, predict
 
@@ -111,16 +112,16 @@ class FPMCplus(SeqAbstractRecommender):
             if self.is_pairwise.lower() == "true":
                 _, IU_j, IL_j, _, output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
-                self.loss = Learner.pairwise_loss(self.loss_function,self.result) + \
+                self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
                             self.reg_mf * l2_loss(UI_u, IU_i, IL_i, LI_l, IU_j, IL_j) + \
                             self.reg_w * l2_loss(self.W, self.h)
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function,self.labels,self.output) + \
+                self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
                             self.reg_mf * l2_loss(UI_u, IU_i, IL_i, LI_l)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
                 
     def build_graph(self):
         self._create_placeholders()
@@ -135,14 +136,15 @@ class FPMCplus(SeqAbstractRecommender):
             # Generate training instances
             if self.is_pairwise.lower() == "true":
                 user_input, item_input_pos, item_input_recents, item_input_neg = \
-                    DataGenerator._get_pairwise_all_highorder_data(self.dataset, self.high_order, self.train_dict)
+                    data_generator._get_pairwise_all_highorder_data(self.dataset, self.high_order, self.train_dict)
                 
                 data_iter = DataIterator(user_input, item_input_pos, item_input_recents, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
                 
             else:
                 user_input, item_input, item_input_recents, labels = \
-                    DataGenerator._get_pointwise_all_highorder_data(self.dataset, self.high_order, self.num_negatives, self.train_dict)
+                    data_generator._get_pointwise_all_highorder_data(self.dataset, self.high_order,
+                                                                     self.num_negatives, self.train_dict)
                 
                 data_iter = DataIterator(user_input, item_input, item_input_recents, labels,
                                          batch_size=self.batch_size, shuffle=True)
@@ -169,14 +171,15 @@ class FPMCplus(SeqAbstractRecommender):
                                  self.item_input_recent: bat_items_recent,
                                  self.labels: bat_labels}
     
-                    loss,_ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
-                    total_loss+=loss
+                    loss, _ = self.sess.run((self.loss,self.optimizer),feed_dict=feed_dict)
+                    total_loss += loss
                 
             logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+
     @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)
@@ -184,29 +187,29 @@ class FPMCplus(SeqAbstractRecommender):
     def predict(self, user_ids, candidate_items_userids):
         ratings = []
         if candidate_items_userids is None:
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                cand_items = self.train_dict[userid]
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                cand_items = self.train_dict[user_id]
                 item_recent = []
     
                 for _ in range(self.num_items):
                     item_recent.append(cand_items[len(cand_items)-self.high_order:])
-                users = np.full(self.num_items, userid, dtype=np.int32)
+                users = np.full(self.num_items, user_id, dtype=np.int32)
                 feed_dict = {self.user_input: users,
                              self.item_input_recent: item_recent,
-                             self.item_input: allitems}
+                             self.item_input: all_items}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))  
         
         else:
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                cand_items = self.train_dict[userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                cand_items = self.train_dict[user_id]
                 item_recent = []
     
-                for _ in range(len(items_by_userid)):
+                for _ in range(len(items_by_user_id)):
                     item_recent.append(cand_items[len(cand_items)-self.high_order:])
-                users = np.full(len(items_by_userid), userid, dtype=np.int32)
+                users = np.full(len(items_by_user_id), user_id, dtype=np.int32)
                 feed_dict = {self.user_input: users,
                              self.item_input_recent: item_recent,
-                             self.item_input: items_by_userid}
+                             self.item_input: items_by_user_id}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
         return ratings

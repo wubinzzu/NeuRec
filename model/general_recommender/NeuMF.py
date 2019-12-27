@@ -6,9 +6,9 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import DataGenerator, Learner, Tool
-from util.DataIterator import DataIterator
-from util.Logger import logger
+from util import data_generator, learner, tool
+from util.data_iterator import DataIterator
+from util.logger import logger
 from util import timer
 import pickle
 from util import l2_loss
@@ -50,22 +50,22 @@ class NeuMF(AbstractRecommender):
     def _create_variables(self, params=None):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             if params is None:
-                initializer = Tool.get_initializer(self.init_method, self.stddev)
+                initializer = tool.get_initializer(self.init_method, self.stddev)
                 
-                self.mf_embedding_user = tf.Variable(initializer([self.num_users,self.embedding_size]), 
+                self.mf_embedding_user = tf.Variable(initializer([self.num_users, self.embedding_size]),
                                                      name='mf_embedding_user', dtype=tf.float32)
-                self.mf_embedding_item = tf.Variable(initializer([self.num_items,self.embedding_size]),
+                self.mf_embedding_item = tf.Variable(initializer([self.num_items, self.embedding_size]),
                                                      name='mf_embedding_item', dtype=tf.float32)
                 self.mlp_embedding_user = tf.Variable(initializer([self.num_users, int(self.layers[0]/2)]),
                                                       name="mlp_embedding_user", dtype=tf.float32)
                 self.mlp_embedding_item = tf.Variable(initializer([self.num_items, int(self.layers[0]/2)]),
                                                       name="mlp_embedding_item", dtype=tf.float32)
             else:
-                self.mf_embedding_user = tf.Variable(params[0][0],name = 'mf_embedding_user',dtype=tf.float32)
-                self.mf_embedding_item = tf.Variable(params[0][1],name = 'mf_embedding_item',dtype=tf.float32)
+                self.mf_embedding_user = tf.Variable(params[0][0], name='mf_embedding_user', dtype=tf.float32)
+                self.mf_embedding_item = tf.Variable(params[0][1], name='mf_embedding_item', dtype=tf.float32)
                 
-                self.mlp_embedding_user = tf.Variable(params[1][0],name = "mlp_embedding_user",dtype=tf.float32)
-                self.mlp_embedding_item = tf.Variable(params[1][1],name = "mlp_embedding_item",dtype=tf.float32)
+                self.mlp_embedding_user = tf.Variable(params[1][0], name="mlp_embedding_user", dtype=tf.float32)
+                self.mlp_embedding_item = tf.Variable(params[1][1], name="mlp_embedding_item", dtype=tf.float32)
 
     def _create_inference(self, item_input):
         with tf.name_scope("inference"):
@@ -92,34 +92,34 @@ class NeuMF(AbstractRecommender):
             if self.is_pairwise.lower() == "true":
                 _, q2, _, n2, output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - output_neg
-                self.loss = Learner.pairwise_loss(self.loss_function,result) + \
+                self.loss = learner.pairwise_loss(self.loss_function, result) + \
                             self.reg_mf * l2_loss(p1, q2, q1) + \
                             self.reg_mlp * l2_loss(m1, n2, n1)
 
 
             else:
-                self.loss = Learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
+                self.loss = learner.pointwise_loss(self.loss_function, self.labels, self.output) + \
                             self.reg_mf * l2_loss(p1, q1) + \
                             self.reg_mlp * l2_loss(m1, n1)
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate) 
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
             
     def build_graph(self):
         self._create_placeholders()
         try:
-            pretrained_params = []
+            pre_trained_params = []
             with open(self.mf_pretrain,"rb") as fin:
-                pretrained_params.append(pickle.load(fin, encoding="utf-8"))
+                pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
             with open(self.mlp_pretrain,"rb") as fin:
-                pretrained_params.append(pickle.load(fin, encoding="utf-8"))
+                pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
             logger.info("load pretrained params successful!")
         except:
-            pretrained_params = None
+            pre_trained_params = None
             logger.info("load pretrained params unsuccessful!")
             
-        self._create_variables(pretrained_params)
+        self._create_variables(pre_trained_params)
         self._create_loss()
         self._create_optimizer()
                                                
@@ -128,11 +128,11 @@ class NeuMF(AbstractRecommender):
         for epoch in range(1,self.num_epochs+1):
             # Generate training instances
             if self.is_pairwise.lower() == "true":
-                user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+                user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
             else:
-                user_input, item_input, labels = DataGenerator._get_pointwise_all_data(self.dataset, self.num_negatives)
+                user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
                 data_iter = DataIterator(user_input, item_input, labels,
                                          batch_size=self.batch_size, shuffle=True)
 
@@ -157,14 +157,15 @@ class NeuMF(AbstractRecommender):
                                                              time() - training_start_time))
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+
     @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is not None:
-            for u, i in zip(user_ids, candidate_items_userids):
+        if candidate_items_user_ids is not None:
+            for u, i in zip(user_ids, candidate_items_user_ids):
                 users = np.full(len(i), u, dtype=np.int32)
                 feed_dict = {self.user_input: users, self.item_input: i}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))

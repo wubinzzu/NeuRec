@@ -1,16 +1,16 @@
-'''
+"""
 Reference: Dawen, Liang, et al. "Variational autoencoders for collaborative filtering." in WWW2018
 @author: wubin
-'''
+"""
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, Tool
+from util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
-from util.Logger import logger
+from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
 from util import timer
-from util.Tool import csr_to_user_dict
+from util.tool import csr_to_user_dict
 
 
 class MultiDAE(AbstractRecommender):
@@ -44,8 +44,8 @@ class MultiDAE(AbstractRecommender):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now   
             self.weights = []
             self.biases = []
-            weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
-            bias_initializer = Tool.get_initializer(self.bias_init_method, self.stddev)
+            weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
+            bias_initializer = tool.get_initializer(self.bias_init_method, self.stddev)
             # define weights
             for i, (d_in, d_out) in enumerate(zip(self.dims[:-1], self.dims[1:])):
                 weight_key = "weight_{}to{}".format(i, i+1)
@@ -65,15 +65,14 @@ class MultiDAE(AbstractRecommender):
                 self.h = tf.matmul(self.h, w) + b
                 
                 if i != len(self.weights) - 1:
-                    self.h = Tool.activation_function(self.act, self.h)
+                    self.h = tool.activation_function(self.act, self.h)
                     
             self.log_softmax_var = tf.nn.log_softmax(self.h)
         
     def _create_loss(self):
         with tf.name_scope("loss"):  
             # per-user average negative log-likelihood 
-            neg_ll = -tf.reduce_mean(tf.reduce_sum(
-            self.log_softmax_var * self.input_ph, axis=1))
+            neg_ll = -tf.reduce_mean(tf.reduce_sum(self.log_softmax_var * self.input_ph, axis=1))
             # apply regularization to weights
             regularization = l2_regularizer(self.reg)
             reg_var = apply_regularization(regularization, self.weights)
@@ -83,7 +82,7 @@ class MultiDAE(AbstractRecommender):
                 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)     
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -94,7 +93,7 @@ class MultiDAE(AbstractRecommender):
             
     def train_model(self):
 
-        for epoch in  range(1, self.num_epochs+1):
+        for epoch in range(1, self.num_epochs+1):
             random_perm_doc_idx = np.random.permutation(self.num_users)
             self.total_batch = self.num_users
             total_loss = 0.0
@@ -106,17 +105,17 @@ class MultiDAE(AbstractRecommender):
                 elif num_batch < self.total_batch - 1:
                     batch_set_idx = random_perm_doc_idx[num_batch * self.batch_size: (num_batch + 1) * self.batch_size]
                 
-                batch_matrix = np.zeros((len(batch_set_idx),self.num_items)) 
+                batch_matrix = np.zeros((len(batch_set_idx), self.num_items))
                 
                 batch_uid = 0
-                for userid in batch_set_idx:
-                    items_by_userid = self.train_dict[userid]
-                    for itemid in items_by_userid:
-                        batch_matrix[batch_uid,itemid] = 1
+                for user_id in batch_set_idx:
+                    items_by_user_id = self.train_dict[user_id]
+                    for item_id in items_by_user_id:
+                        batch_matrix[batch_uid, item_id] = 1
                         
-                    batch_uid=batch_uid+1
+                    batch_uid = batch_uid+1
                  
-                feed_dict = {self.input_ph: batch_matrix,self.keep_prob_ph: 0.5}
+                feed_dict = {self.input_ph: batch_matrix, self.keep_prob_ph: 0.5}
                 _, loss = self.sess.run([self.optimizer, self.loss], feed_dict=feed_dict)
                 total_loss += loss
             logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
@@ -128,24 +127,24 @@ class MultiDAE(AbstractRecommender):
     def evaluate(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is not None:
-            rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-            for userid, candidate_items_userid in zip(user_ids, candidate_items_userids):
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
+        if candidate_items_user_ids is not None:
+            rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
+            for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
                 output = self.sess.run(self.h, feed_dict={self.input_ph:rating_matrix})
-                ratings.append(output[0, candidate_items_userid])
+                ratings.append(output[0, candidate_items_user_id])
                 
         else:
-            rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
-            allitems = np.arange(self.num_items)
-            for userid in user_ids:
-                items_by_userid = self.dataset.train_matrix[userid].indices
-                for itemid in items_by_userid:
-                    rating_matrix[0,itemid] = 1
+            rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
+            all_items = np.arange(self.num_items)
+            for user_id in user_ids:
+                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                for item_id in items_by_user_id:
+                    rating_matrix[0, item_id] = 1
                 output = self.sess.run(self.h, feed_dict={self.input_ph:rating_matrix})
-                ratings.append(output[0, allitems])
+                ratings.append(output[0, all_items])
         return ratings

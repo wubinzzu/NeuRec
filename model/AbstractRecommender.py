@@ -2,7 +2,7 @@ from evaluator import ProxyEvaluator
 import pandas as pd
 import numpy as np
 import scipy.sparse as sp
-from util.Logger import logger
+from util.logger import logger
 
 
 class AbstractRecommender(object):

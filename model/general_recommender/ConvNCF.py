@@ -1,15 +1,15 @@
-'''
+"""
 Xiangnan He et al., "Outer Product-based Neural Collaborative Filtering", In IJCAI 2018.  
 @author: wubin
-'''
+"""
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
-from util.Logger import logger
+from util import learner, data_generator, tool
+from util.logger import logger
 from util import timer
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 import pickle
 from util import l2_loss
 
@@ -47,35 +47,33 @@ class ConvNCF(AbstractRecommender):
             self.keep_prob = tf.placeholder_with_default(1.0, shape=None,name = "keep_prob")
 
     # ---------- model definition -------
-    def weight_variable(self,shape):
-        initializer = Tool.get_initializer(self.weight_init_method, self.stddev)
+    def weight_variable(self, shape):
+        initializer = tool.get_initializer(self.weight_init_method, self.stddev)
         return tf.Variable(initializer(shape))
-    
-    def bias_variable(self,shape):
+
+    def bias_variable(self, shape):
         initial = tf.constant(0.1, shape=shape)
         return tf.Variable(initial)
 
     def _conv_weight(self, isz, osz):
         return self.weight_variable([2,2,isz,osz]), self.bias_variable([osz])
 
-    def _conv_layer(self, input, P):
-        conv = tf.nn.conv2d(input, P[0], strides=[1, 2, 2, 1], padding='SAME')
+    def _conv_layer(self, x, P):
+        conv = tf.nn.conv2d(x, P[0], strides=[1, 2, 2, 1], padding='SAME')
         return tf.nn.tanh(conv + P[1])
 
     def _create_variables(self, params=None):
         with tf.name_scope("embedding"):
             if params is None:
-                initializer = Tool.get_initializer(self.embed_init_method, self.stddev)
+                initializer = tool.get_initializer(self.embed_init_method, self.stddev)
                 self.embedding_P = tf.Variable(initializer([self.num_users, self.embedding_size]),
-                                                name='embedding_P', dtype=tf.float32)  #(users, embedding_size)
+                                               name='embedding_P', dtype=tf.float32)  # (users, embedding_size)
                 self.embedding_Q = tf.Variable(initializer([self.num_items, self.embedding_size]),
-                                                name='embedding_Q', dtype=tf.float32)  #(items, embedding_size)
+                                               name='embedding_Q', dtype=tf.float32)  # (items, embedding_size)
             
             else:
-                self.embedding_P = tf.Variable(params[0],
-                                                name='embedding_P', dtype=tf.float32)  #(users, embedding_size)
-                self.embedding_Q = tf.Variable(params[1],
-                                                name='embedding_Q', dtype=tf.float32)  #(items, embedding_size)
+                self.embedding_P = tf.Variable(params[0], name='embedding_P', dtype=tf.float32)  # (users, embedding_size)
+                self.embedding_Q = tf.Variable(params[1], name='embedding_Q', dtype=tf.float32)  # (items, embedding_size)
 
             # here should have 6 iszs due to the size of outer products is 64x64
             iszs = [1] + self.nc[:-1]
@@ -84,8 +82,8 @@ class ConvNCF(AbstractRecommender):
             for isz, osz in zip(iszs, oszs):
                 self.P.append(self._conv_weight(isz, osz))
 
-            self.W = self.weight_variable([self.nc[-1], 1])#32x1
-            self.b = self.weight_variable([1])#1
+            self.W = self.weight_variable([self.nc[-1], 1])  # 32x1
+            self.b = self.weight_variable([1])  # 1
 
     def _create_inference(self, item_input):
         with tf.name_scope("inference"):
@@ -121,7 +119,7 @@ class ConvNCF(AbstractRecommender):
             self.p1, self.q1, self.output = self._create_inference(self.item_input_pos)
             self.p2, self.q2, self.output_neg = self._create_inference(self.item_input_neg)
             self.result = self.output - self.output_neg
-            self.loss = Learner.pairwise_loss(self.loss_function, self.result)########
+            self.loss = learner.pairwise_loss(self.loss_function, self.result)
 
             self.opt_loss = self.loss + self.lambda_bilinear * l2_loss(self.p1, self.q2, self.q1) + \
                             self.gamma_bilinear * self._regular([(self.W, self.b)]) + \
@@ -134,9 +132,9 @@ class ConvNCF(AbstractRecommender):
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-        # seperated optimizer
+            # seperated optimizer
             var_list1 = [self.embedding_P, self.embedding_Q]
-            #[self.W1,self.W2,self.W3,self.W4,self.b1,self.b2,self.b3,self.b4,self.P1,self.P2,self.P3]
+            # [self.W1,self.W2,self.W3,self.W4,self.b1,self.b2,self.b3,self.b4,self.P1,self.P2,self.P3]
             var_list2 = list(set(tf.trainable_variables()) - set(var_list1))
             opt1 = tf.train.AdagradOptimizer(self.lr_embed)
             opt2 = tf.train.AdagradOptimizer(self.lr_net)
@@ -151,9 +149,9 @@ class ConvNCF(AbstractRecommender):
         self._create_placeholders()
         try:
             pretrained_params = []
-            with open(self.mf_pretrain,"rb") as fin:
+            with open(self.mf_pretrain, "rb") as fin:
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
-            with open(self.mlp_pretrain,"rb") as fin:
+            with open(self.mlp_pretrain, "rb") as fin:
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
             logger.info("load pretrained params successful!")
         except:
@@ -161,16 +159,16 @@ class ConvNCF(AbstractRecommender):
             logger.info("load pretrained params unsuccessful!")
         self._create_variables(pretrained_params)
         self._create_loss()
-        if pretrained_params == None:
+        if pretrained_params is None:
             self._create_pre_optimizer()
         self._create_optimizer()
 
     # ---------- training process -------
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in  range(1, self.num_epochs+1):
+        for epoch in range(1, self.num_epochs+1):
             # Generate training instances
-            user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
             data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
                                      batch_size=self.batch_size, shuffle=True)
             total_loss = 0.0
@@ -191,10 +189,10 @@ class ConvNCF(AbstractRecommender):
     def evaluate(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is not None:
-            for u, i in zip(user_ids, candidate_items_userids):
+        if candidate_items_user_ids is not None:
+            for u, i in zip(user_ids, candidate_items_user_ids):
                 users = np.full(len(i), u, dtype=np.int32)
                 feed_dict = {self.user_input: users, self.item_input_pos: i}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))

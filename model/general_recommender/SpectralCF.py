@@ -1,14 +1,14 @@
-'''
+"""
 Reference: Lei, Zheng, et al. "Spectral Collaborative Filtering." in RecSys2018
 @author: wubin
-'''
+"""
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import DataGenerator, Learner, Tool
-from util.Logger import logger
+from util import data_generator, learner, tool
+from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
-from util.DataIterator import DataIterator
+from util.data_iterator import DataIterator
 from util import timer
 from util import l2_loss
 
@@ -18,7 +18,7 @@ class SpectralCF(AbstractRecommender):
         super(SpectralCF, self).__init__(dataset, conf)
         self.learning_rate = conf["learning_rate"]
         self.learner = conf["learner"]
-        self.batch_size= conf["batch_size"]
+        self.batch_size = conf["batch_size"]
         self.num_layers = conf["num_layers"]
         self.activation = conf["activation"]
         self.embedding_size = conf["embedding_size"]
@@ -39,22 +39,23 @@ class SpectralCF(AbstractRecommender):
         self.L = self.laplacian_matrix(normalized=True)
         self.lamda, self.U = np.linalg.eig(self.L)
         self.lamda = np.diag(self.lamda)
-        self.sess=sess        
+        self.sess = sess
 
     def _create_placeholders(self):
         with tf.name_scope("input_data"):
-            self.input_user = tf.placeholder(dtype=tf.int32, shape=[None,])
-            self.input_item_pos = tf.placeholder(dtype=tf.int32, shape=[None,])
-            self.input_item_neg = tf.placeholder(dtype=tf.int32, shape=[None,])
+            self.input_user = tf.placeholder(dtype=tf.int32, shape=[None, ])
+            self.input_item_pos = tf.placeholder(dtype=tf.int32, shape=[None, ])
+            self.input_item_neg = tf.placeholder(dtype=tf.int32, shape=[None, ])
+
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now  
-            embed_initializer = Tool.get_initializer(self.embed_init_method, self.stddev)
+            embed_initializer = tool.get_initializer(self.embed_init_method, self.stddev)
             self.user_embeddings = tf.Variable(embed_initializer([self.num_users, self.embedding_size]),
-                                     dtype=tf.float32, name='user_embeddings')
-            self.item_embeddings = tf.Variable(embed_initializer([self.num_items, self.embedding_size]), 
-                                     dtype=tf.float32, name='item_embeddings')
+                                               dtype=tf.float32, name='user_embeddings')
+            self.item_embeddings = tf.Variable(embed_initializer([self.num_items, self.embedding_size]),
+                                               dtype=tf.float32, name='item_embeddings')
             
-        weight_initializer = Tool.get_initializer(self.weight_init_method, self.stddev) 
+        weight_initializer = tool.get_initializer(self.weight_init_method, self.stddev)
         self.filters = []
         for _ in range(self.num_layers):
             self.filters.append(
@@ -63,7 +64,7 @@ class SpectralCF(AbstractRecommender):
     def _create_inference(self):
         with tf.name_scope("inference"):
             A_hat = np.dot(self.U, self.U.T) + np.dot(np.dot(self.U, self.lamda), self.U.T)
-            #A_hat += np.dot(np.dot(self.U, self.lamda_2), self.U.T)
+            # A_hat += np.dot(np.dot(self.U, self.lamda_2), self.U.T)
             A_hat = A_hat.astype(np.float32)
     
             embeddings = tf.concat([self.user_embeddings, self.item_embeddings], axis=0)
@@ -72,8 +73,8 @@ class SpectralCF(AbstractRecommender):
     
                 embeddings = tf.matmul(A_hat, embeddings)
     
-                #filters = self.filters[k]#tf.squeeze(tf.gather(self.filters, k))
-                embeddings = Tool.activation_function(self.activation, (tf.matmul(embeddings, self.filters[k])))
+                # filters = self.filters[k]#tf.squeeze(tf.gather(self.filters, k))
+                embeddings = tool.activation_function(self.activation, (tf.matmul(embeddings, self.filters[k])))
                 all_embeddings += [embeddings]
             all_embeddings = tf.concat(all_embeddings, 1)
             self.user_new_embeddings, self.item_new_embeddings = tf.split(all_embeddings, [self.num_users, self.num_items], 0)
@@ -87,11 +88,11 @@ class SpectralCF(AbstractRecommender):
             output_neg = tf.reduce_sum(tf.multiply(self.u_embeddings, self.neg_j_embeddings), axis=1)
             regularizer = self.reg * l2_loss(self.u_embeddings, self.pos_i_embeddings, self.neg_j_embeddings)
 
-            self.loss = Learner.pairwise_loss(self.loss_function,self.output - output_neg)+ regularizer
+            self.loss = learner.pairwise_loss(self.loss_function, self.output - output_neg) + regularizer
                 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
     
     def build_graph(self):
         self._create_placeholders()
@@ -104,30 +105,30 @@ class SpectralCF(AbstractRecommender):
         A = np.zeros([self.num_users+self.num_items, self.num_users+self.num_items], dtype=np.float32)
         A[:self.num_users, self.num_users:] = self.graph
         A[self.num_users:, :self.num_users] = self.graph.transpose()
-        if self_connection == True:
+        if self_connection is True:
             return np.identity(self.num_users+self.num_items,dtype=np.float32) + A
         return A
 
     def degree_matrix(self):
         degree = np.sum(self.A, axis=1, keepdims=False)
-        #degree = np.diag(degree)
+        # degree = np.diag(degree)
         return degree
 
     def laplacian_matrix(self, normalized=False):
-        if normalized == False:
+        if normalized is False:
             return self.D - self.A
 
         temp = np.dot(np.diag(np.power(self.D, -1)), self.A)
-        #temp = np.dot(temp, np.power(self.D, -0.5))
+        # temp = np.dot(temp, np.power(self.D, -0.5))
         return np.identity(self.num_users+self.num_items,dtype=np.float32) - temp
         
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in  range(1,self.num_epochs+1):
+        for epoch in range(1,self.num_epochs+1):
             # Generate training instances
-            user_input, item_input_pos, item_input_neg = DataGenerator._get_pairwise_all_data(self.dataset)
+            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
             data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
+                                     batch_size=self.batch_size, shuffle=True)
             
             total_loss = 0.0
             training_start_time = time()
@@ -146,7 +147,8 @@ class SpectralCF(AbstractRecommender):
                 
     @timer
     def evaluate(self):
-        self._cur_user_embeddings, self._cur_item_embeddings = self.sess.run([self.user_new_embeddings, self.item_new_embeddings])
+        self._cur_user_embeddings, self._cur_item_embeddings = \
+            self.sess.run([self.user_new_embeddings, self.item_new_embeddings])
         return self.evaluator.evaluate(self)
 
     def predict(self, user_ids, candidate_items_userids):
@@ -155,9 +157,9 @@ class SpectralCF(AbstractRecommender):
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                user_embed = self._cur_user_embeddings[userid]
-                items_embed = self._cur_item_embeddings[items_by_userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                user_embed = self._cur_user_embeddings[user_id]
+                items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))
             
         return ratings

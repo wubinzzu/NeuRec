@@ -2,10 +2,10 @@ from model.AbstractRecommender import SocialAbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import Learner, DataGenerator, Tool
-from util.Logger import logger
-from util.DataIterator import DataIterator
-from util.Tool import csr_to_user_dict
+from util import learner, data_generator, tool
+from util.logger import logger
+from util.data_iterator import DataIterator
+from util.tool import csr_to_user_dict
 from util import timer
 from util import l2_loss
 
@@ -51,7 +51,7 @@ class DiffNet(SocialAbstractRecommender):
         social_neighbors_indices_list = []
         social_neighbors_values_list = []
         for u in range(self.num_users):
-            friends =  self.social_matrix[u].indices
+            friends = self.social_matrix[u].indices
             for v in friends:
                 social_neighbors_indices_list.append([u,v])
                 social_neighbors_values_list.append(1.0/len(friends))
@@ -79,7 +79,7 @@ class DiffNet(SocialAbstractRecommender):
 
     def _create_variables(self):
         with tf.name_scope("embedding"):
-            initializer = Tool.get_initializer(self.init_method, self.stddev)
+            initializer = tool.get_initializer(self.init_method, self.stddev)
                
             self.user_embedding = tf.Variable(initializer([self.num_users, self.embedding_size]),
                                               name='user_embedding')
@@ -87,22 +87,22 @@ class DiffNet(SocialAbstractRecommender):
                                               name='item_embedding')
             
         user_review_vectors = np.zeros((self.num_users, self.feature_dimension))
-        with open( self.user_feature_file, 'r') as f:
+        with open(self.user_feature_file, 'r') as f:
             for line in f.readlines():
-                userindex, data =line.strip().split("::::")
-                if userindex in self.userids:
-                    inneruserindex = self.userids[userindex]
-                    user_review_vectors[inneruserindex] = eval(data)
+                user_idx, data = line.strip().split("::::")
+                if user_idx in self.userids:
+                    inner_user_idx = self.userids[user_idx]
+                    user_review_vectors[inner_user_idx] = eval(data)
             
         self.user_review_vector_matrix = tf.constant(user_review_vectors, dtype=tf.float32)
 
         item_review_vectors = np.zeros((self.num_items, self.feature_dimension))
-        with open( self.item_feature_file, 'r') as f:
+        with open(self.item_feature_file, 'r') as f:
             for line in f.readlines():
-                itemindex, data =line.strip().split("::::")
-                if itemindex in self.itemids:
-                    inneritemindex = self.itemids[itemindex]
-                    item_review_vectors[inneritemindex] = eval(data)
+                item_idx, data = line.strip().split("::::")
+                if item_idx in self.itemids:
+                    inner_item_idx = self.itemids[item_idx]
+                    item_review_vectors[inner_item_idx] = eval(data)
             
         self.item_review_vector_matrix = tf.constant(item_review_vectors, dtype=tf.float32)
         self.reduce_dimension_layer = tf.layers.Dense(self.embedding_size, activation=tf.nn.sigmoid,
@@ -151,7 +151,7 @@ class DiffNet(SocialAbstractRecommender):
     
             #self.fusion_user_embedding = self.user_fusion_layer(\
             #    tf.concat([self.user_embedding, second_user_review_vector_matrix], 1))
-            self.fusion_user_embedding = self.user_embedding #+ second_user_review_vector_matrix
+            self.fusion_user_embedding = self.user_embedding  # + second_user_review_vector_matrix
             first_gcn_user_embedding = self.generateUserEmbeddingFromSocialNeighbors(self.fusion_user_embedding)
             second_gcn_user_embedding = self.generateUserEmbeddingFromSocialNeighbors(first_gcn_user_embedding)
     
@@ -176,7 +176,7 @@ class DiffNet(SocialAbstractRecommender):
 
     def _create_optimizer(self):
         with tf.name_scope("learner"):
-            self.optimizer = Learner.optimizer(self.learner, self.loss, self.learning_rate)
+            self.optimizer = learner.optimizer(self.learner, self.loss, self.learning_rate)
                 
     def build_graph(self):
         self._create_placeholders()  
@@ -190,7 +190,7 @@ class DiffNet(SocialAbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1,self.num_epochs+1):
             # Generate training instances
-            user_input, item_input, labels = DataGenerator._get_pointwise_all_data(self.dataset, self.num_negatives)
+            user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
             data_iter = DataIterator(user_input, item_input, labels,
                                      batch_size=self.batch_size, shuffle=True)
 
@@ -210,7 +210,8 @@ class DiffNet(SocialAbstractRecommender):
 
     @timer
     def evaluate(self):
-        self._cur_user_embeddings, self._cur_item_embeddings = self.sess.run([self.latest_user_latent, self.latest_item_latent])
+        self._cur_user_embeddings, self._cur_item_embeddings = \
+            self.sess.run([self.latest_user_latent, self.latest_item_latent])
         return self.evaluator.evaluate(self)
 
     def predict(self, user_ids, candidate_items_userids):
@@ -219,9 +220,9 @@ class DiffNet(SocialAbstractRecommender):
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                user_embed = self._cur_user_embeddings[userid]
-                items_embed = self._cur_item_embeddings[items_by_userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+                user_embed = self._cur_user_embeddings[user_id]
+                items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))
             
         return ratings

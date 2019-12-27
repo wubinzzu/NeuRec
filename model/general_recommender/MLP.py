@@ -38,7 +38,7 @@ class MLP(AbstractRecommender):
         with tf.name_scope("input_data"):
             self.user_input = tf.placeholder(tf.int32, shape=[None], name='user_input')
             self.item_input = tf.placeholder(tf.int32, shape=[None], name='item_input')
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None], name="item_input_neg")
             else:
                 self.labels = tf.placeholder(tf.float32, shape=[None], name="labels")
@@ -70,7 +70,7 @@ class MLP(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):  
             p1, q1, self.output = self._create_inference(self.item_input)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 _, q2, self.output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - self.output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, result) + self.reg_mlp * l2_loss(p1, q2, q1)
@@ -92,7 +92,7 @@ class MLP(AbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1,self.num_epochs+1):
             # Generate training instances
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
@@ -104,7 +104,7 @@ class MLP(AbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
             num_training_instances = len(user_input)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items_pos,

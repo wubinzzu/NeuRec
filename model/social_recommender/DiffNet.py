@@ -162,7 +162,7 @@ class DiffNet(SocialAbstractRecommender):
             self.latest_item_latent = tf.nn.embedding_lookup(self.final_item_embedding, self.item_input)
             
 #             self.output = tf.sigmoid(tf.reduce_sum(tf.multiply(self.latest_user_latent, self.latest_item_latent),1))
-            self.output = tf.reduce_sum(tf.multiply(self.latest_user_latent, self.latest_item_latent),1)
+            self.output = tf.reduce_sum(tf.multiply(self.latest_user_latent, self.latest_item_latent), 1)
             
     def _create_loss(self):
         with tf.name_scope("loss"):
@@ -188,7 +188,7 @@ class DiffNet(SocialAbstractRecommender):
     # ---------- training process -------
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in range(1,self.num_epochs+1):
+        for epoch in range(1, self.num_epochs+1):
             # Generate training instances
             user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
             data_iter = DataIterator(user_input, item_input, labels,

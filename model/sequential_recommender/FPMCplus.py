@@ -46,7 +46,7 @@ class FPMCplus(SeqAbstractRecommender):
             self.user_input = tf.placeholder(tf.int32, shape=[None], name="user_input")
             self.item_input = tf.placeholder(tf.int32, shape=[None], name="item_input_pos")
             self.item_input_recent = tf.placeholder(tf.int32, shape=[None, None], name="item_input_recent")
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None], name="item_input_neg")
             else:
                 self.labels = tf.placeholder(tf.float32, shape=[None], name="labels")
@@ -75,7 +75,7 @@ class FPMCplus(SeqAbstractRecommender):
         with tf.name_scope("attention_MLP"):
             UI_u = tf.tile(tf.expand_dims(embeddings_UI_u, 1), tf.stack([1, self.high_order, 1]))
             IL_i = tf.tile(tf.expand_dims(embeddings_IL_i, 1), tf.stack([1, self.high_order, 1]))
-            embedding_short =tf.concat([UI_u,IL_i,item_embedding_recent], 2)
+            embedding_short = tf.concat([UI_u,IL_i,item_embedding_recent], 2)
             batch_users = tf.shape(embedding_short)[0]
 
             # (b*n, e or 2*e) * (e or 2*e, w) + (1, w)
@@ -109,7 +109,7 @@ class FPMCplus(SeqAbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             UI_u, IU_i, IL_i, LI_l, self.output = self._create_inference(self.item_input)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 _, IU_j, IL_j, _, output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
@@ -134,26 +134,26 @@ class FPMCplus(SeqAbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             # Generate training instances
-            if self.is_pairwise.lower() == "true":
-                user_input, item_input_pos, item_input_recents, item_input_neg = \
+            if self.is_pairwise is True:
+                user_input, item_input_pos, item_input_recent, item_input_neg = \
                     data_generator._get_pairwise_all_highorder_data(self.dataset, self.high_order, self.train_dict)
                 
-                data_iter = DataIterator(user_input, item_input_pos, item_input_recents, item_input_neg,
+                data_iter = DataIterator(user_input, item_input_pos, item_input_recent, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
                 
             else:
-                user_input, item_input, item_input_recents, labels = \
+                user_input, item_input, item_input_recent, labels = \
                     data_generator._get_pointwise_all_highorder_data(self.dataset, self.high_order,
                                                                      self.num_negatives, self.train_dict)
                 
-                data_iter = DataIterator(user_input, item_input, item_input_recents, labels,
+                data_iter = DataIterator(user_input, item_input, item_input_recent, labels,
                                          batch_size=self.batch_size, shuffle=True)
            
             num_training_instances = len(user_input)
             total_loss = 0.0
             training_start_time = time()
       
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_users, bat_items_pos, bat_items_recent, bat_items_neg in data_iter:
                     
                     feed_dict = {self.user_input: bat_users, 
@@ -184,9 +184,9 @@ class FPMCplus(SeqAbstractRecommender):
     def evaluate(self):
         return self.evaluator.evaluate(self)
                 
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_user_ids):
         ratings = []
-        if candidate_items_userids is None:
+        if candidate_items_user_ids is None:
             all_items = np.arange(self.num_items)
             for user_id in user_ids:
                 cand_items = self.train_dict[user_id]
@@ -201,7 +201,7 @@ class FPMCplus(SeqAbstractRecommender):
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))  
         
         else:
-            for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_user_ids):
                 cand_items = self.train_dict[user_id]
                 item_recent = []
     

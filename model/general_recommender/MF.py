@@ -38,7 +38,7 @@ class MF(AbstractRecommender):
         with tf.name_scope("input_data"):
             self.user_input = tf.placeholder(tf.int32, shape=[None], name="user_input")
             self.item_input = tf.placeholder(tf.int32, shape=[None], name="item_input")
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None], name="item_input_neg")
             else:
                 self.labels = tf.placeholder(tf.float32, shape=[None], name="labels")
@@ -64,7 +64,7 @@ class MF(AbstractRecommender):
         with tf.name_scope("loss"):
             # loss for L(Theta)
             p1, q1, self.output = self._create_inference(self.item_input)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 _, q2, self.output_neg = self._create_inference(self.item_input_neg)
                 result = self.output - self.output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, result) + self.reg_mf * l2_loss(p1, q2, q1)
@@ -87,7 +87,7 @@ class MF(AbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             # Generate training instances
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
                                          batch_size=self.batch_size, shuffle=True)
@@ -99,7 +99,7 @@ class MF(AbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
 
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items_pos,
@@ -123,15 +123,15 @@ class MF(AbstractRecommender):
         self._cur_user_embeddings, self._cur_item_embeddings = self.sess.run([self.user_embeddings, self.item_embeddings])
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_userids):
-        if candidate_items_userids is None:
+    def predict(self, user_ids, candidate_items_user_ids):
+        if candidate_items_user_ids is None:
             user_embed = self._cur_user_embeddings[user_ids]
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for userid, items_by_userid in zip(user_ids, candidate_items_userids):
-                user_embed = self._cur_user_embeddings[userid]
-                items_embed = self._cur_item_embeddings[items_by_userid]
+            for user_id, items_by_user_id in zip(user_ids, candidate_items_user_ids):
+                user_embed = self._cur_user_embeddings[user_id]
+                items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))
             
         return ratings

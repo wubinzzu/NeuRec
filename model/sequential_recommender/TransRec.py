@@ -42,7 +42,7 @@ class TransRec(SeqAbstractRecommender):
             self.user_input = tf.placeholder(tf.int32, shape=[None], name="user_input")
             self.item_input = tf.placeholder(tf.int32, shape=[None], name="item_input_pos")
             self.item_input_recent = tf.placeholder(tf.int32, shape=[None], name="item_input_recent")
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None], name="item_input_neg")
             else:
                 self.labels = tf.placeholder(tf.float32, shape=[None, ], name="labels")
@@ -76,7 +76,7 @@ class TransRec(SeqAbstractRecommender):
         with tf.name_scope("loss"):
             # loss for L(Theta)
             p1, r1, q1, b1, self.output = self._create_inference(self.item_input)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 _, _, q2, b2, output_neg = self._create_inference(self.item_input_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
@@ -100,7 +100,7 @@ class TransRec(SeqAbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         for epoch in range(self.num_epochs):
             # Generate training instances
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 user_input, item_input_pos, item_input_recent, item_input_neg = \
                     data_generator._get_pairwise_all_firstorder_data(self.dataset, self.train_dict)
                 data_iter = DataIterator(user_input, item_input_pos, item_input_recent, item_input_neg,
@@ -115,7 +115,7 @@ class TransRec(SeqAbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
 
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_users, bat_items_pos, bat_items_recent, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items_pos,

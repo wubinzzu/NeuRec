@@ -55,14 +55,14 @@ class NAIS(AbstractRecommender):
             self.user_input = tf.placeholder(tf.int32, shape=[None, None], name="user_input")  # the index of users
             self.num_idx = tf.placeholder(tf.float32, shape=[None], name="num_idx")  # the number of items rated by users
             self.item_input = tf.placeholder(tf.int32, shape=[None], name="item_input_pos")  # the index of items
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 self.user_input_neg = tf.placeholder(tf.int32, shape=[None, None], name="user_input_neg")
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None], name="item_input_neg")
                 self.num_idx_neg = tf.placeholder(tf.float32, shape=[None], name="num_idx_neg")
             else:
                 self.labels = tf.placeholder(tf.float32, shape=[None], name="labels")
 
-    def _create_variables(self,params=None):
+    def _create_variables(self, params=None):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             if params is None:
                 embed_initializer = tool.get_initializer(self.embed_init_method, self.stddev)
@@ -116,7 +116,7 @@ class NAIS(AbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             p1, q1, self.output = self._create_inference(self.user_input,self.item_input,self.num_idx)
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 _, q2, output_neg = self._create_inference(self.user_input_neg, self.item_input_neg, self.num_idx_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
@@ -178,8 +178,8 @@ class NAIS(AbstractRecommender):
 
     def train_model(self):
         logger.info(self.evaluator.metrics_info())
-        for epoch in range(1,self.num_epochs+1):
-            if self.is_pairwise.lower() == "true":
+        for epoch in range(1, self.num_epochs+1):
+            if self.is_pairwise is True:
                 user_input, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos, item_input_neg = \
                     data_generator._get_pairwise_all_likefism_data(self.dataset)
                 data_iter = DataIterator(user_input, user_input_neg, num_idx_pos,
@@ -194,7 +194,7 @@ class NAIS(AbstractRecommender):
             num_training_instances = len(user_input)
             total_loss = 0.0
             training_start_time = time()
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_users_pos, bat_users_neg, bat_idx_pos, bat_idx_neg, bat_items_pos, bat_items_neg in data_iter:
                     bat_users_pos = pad_sequences(bat_users_pos, value=self.num_items)
                     bat_users_neg = pad_sequences(bat_users_neg, value=self.num_items)

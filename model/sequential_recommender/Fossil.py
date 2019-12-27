@@ -51,7 +51,7 @@ class Fossil(SeqAbstractRecommender):
             self.num_idx = tf.placeholder(tf.float32, shape=[None, ], name="num_idx")  # the number of items rated by users
             self.item_input = tf.placeholder(tf.int32, shape=[None, ], name="item_input_pos")  # the index of items
             self.item_input_recent = tf.placeholder(tf.int32, shape=[None, None], name="item_input_recent")
-            if self.is_pairwise.lower() =="true":
+            if self.is_pairwise is True:
                 self.user_input_neg = tf.placeholder(tf.int32, shape=[None, None], name="user_input_neg")
                 self.item_input_neg = tf.placeholder(tf.int32, shape=[None, ], name="item_input_neg")
                 self.num_idx_neg = tf.placeholder(tf.float32, shape=[None, ], name="num_idx_neg")
@@ -90,7 +90,7 @@ class Fossil(SeqAbstractRecommender):
     def _create_loss(self):
         with tf.name_scope("loss"):
             p1, q1, eta_u, short, self.output = self._create_inference(self.user_input, self.item_input, self.num_idx)
-            if self.is_pairwise.lower() =="true":
+            if self.is_pairwise is True:
                 _, q2, _, _, output_neg = self._create_inference(self.user_input_neg, self.item_input_neg, self.num_idx_neg)
                 self.result = self.output - output_neg
                 self.loss = learner.pairwise_loss(self.loss_function, self.result) + \
@@ -117,7 +117,7 @@ class Fossil(SeqAbstractRecommender):
         logger.info(self.evaluator.metrics_info())
         self.evaluate()
         for epoch in range(1, self.num_epochs+1):
-            if self.is_pairwise.lower() =="true":
+            if self.is_pairwise is True:
                 user_input_id, user_input, user_input_neg, num_idx_pos,\
                     num_idx_neg, item_input_pos, item_input_neg, item_input_recent = \
                     data_generator._get_pairwise_all_likefossil_data(self.dataset, self.high_order, self.train_dict)
@@ -137,7 +137,7 @@ class Fossil(SeqAbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
             
-            if self.is_pairwise.lower() == "true":
+            if self.is_pairwise is True:
                 for bat_user_input_id, bat_users_pos, bat_users_neg, bat_idx_pos, bat_idx_neg, \
                         bat_items_pos, bat_items_neg, bat_item_input_recent in data_iter:
                     bat_users_pos = pad_sequences(bat_users_pos, value=self.num_items)

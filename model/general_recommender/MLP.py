@@ -51,6 +51,9 @@ class MLP(AbstractRecommender):
             self.mlp_embedding_item = tf.Variable(initializer([self.num_items, int(self.layers[0]/2)]),
                                                   name="mlp_embedding_item", dtype=tf.float32)
 
+        self.dense_layer = [tf.layers.Dense(units=n_units, activation=tf.nn.relu, name="layer%d" % idx)
+                            for idx, n_units in enumerate(self.layers)]
+
     def _create_inference(self, item_input):
         with tf.name_scope("inference"):
             # Crucial to flatten an embedding vector!
@@ -59,9 +62,11 @@ class MLP(AbstractRecommender):
             # The 0-th layer is the concatenation of embedding layers
             mlp_vector = tf.concat([mlp_user_latent, mlp_item_latent], axis=1)
             # MLP layers
-            for idx in np.arange(len(self.layers)):
-                mlp_vector = tf.layers.dense(mlp_vector, units=self.layers[idx],
-                                             activation=tf.nn.relu, name="layer%d" % idx)
+            for layer in self.dense_layer:
+                mlp_vector = layer(mlp_vector)
+            # for idx in np.arange(len(self.layers)):
+            #     mlp_vector = tf.layers.dense(mlp_vector, units=self.layers[idx],
+            #                                  activation=tf.nn.relu, name="layer%d" % idx)
                 
             # Final prediction layer
         predict = tf.reduce_sum(mlp_vector, 1)
@@ -123,7 +128,7 @@ class MLP(AbstractRecommender):
             if epoch % self.verbose == 0:
                 logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
                 
-    @timer
+    # @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)
 

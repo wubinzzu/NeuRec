@@ -2,12 +2,11 @@ from model.AbstractRecommender import SocialAbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import learner, data_generator, tool
-from util.logger import logger
-from util.data_iterator import DataIterator
+from util import learner, tool
 from util.tool import csr_to_user_dict
 from util import timer
 from util import l2_loss
+from data import PointwiseSampler
 
 
 class DiffNet(SocialAbstractRecommender):
@@ -142,8 +141,8 @@ class DiffNet(SocialAbstractRecommender):
             # compute item embedding
             #self.fusion_item_embedding = self.item_fusion_layer(\
             #   tf.concat([self.item_embedding, second_item_review_vector_matrix], 1))
-            self.final_item_embedding = self.fusion_item_embedding \
-                                 = self.item_embedding + second_item_review_vector_matrix  # TODO ?
+            self.final_item_embedding = self.fusion_item_embedding = \
+                self.item_embedding + second_item_review_vector_matrix  # TODO ?
             #self.final_item_embedding = self.fusion_item_embedding = second_item_review_vector_matrix
     
             # compute user embedding
@@ -187,26 +186,22 @@ class DiffNet(SocialAbstractRecommender):
 
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        data_iter = PointwiseSampler(self.dataset, neg_num=self.num_negatives, batch_size=self.batch_size, shuffle=True)
         for epoch in range(1, self.num_epochs+1):
-            # Generate training instances
-            user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
-            data_iter = DataIterator(user_input, item_input, labels,
-                                     batch_size=self.batch_size, shuffle=True)
-
             total_loss = 0.0
-            training_start_time = time()
-            num_training_instances = len(user_input)
+            start_time = time()
+            num_instances = len(data_iter)
             for bat_users, bat_items, bat_labels in data_iter:
                 feed_dict = {self.user_input: bat_users,
                              self.item_input: bat_items,
                              self.labels: bat_labels}
                 loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
-                                                             time() - training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %
+                             (epoch, total_loss / num_instances,time() - start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

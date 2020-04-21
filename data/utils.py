@@ -3,6 +3,18 @@
 """
 import pandas as pd
 import math
+import hashlib
+import os
+
+
+def check_md5(file_name):
+    if not os.path.isfile(file_name):
+        raise FileNotFoundError("There is not file named '%s'!" % file_name)
+    with open(file_name, "rb") as fin:
+        bytes = fin.read()  # read file as bytes
+        readable_hash = hashlib.md5(bytes).hexdigest()
+
+    return readable_hash
 
 
 def load_data(filename, sep, columns):
@@ -35,6 +47,14 @@ def remap_id(data):
 
     return data, user2id, item2id
 
+
+def get_map_id(data):
+    unique_user = data["user"].unique()
+    user2id = pd.Series(data=range(len(unique_user)), index=unique_user)
+
+    unique_item = data["item"].unique()
+    item2id = pd.Series(data=range(len(unique_item)), index=unique_item)
+    return user2id.to_dict(), item2id.to_dict()
 
 def split_by_ratio(data, ratio=0.8, by_time=True):
     if by_time:

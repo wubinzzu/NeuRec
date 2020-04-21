@@ -8,7 +8,6 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool
-from util.logger import logger
 from util import timer
 from util import l2_loss
 
@@ -124,7 +123,7 @@ class JCA(AbstractRecommender):
         self._create_optimizer()
                                                
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in  range(1,self.num_epochs+1):
             random_row_idx = np.random.permutation(self.num_users)  # randomly permute the rows
             random_col_idx = np.random.permutation(self.num_items)  # randomly permute the cols
@@ -159,10 +158,10 @@ class JCA(AbstractRecommender):
                             self.row_idx: np.reshape(row_idx, (len(row_idx), 1)),
                             self.col_idx: np.reshape(col_idx, (len(col_idx), 1))})
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss,
-                                                             time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %
+                             (epoch, total_loss, time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
     @timer
     def evaluate(self):

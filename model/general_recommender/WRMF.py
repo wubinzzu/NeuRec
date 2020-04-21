@@ -6,7 +6,6 @@ import numpy as np
 from time import time
 from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
-from util.logger import logger
 from util import timer, tool
 
 
@@ -68,7 +67,7 @@ class WRMF(AbstractRecommender):
         
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             training_start_time = time()
             print('solving for user vectors...')
@@ -85,9 +84,9 @@ class WRMF(AbstractRecommender):
                         self.Ci: self.Cui[:,item_id].reshape([-1, 1])}
                 self.sess.run(self.update_item, feed_dict=feed)
            
-            logger.info('iteration %i finished in %f seconds' % (epoch, time()-training_start_time))
+            self.logger.info('iteration %i finished in %f seconds' % (epoch, time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
                 
     @timer
     def evaluate(self):

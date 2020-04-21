@@ -13,7 +13,6 @@ import tensorflow as tf
 from util import inner_product
 from util import batch_random_choice
 from util import pad_sequences
-from util.logger import logger
 
 
 def normalize(inputs,
@@ -388,7 +387,7 @@ class SASRec(SeqAbstractRecommender):
         self.all_logits = tf.matmul(last_emb, items_embeddings, transpose_b=True)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
 
         for epoch in range(self.epochs):
             item_seq_list, item_pos_list, item_neg_list = self.get_train_data()
@@ -403,7 +402,7 @@ class SASRec(SeqAbstractRecommender):
                 self.sess.run(self.train_opt, feed_dict=feed)
 
             result = self.evaluate_model()
-            logger.info("epoch %d:\t%s" % (epoch, result))
+            self.logger.info("epoch %d:\t%s" % (epoch, result))
 
     def get_train_data(self):
         item_seq_list, item_pos_list, item_neg_list = [], [], []

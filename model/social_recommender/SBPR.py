@@ -8,7 +8,6 @@ import numpy as np
 from time import time
 from util import learner, randint_choice, tool
 from model.AbstractRecommender import SocialAbstractRecommender
-from util.logger import logger
 from util import timer
 from util.data_iterator import DataIterator
 from util.tool import csr_to_user_dict
@@ -100,7 +99,7 @@ class SBPR(SocialAbstractRecommender):
 
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(self.num_epochs):
             user_input, item_input_pos, item_input_social, item_input_neg, suk_input = self._get_pairwise_all_data()
             data_iter = DataIterator(user_input, item_input_pos, item_input_social, item_input_neg, suk_input,
@@ -115,10 +114,10 @@ class SBPR(SocialAbstractRecommender):
                       
                 loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     def _get_pairwise_all_data(self):
         user_input, item_input_pos, item_input_social, item_input_neg, suk_input = [], [], [], [], []

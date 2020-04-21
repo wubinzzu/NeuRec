@@ -8,7 +8,6 @@ import tensorflow as tf
 import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-from util.logger import logger
 from util import l2_loss
 from util.data_iterator import DataIterator
 
@@ -199,7 +198,7 @@ class IRGAN(AbstractRecommender):
                 self.training_discriminator()
             for _ in range(self.g_epoch):
                 self.training_generator()
-                logger.info("%s" % (self.evaluate()))
+                self.logger.info("%s" % (self.evaluate()))
 
     def training_discriminator(self):
         users_list, items_list, labels_list = self.get_train_data()

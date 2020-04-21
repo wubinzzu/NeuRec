@@ -24,12 +24,14 @@ class Sampler(object):
 
 class SequentialSampler(Sampler):
     """Samples elements sequentially, always in the same order.
-
-    Arguments:
-        data_source (_Dataset): dataset to sample from
     """
 
     def __init__(self, data_source):
+        """Initializes a new `SequentialSampler` instance.
+
+        Args:
+            data_source (_Dataset): Dataset to sample from.
+        """
         super(SequentialSampler, self).__init__()
         self.data_source = data_source
 
@@ -42,12 +44,14 @@ class SequentialSampler(Sampler):
 
 class RandomSampler(Sampler):
     """Samples elements randomly, without replacement.
-
-    Arguments:
-        data_source (_Dataset): dataset to sample from
     """
 
     def __init__(self, data_source):
+        """Initializes a new `SequentialSampler` instance.
+
+        Args:
+            data_source (_Dataset): Dataset to sample from.
+        """
         super(RandomSampler, self).__init__()
         self.data_source = data_source
 
@@ -61,15 +65,17 @@ class RandomSampler(Sampler):
 
 class BatchSampler(Sampler):
     """Wraps another sampler to yield a mini-batch of indices.
-
-    Args:
-        sampler (Sampler): Base sampler.
-        batch_size (int): Size of mini-batch.
-        drop_last (bool): If ``True``, the sampler will drop the last batch if
-            its size would be less than ``batch_size``
     """
 
     def __init__(self, sampler, batch_size, drop_last):
+        """Initializes a new `BatchSampler` instance.
+
+        Args:
+            sampler (Sampler): Base sampler.
+            batch_size (int): Size of mini-batch.
+            drop_last (bool): If `True`, the sampler will drop the last batch
+                if its size would be less than `batch_size`.
+        """
         super(BatchSampler, self).__init__()
         if not isinstance(sampler, Sampler):
             raise ValueError("sampler should be an instance of "
@@ -104,14 +110,17 @@ class BatchSampler(Sampler):
 
 
 class _Dataset(object):
-    """ pack the given data to one dataset
+    """Pack the given data to one dataset.
 
     Args:
-        data: a list of 'data'.
+        data (list or tuple): a list of 'data'.
     """
+
     def __init__(self, data):
         for d in data:
-            assert len(d) == len(data[0])
+            if len(d) != len(data[0]):
+                raise ValueError("The length of the given data are not equal!")
+            # assert len(d) == len(data[0])
         self.data = data
 
     def __len__(self):
@@ -122,12 +131,12 @@ class _Dataset(object):
 
 
 class _DataLoaderIter(object):
-    r"""Iterates once over the DataLoader's dataset, as specified by the sampler"""
+    """Iterates once over the dataset, as specified by the sampler.
+    """
 
     def __init__(self, loader):
         self.dataset = loader.dataset
         self.batch_sampler = loader.batch_sampler
-
         self.sample_iter = iter(self.batch_sampler)
 
     def __len__(self):
@@ -145,35 +154,43 @@ class _DataLoaderIter(object):
     def __iter__(self):
         return self
 
-    def __getstate__(self):
-        # across multiple threads for HOGWILD.
-        # Probably the best way to do this is by moving the sample pushing
-        # to a separate thread and then just sharing the data queue
-        # but signalling the end is tricky without a non-blocking API
-        raise NotImplementedError("_DataLoaderIter cannot be pickled")
-
-    def __del__(self):
-        pass
-
 
 class DataIterator(object):
-    """
-    Data loader. Combines a dataset and a sampler,
-    and provides iterators over the dataset.
+    """`DataIterator` provides iterators over the dataset.
 
-    Args:
-        data: data from which to load the data.
-        batch_size (int, optional): how many samples per batch to load
-            (default: 1).
-        shuffle (bool, optional): set to ``True`` to have the data reshuffled
-            at every epoch (default: False).
-        drop_last (bool, optional): set to ``True`` to drop the last incomplete batch,
-            if the dataset size is not divisible by the batch size. If ``False`` and
-            the size of dataset is not divisible by the batch size, then the last batch
-            will be smaller. (default: False)
+    This class combines some data sets and provides a batch iterator over them.
+    For example::
+
+        users = list(range(10))
+        items = list(range(10, 20))
+        labels = list(range(20, 30))
+
+        data_iter = DataIterator(users, items, labels, batch_size=4, shuffle=False)
+        for bat_user, bat_item, bat_label in data_iter:
+            print(bat_user, bat_item, bat_label)
+
+        data_iter = DataIterator(users, items, batch_size=4, shuffle=True, drop_last=True)
+        for bat_user, bat_item in data_iter:
+            print(bat_user, bat_item)
+
     """
 
     def __init__(self, *data, batch_size=1, shuffle=False, drop_last=False):
+        """
+        Args:
+            *data: Variable length data list.
+            batch_size (int): How many samples per batch to load. Defaults to `1`.
+            shuffle (bool): Set to `True` to have the data reshuffled at every
+                epoch. Defaults to `False`.
+            drop_last (bool): Set to `True` to drop the last incomplete batch,
+                if the dataset size is not divisible by the batch size.
+                If `False` and the size of dataset is not divisible by the
+                batch size, then the last batch will be smaller.
+                Defaults to `False`.
+
+        Raises:
+            ValueError: If the length of the given data are not equal.
+        """
         dataset = _Dataset(list(data))
         self.dataset = dataset
         self.batch_size = batch_size
@@ -196,11 +213,12 @@ class DataIterator(object):
 if __name__ == "__main__":
     users = list(range(10))
     items = list(range(10, 20))
-    dataloader = DataIterator(users, items, batch_size=3, shuffle=False, drop_last=False)
-    for bat_u, bat_i in dataloader:
-        print(bat_u, bat_i)
+    labels = list(range(20, 30))
 
-    print()
-    dataloader = DataIterator(users, items, batch_size=3, shuffle=True, drop_last=True)
-    for bat_u, bat_i in dataloader:
-        print(bat_u, bat_i)
+    data_iter = DataIterator(users, items, labels, batch_size=4, shuffle=False)
+    for bat_user, bat_item, bat_label in data_iter:
+        print(bat_user, bat_item, bat_label)
+
+    data_iter = DataIterator(users, items, batch_size=4, shuffle=True, drop_last=True)
+    for bat_user, bat_item in data_iter:
+        print(bat_user, bat_item)

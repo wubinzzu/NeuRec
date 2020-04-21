@@ -10,7 +10,6 @@ import numpy as np
 from model.AbstractRecommender import SeqAbstractRecommender
 import tensorflow as tf
 from util import log_loss, l2_loss
-from util.logger import logger
 
 
 class GRU4Rec(SeqAbstractRecommender):
@@ -133,7 +132,7 @@ class GRU4Rec(SeqAbstractRecommender):
         self.update_opt = tf.train.AdamOptimizer(self.lr).minimize(final_loss)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
 
         data_uit, offset_idx = self.data_uit, self.offset_idx
         data_items = data_uit[:, 1]
@@ -175,7 +174,7 @@ class GRU4Rec(SeqAbstractRecommender):
                         state[i][mask] = 0
 
             result = self.evaluate_model()
-            logger.info("epoch %d:\t%s" % (epoch, result))
+            self.logger.info("epoch %d:\t%s" % (epoch, result))
 
     def _get_user_embeddings(self):
         users = np.arange(self.users_num, dtype=np.int32)

@@ -8,12 +8,10 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import timer
-from util import learner, data_generator, tool
-from util.logger import logger
-from util.data_iterator import DataIterator
+from util import learner, tool
 from util.tool import csr_to_user_dict_bytime
 from util import l2_loss
-
+from data import TimeOrderPointwiseSampler, TimeOrderPairwiseSampler
 
 class FPMC(SeqAbstractRecommender):
     def __init__(self, sess, dataset, conf):
@@ -97,21 +95,16 @@ class FPMC(SeqAbstractRecommender):
 
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        if self.is_pairwise is True:
+            data_iter = TimeOrderPairwiseSampler(self.dataset, high_order=1, neg_num=1,
+                                                 batch_size=self.batch_size, shuffle=True)
+        else:
+            data_iter = TimeOrderPointwiseSampler(self.dataset, high_order=1,
+                                                  neg_num=self.num_negatives,
+                                                  batch_size=self.batch_size, shuffle=True)
         for epoch in range(1, self.num_epochs+1):
-            # Generate training instances
-            if self.is_pairwise is True:
-                user_input, item_input_pos, item_input_recent, item_input_neg = \
-                    data_generator._get_pairwise_all_firstorder_data(self.dataset, self.train_dict)
-                data_iter = DataIterator(user_input, item_input_pos, item_input_recent, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
-            else:
-                user_input, item_input, item_input_recent, labels = \
-                    data_generator._get_pointwise_all_firstorder_data(self.dataset, self.num_negatives, self.train_dict)
-                data_iter = DataIterator(user_input, item_input, item_input_recent, labels,
-                                         batch_size=self.batch_size, shuffle=True)
-           
-            num_training_instances = len(user_input)
+            num_training_instances = len(data_iter)
             total_loss = 0.0
             training_start_time = time()
 
@@ -134,17 +127,17 @@ class FPMC(SeqAbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
-                                                             time() - training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %
+                             (epoch, total_loss / num_training_instances, time() - training_start_time))
             
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)
     
-    def predict(self, user_ids, candidate_items_userids):
+    def predict(self, user_ids, candidate_items_userids=None):
         ratings = []
         if candidate_items_userids is None:
             all_items = np.arange(self.num_items)
@@ -169,4 +162,4 @@ class FPMC(SeqAbstractRecommender):
                              self.item_input: items_by_user_id}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
 
-        return ratings
+        return np.vstack(ratings)

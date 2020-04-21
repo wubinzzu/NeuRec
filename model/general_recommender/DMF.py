@@ -7,7 +7,6 @@ import numpy as np
 from time import time
 from util import learner, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.logger import logger
 from util import timer
 
 
@@ -106,10 +105,10 @@ class DMF(AbstractRecommender):
                              self.labels: bat_labels}
                 loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
     @timer
     def evaluate(self):

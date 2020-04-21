@@ -7,7 +7,6 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner,data_generator, tool
-from util.logger import logger
 from util import timer
 from util.tool import csr_to_user_dict
 import pickle
@@ -140,10 +139,10 @@ class NAIS(AbstractRecommender):
                 pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
             with open(self.mlp_pretrain, "rb") as fin:
                 pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
-            logger.info("load pretrained params successful!")
+            self.logger.info("load pretrained params successful!")
         except:
             pre_trained_params = None
-            logger.info("load pretrained params unsuccessful!")
+            self.logger.info("load pretrained params unsuccessful!")
             
         self._create_variables(pre_trained_params)
         self._create_loss()
@@ -177,7 +176,7 @@ class NAIS(AbstractRecommender):
                 return tf.reduce_sum(A * embedding_q_, 1)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             if self.is_pairwise is True:
                 user_input, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos, item_input_neg = \
@@ -217,10 +216,10 @@ class NAIS(AbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
         
         # save model
         # params = self.sess.run([self.c1, self.embedding_Q, self.bias])

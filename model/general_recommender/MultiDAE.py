@@ -7,7 +7,6 @@ import numpy as np
 from time import time
 from util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
-from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
 from util import timer
 from util.tool import csr_to_user_dict
@@ -118,10 +117,10 @@ class MultiDAE(AbstractRecommender):
                 feed_dict = {self.input_ph: batch_matrix, self.keep_prob_ph: 0.5}
                 _, loss = self.sess.run([self.optimizer, self.loss], feed_dict=feed_dict)
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

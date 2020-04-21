@@ -6,12 +6,11 @@ Reference: Steffen Rendle et al., "BPR: Bayesian Personalized Ranking from Impli
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import learner, data_generator, tool
+from util import learner, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.data_iterator import DataIterator
-from util.logger import logger
 from util import timer
 from util import l2_loss
+from data import PairwiseSampler, PointwiseSampler
 
 
 class MF(AbstractRecommender):
@@ -84,18 +83,13 @@ class MF(AbstractRecommender):
         
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        if self.is_pairwise is True:
+            data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True)
+        else:
+            data_iter = PointwiseSampler(self.dataset, neg_num=self.num_negatives, batch_size=self.batch_size, shuffle=True)
+
         for epoch in range(1, self.num_epochs+1):
-            # Generate training instances
-            if self.is_pairwise is True:
-                user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
-                data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
-            else:
-                user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
-                data_iter = DataIterator(user_input, item_input, labels,
-                                         batch_size=self.batch_size, shuffle=True)
-            
             total_loss = 0.0
             training_start_time = time()
 
@@ -113,17 +107,17 @@ class MF(AbstractRecommender):
                                  self.labels: bat_labels}
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/len(user_input),
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/len(data_iter),
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
-    @timer
+    # @timer
     def evaluate(self):
         self._cur_user_embeddings, self._cur_item_embeddings = self.sess.run([self.user_embeddings, self.item_embeddings])
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_user_ids):
+    def predict(self, user_ids, candidate_items_user_ids=None):
         if candidate_items_user_ids is None:
             user_embed = self._cur_user_embeddings[user_ids]
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)

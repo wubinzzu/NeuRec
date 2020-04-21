@@ -11,7 +11,6 @@ from util import DataIterator
 from util.tool import csr_to_user_dict_bytime
 import tensorflow as tf
 from util import pad_sequences
-from util.logger import logger
 import math
 
 
@@ -146,7 +145,7 @@ class SRGNN(SeqAbstractRecommender):
         self.update_opt = tf.train.AdamOptimizer(self.lr).minimize(loss)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         users_list, items_list = [], []
         for user, items in self.user_pos_train.items():
             users_list.append(user)
@@ -166,7 +165,7 @@ class SRGNN(SeqAbstractRecommender):
 
                 self.sess.run(self.update_opt, feed_dict=feed)
 
-            logger.info("epoch %d:\t%s" % (epoch, self.evaluate_model()))
+            self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate_model()))
 
     def _build_session_graph(self, bat_items):
         A_in, A_out, alias_inputs, items = [], [], [], []

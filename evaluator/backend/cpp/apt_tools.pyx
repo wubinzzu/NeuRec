@@ -4,7 +4,6 @@
 """
 import numpy as np
 
-
 def get_float_type():
     cdef size_of_float = sizeof(float)*8
     if size_of_float == 32:
@@ -22,6 +21,11 @@ def get_int_type():
         return np.int32
     else:
         raise EnvironmentError("The size of 'int' is %d, but 16 or 32." % size_of_int)
+
+
+float_type = get_float_type()
+int_type = get_int_type()
+
 
 def is_ndarray(array, dtype):
     if not isinstance(array, np.ndarray):

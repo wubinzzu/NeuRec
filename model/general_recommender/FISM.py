@@ -7,7 +7,6 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, data_generator, tool
-from util.logger import logger
 from util import timer
 from util.tool import csr_to_user_dict
 from util import l2_loss
@@ -99,7 +98,7 @@ class FISM(AbstractRecommender):
         self._create_optimizer()
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             if self.is_pairwise is True:
                 user_input, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos, item_input_neg = \
@@ -139,10 +138,10 @@ class FISM(AbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/len(user_input),
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/len(user_input),
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
         
         # save model
         # params = self.sess.run([self.c1, self.embedding_Q, self.bias])

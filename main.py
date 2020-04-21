@@ -4,7 +4,8 @@ import numpy as np
 import tensorflow as tf
 import importlib
 from data.dataset import Dataset
-from util import Configurer, tool
+from util import Configurator, tool
+
 
 np.random.seed(2018)
 random.seed(2018)
@@ -12,11 +13,13 @@ tf.set_random_seed(2017)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 if __name__ == "__main__":
-    conf = Configurer()
-
-    recommender = str(conf["recommender"])
-    # num_thread = int(conf["rec.number.thread"])
+    conf = Configurator("NeuRec.properties", default_section="hyperparameters")
     gpu_id = str(conf["gpu_id"])
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
+
+    recommender = conf["recommender"]
+    # num_thread = int(conf["rec.number.thread"])
+
     # if Tool.get_available_gpus(gpu_id):
     #     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
     dataset = Dataset(conf)

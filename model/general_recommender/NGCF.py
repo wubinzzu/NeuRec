@@ -7,13 +7,11 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 from time import time
-from util import data_generator, learner, tool
-from util.logger import logger
+from util import learner, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.data_iterator import DataIterator
 from util import timer
 from util import l2_loss
-
+from data import PairwiseSampler
 
 class NGCF(AbstractRecommender):
     def __init__(self, sess, dataset, conf):
@@ -123,16 +121,12 @@ class NGCF(AbstractRecommender):
         self._create_optimizer()
         
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True)
         for epoch in  range(1,self.num_epochs+1):
-            # Generate training instances
-            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
-            data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                     batch_size=self.batch_size, shuffle=True)
-            
             total_loss = 0.0
             training_start_time = time()
-            num_training_instances = len(user_input)
+            num_training_instances = len(data_iter)
             for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.pos_items: bat_items_pos,
@@ -140,10 +134,10 @@ class NGCF(AbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
                 
     @timer
     def evaluate(self):
@@ -165,7 +159,7 @@ class NGCF(AbstractRecommender):
     
     def _create_ngcf_embed(self):
         # Generate a set of adjacency sub-matrix.
-        if self.node_dropout_flag == 'True':  # TODO true或True? 统一下
+        if self.node_dropout_flag is True:
             # node dropout.
             A_fold_hat = self._split_A_hat_node_dropout(self.norm_adj)
         else:
@@ -263,13 +257,13 @@ class NGCF(AbstractRecommender):
                                                         name='user_embedding')
             all_weights['item_embedding'] = tf.Variable(embed_initializer([self.num_items, self.emb_dim]),
                                                         name='item_embedding')
-            logger.info('using xavier initialization')
+            self.logger.info('using xavier initialization')
         else:
             all_weights['user_embedding'] = tf.Variable(initial_value=self.pre_train_data['user_embed'], trainable=True,
                                                         name='user_embedding', dtype=tf.float32)
             all_weights['item_embedding'] = tf.Variable(initial_value=self.pre_train_data['item_embed'], trainable=True,
                                                         name='item_embedding', dtype=tf.float32)
-            logger.info('using pretrained initialization')
+            self.logger.info('using pretrained initialization')
 
         self.weight_size_list = [self.emb_dim] + self.weight_size
 
@@ -299,7 +293,7 @@ class NGCF(AbstractRecommender):
         d_mat_inv = sp.diags(d_inv)
         norm_adj = d_mat_inv.dot(adj)
         # norm_adj = adj.dot(d_mat_inv)
-        logger.info('generate single-normalized adjacency matrix.')
+        self.logger.info('generate single-normalized adjacency matrix.')
         return norm_adj.tocoo()
 
     def get_adj_mat(self):
@@ -310,16 +304,16 @@ class NGCF(AbstractRecommender):
         A = A.todok()
         if self.adj_type == 'plain':
             adj_mat = A
-            logger.info('use the plain adjacency matrix')
+            self.logger.info('use the plain adjacency matrix')
         elif self.adj_type == 'norm':  
             adj_mat = self.normalized_adj_single(A + sp.eye(A.shape[0]))
-            logger.info('use the normalized adjacency matrix')
+            self.logger.info('use the normalized adjacency matrix')
         elif self.adj_type == 'gcmc':
             adj_mat = self.normalized_adj_single(A)
-            logger.info('use the gcmc adjacency matrix')
+            self.logger.info('use the gcmc adjacency matrix')
         else:
             adj_mat = self.normalized_adj_single(A) + sp.eye(A.shape[0])
-            logger.info('use the mean adjacency matrix')
+            self.logger.info('use the mean adjacency matrix')
     
         return adj_mat.tocsr()
     

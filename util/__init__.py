@@ -1,4 +1,4 @@
-from util.configurer import Configurer
+from util.configurator import Configurator
 from util.data_iterator import DataIterator
 from util.tool import randint_choice
 from util.tool import csr_to_user_dict
@@ -10,3 +10,4 @@ from util.tool import inner_product
 from util.tool import batch_random_choice
 from util.tool import l2_loss
 from util.tool import log_loss
+from .logger import Logger

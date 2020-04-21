@@ -6,12 +6,11 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import learner, data_generator, tool
-from util.logger import logger
+from util import learner, tool
 from util import timer
-from util.data_iterator import DataIterator
 import pickle
 from util import l2_loss
+from data import PairwiseSampler
 
 
 class ConvNCF(AbstractRecommender):
@@ -153,10 +152,10 @@ class ConvNCF(AbstractRecommender):
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
             with open(self.mlp_pretrain, "rb") as fin:
                 pretrained_params.append(pickle.load(fin, encoding="utf-8"))
-            logger.info("load pretrained params successful!")
+            self.logger.info("load pretrained params successful!")
         except:
             pretrained_params = None
-            logger.info("load pretrained params unsuccessful!")
+            self.logger.info("load pretrained params unsuccessful!")
         self._create_variables(pretrained_params)
         self._create_loss()
         if pretrained_params is None:
@@ -165,25 +164,22 @@ class ConvNCF(AbstractRecommender):
 
     # ---------- training process -------
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True)
         for epoch in range(1, self.num_epochs+1):
-            # Generate training instances
-            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
-            data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                     batch_size=self.batch_size, shuffle=True)
             total_loss = 0.0
             training_start_time = time()
-            num_training_instances = len(user_input)
+            num_training_instances = len(data_iter)
             for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input_pos: bat_items_pos,
                                  self.item_input_neg: bat_items_neg}
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
                                                              time() - training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

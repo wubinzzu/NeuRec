@@ -12,7 +12,6 @@ from util.tool import csr_to_user_dict_bytime
 import tensorflow as tf
 from util import batch_random_choice
 from util import pad_sequences
-from util.logger import logger
 
 
 class Caser(SeqAbstractRecommender):
@@ -123,7 +122,7 @@ class Caser(SeqAbstractRecommender):
         self.all_logits = tf.matmul(user_embs, self.item_embeddings, transpose_b=True)  # (b, items_num)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         self.user_pos_train = csr_to_user_dict_bytime(self.dataset.time_matrix, self.dataset.train_matrix)
         users_list, item_seq_list, item_pos_list = self._generate_sequences()
         for epoch in range(self.epochs):
@@ -140,7 +139,7 @@ class Caser(SeqAbstractRecommender):
                 self.sess.run(self.train_opt, feed_dict=feed)
 
             result = self.evaluate_model()
-            logger.info("epoch %d:\t%s" % (epoch, result))
+            self.logger.info("epoch %d:\t%s" % (epoch, result))
 
     def _generate_sequences(self):
         self.user_test_seq = {}

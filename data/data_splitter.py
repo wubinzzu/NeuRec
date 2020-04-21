@@ -20,21 +20,21 @@ class Splitter(object):
         self.user_min = config["user_min"]
         self.item_min = config["item_min"]
         self.by_time = config["by_time"]
-        self.spliter = config["splitter"]
+        self.splitter = config["splitter"]
         self.test_neg = config["rec.evaluate.neg"]
 
     def split(self):
         if self.file_format.lower() == "uirt":
             columns = ["user", "item", "rating", "time"]
-            if self.by_time is False:
-                by_time = False
-            else:
-                by_time = True
+            by_time = self.by_time
         elif self.file_format.lower() == "uir":
             columns = ["user", "item", "rating"]
             by_time = False
+        elif self.file_format.lower() == "ui":
+            columns = ["user", "item"]
+            by_time = False
         else:
-            raise ValueError("There is not data format '%s'" % self.file_format)
+            raise ValueError("'%s' is an invalid data column format!" % self.file_format)
 
         print("load data...")
         all_data = load_data(self.filename, sep=self.sep, columns=columns)
@@ -61,12 +61,12 @@ class Splitter(object):
             neg_items = None
 
         print("split data...")
-        if self.spliter == "ratio":
+        if self.splitter == "ratio":
             train_data, test_data = split_by_ratio(remapped_data, ratio=self.ratio, by_time=by_time)
-        elif self.spliter == "loo":
+        elif self.splitter == "loo":
             train_data, test_data = split_by_loo(remapped_data, by_time=by_time)
         else:
-            raise ValueError("There is not splitter '%s'" % self.spliter)
+            raise ValueError("There is not splitter '%s'" % self.splitter)
 
         print("save to file...")
         base_name = os.path.basename(self.filename).split(".")[0]
@@ -74,7 +74,7 @@ class Splitter(object):
         dir_name = os.path.join(dir_name, base_name)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        filename = "%s_%s_u%d_i%d" % (base_name, self.spliter, self.user_min, self.item_min)
+        filename = "%s_%s_u%d_i%d" % (base_name, self.splitter, self.user_min, self.item_min)
 
         filename = os.path.join(dir_name, filename)
         np.savetxt(filename + ".train", train_data, fmt='%d', delimiter=self.sep)

@@ -179,17 +179,48 @@ def argmax_top_k(a, top_k=50):
     return np.array([idx for ele, idx in ele_idx], dtype=np.intc)
 
 
-def pad_sequences(array, value=0, max_len=None, padding='post', truncating='post'):
-    """padding: String, 'pre' or 'post':
-            pad either before or after each sequence.
-       truncating: String, 'pre' or 'post':
-            remove values from sequences larger than `maxlen`,
-            either at the beginning or at the end of the sequences.
-    """
-    array = tf.keras.preprocessing.sequence.pad_sequences(array, maxlen=max_len, value=value, dtype='int32',
-                                                          padding=padding, truncating=truncating)
+def pad_sequences(sequences, value=0., max_len=None,
+                  padding='post', truncating='post', dtype=np.int32):
+    """Pads sequences to the same length.
 
-    return array
+    Args:
+        sequences (list): A list of lists, where each element is a sequence.
+        value (int or float): Padding value. Defaults to `0.`.
+        max_len (int or None): Maximum length of all sequences.
+        padding (str): `"pre"` or `"post"`: pad either before or after each
+            sequence. Defaults to `post`.
+        truncating (str): `"pre"` or `"post"`: remove values from sequences
+            larger than `max_len`, either at the beginning or at the end of
+            the sequences. Defaults to `post`.
+        dtype (int or float): Type of the output sequences. Defaults to `np.int32`.
+
+    Returns:
+        np.ndarray: Numpy array with shape `(len(sequences), max_len)`.
+
+    Raises:
+        ValueError: If `padding` or `truncating` is not understood.
+    """
+    if max_len is None:
+        max_len = np.max([len(x) for x in sequences])
+
+    x = np.full([len(sequences), max_len], value, dtype=dtype)
+    for idx, s in enumerate(sequences):
+        if not len(s):
+            continue  # empty list/array was found
+        if truncating == 'pre':
+            trunc = s[-max_len:]
+        elif truncating == 'post':
+            trunc = s[:max_len]
+        else:
+            raise ValueError('Truncating type "%s" not understood' % truncating)
+
+        if padding == 'post':
+            x[idx, :len(trunc)] = trunc
+        elif padding == 'pre':
+            x[idx, -len(trunc):] = trunc
+        else:
+            raise ValueError('Padding type "%s" not understood' % padding)
+    return x
 
 
 def inner_product(a, b, name="inner_product"):
@@ -219,13 +250,3 @@ def log_loss(yij, name="log_loss"):
     """
     with tf.name_scope(name):
         return -tf.log_sigmoid(yij)
-
-
-def get_available_gpus(gpu_id):
-    from tensorflow.python.client import device_lib as _device_lib
-    local_device_protos = _device_lib.list_local_devices()
-    for x in local_device_protos:
-        if x.device_type == 'GPU' and gpu_id in x.name:
-            return True
-    else:
-        return False

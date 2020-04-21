@@ -6,12 +6,11 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import data_generator, learner, tool
-from util.data_iterator import DataIterator
-from util.logger import logger
+from util import learner, tool
 from util import timer
 import pickle
 from util import l2_loss
+from data import PairwiseSampler, PointwiseSampler
 
 
 class NeuMF(AbstractRecommender):
@@ -112,31 +111,26 @@ class NeuMF(AbstractRecommender):
                 pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
             with open(self.mlp_pretrain, "rb") as fin:
                 pre_trained_params.append(pickle.load(fin, encoding="utf-8"))
-            logger.info("load pretrained params successful!")
+            self.logger.info("load pretrained params successful!")
         except:
             pre_trained_params = None
-            logger.info("load pretrained params unsuccessful!")
+            self.logger.info("load pretrained params unsuccessful!")
             
         self._create_variables(pre_trained_params)
         self._create_loss()
         self._create_optimizer()
                                                
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
-        for epoch in range(1, self.num_epochs+1):
-            # Generate training instances
-            if self.is_pairwise is True:
-                user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
-                data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                         batch_size=self.batch_size, shuffle=True)
-            else:
-                user_input, item_input, labels = data_generator._get_pointwise_all_data(self.dataset, self.num_negatives)
-                data_iter = DataIterator(user_input, item_input, labels,
-                                         batch_size=self.batch_size, shuffle=True)
+        self.logger.info(self.evaluator.metrics_info())
+        if self.is_pairwise is True:
+            data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True)
+        else:
+            data_iter = PointwiseSampler(self.dataset, neg_num=self.num_negatives, batch_size=self.batch_size, shuffle=True)
 
+        for epoch in range(1, self.num_epochs+1):
             total_loss = 0.0
             training_start_time = time()
-            num_training_instances = len(user_input)
+            num_training_instances = len(data_iter)
             if self.is_pairwise is True:
                 for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
@@ -151,10 +145,10 @@ class NeuMF(AbstractRecommender):
                                  self.labels: bat_labels}
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss / num_training_instances,
                                                              time() - training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

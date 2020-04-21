@@ -5,12 +5,11 @@ Reference: Lei, Zheng, et al. "Spectral Collaborative Filtering." in RecSys2018
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import data_generator, learner, tool
-from util.logger import logger
+from util import learner, tool
 from model.AbstractRecommender import AbstractRecommender
-from util.data_iterator import DataIterator
 from util import timer
 from util import l2_loss
+from data import PairwiseSampler
 
 
 class SpectralCF(AbstractRecommender):
@@ -123,16 +122,12 @@ class SpectralCF(AbstractRecommender):
         return np.identity(self.num_users+self.num_items,dtype=np.float32) - temp
         
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
+        data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True)
         for epoch in range(1,self.num_epochs+1):
-            # Generate training instances
-            user_input, item_input_pos, item_input_neg = data_generator._get_pairwise_all_data(self.dataset)
-            data_iter = DataIterator(user_input, item_input_pos, item_input_neg,
-                                     batch_size=self.batch_size, shuffle=True)
-            
             total_loss = 0.0
             training_start_time = time()
-            num_training_instances = len(user_input)
+            num_training_instances = len(data_iter)
             for bat_users, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.input_user: bat_users,
                                  self.input_item_pos: bat_items_pos,
@@ -140,10 +135,10 @@ class SpectralCF(AbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
     
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
                 
     @timer
     def evaluate(self):

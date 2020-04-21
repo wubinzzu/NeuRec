@@ -8,7 +8,6 @@ based on Generative Adversarial Networks." in CIKM2018
 from model.AbstractRecommender import AbstractRecommender
 import numpy as np
 import tensorflow as tf
-from util.logger import logger
 from scipy.sparse import csr_matrix
 from util import csr_to_user_dict
 from util import randint_choice
@@ -149,7 +148,7 @@ class CFGAN(AbstractRecommender):
         return train_matrix, csr_matrix(zr_matrix), csr_matrix(pm_matrix)
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         g_iter = DataIterator(np.arange(self.num_users), batch_size=self.batchSize_G, shuffle=True, drop_last=False)
         d_iter = DataIterator(np.arange(self.num_users), batch_size=self.batchSize_D, shuffle=True, drop_last=False)
 
@@ -175,7 +174,7 @@ class CFGAN(AbstractRecommender):
                             self.mask: train_p_mask, self.g_zr_dims: train_z_mask}
                     self.sess.run(self.trainer_g, feed_dict=feed)
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     def evaluate(self):
         self.eval_rating_matrix()

@@ -7,7 +7,6 @@ import numpy as np
 from time import time
 from util import learner, tool
 from tensorflow.contrib.layers import apply_regularization, l2_regularizer
-from util.logger import logger
 from model.AbstractRecommender import AbstractRecommender
 from util import timer
 from util.tool import csr_to_user_dict
@@ -137,7 +136,7 @@ class MultiVAE(AbstractRecommender):
             
     def train_model(self):
         update_count = 0.0
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(1,self.num_epochs+1):
             random_perm_doc_idx = np.random.permutation(self.num_users)
             self.total_batch = self.num_users
@@ -173,10 +172,10 @@ class MultiVAE(AbstractRecommender):
                 total_loss += loss
                 
                 update_count += 1
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

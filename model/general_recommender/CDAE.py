@@ -7,9 +7,7 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool
-from util.logger import logger
 from util import timer
-from util.tool import csr_to_user_dict
 from util import l2_loss
 from util.data_iterator import DataIterator
 
@@ -30,9 +28,9 @@ class CDAE(AbstractRecommender):
         self.init_method = conf["init_method"]
         self.stddev = conf["stddev"]
         self.num_users = dataset.num_users
-        self.num_items = dataset.num_items 
-        self.dataset = dataset
-        self.train_dict = csr_to_user_dict(dataset.train_matrix) 
+        self.num_items = dataset.num_items
+        self.train_matrix = dataset.to_csr_matrix()
+        self.train_dict = dataset.get_user_train_dict()
         self.sess = sess
         
     def _create_placeholders(self):
@@ -86,7 +84,7 @@ class CDAE(AbstractRecommender):
         self._create_optimizer()
                                                
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(1, self.num_epochs+1):
             # Generate training instances
             mask_corruption_np = np.random.binomial(1, 1-self.corruption_level, (self.num_users, self.num_items))
@@ -106,10 +104,10 @@ class CDAE(AbstractRecommender):
                 _, loss = self.sess.run([self.optimizer, self.loss], feed_dict=feed_dict)
                 total_loss += loss
 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/self.num_users,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/self.num_users,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
     @timer
     def evaluate(self):
@@ -121,7 +119,7 @@ class CDAE(AbstractRecommender):
         if candidate_items_user_ids is not None:
             rating_matrix = np.zeros((1, self.num_items), dtype=np.int32)
             for user_id, candidate_items_user_id in zip(user_ids, candidate_items_user_ids):
-                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                items_by_user_id = self.train_matrix[user_id].indices
                 for item_id in items_by_user_id:
                     rating_matrix[0, item_id] = 1
                 output = self.sess.run(self.output, 
@@ -134,7 +132,7 @@ class CDAE(AbstractRecommender):
             rating_matrix = np.zeros((1,self.num_items), dtype=np.int32)
             all_items = np.arange(self.num_items)
             for user_id in user_ids:
-                items_by_user_id = self.dataset.train_matrix[user_id].indices
+                items_by_user_id = self.train_matrix[user_id].indices
                 for item_id in items_by_user_id:
                     rating_matrix[0, item_id] = 1
 

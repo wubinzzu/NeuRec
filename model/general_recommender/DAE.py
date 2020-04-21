@@ -7,7 +7,6 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool
-from util.logger import logger
 from util import timer
 from util.tool import csr_to_user_dict
 from util import l2_loss
@@ -82,7 +81,7 @@ class DAE(AbstractRecommender):
         self._create_optimizer()
                                                
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(self.num_epochs):
             # Generate training instances
             mask_corruption_np = np.random.binomial(1, 1-self.corruption_level, (self.num_users, self.num_items))
@@ -101,10 +100,10 @@ class DAE(AbstractRecommender):
                              self.input_R: batch_matrix}
                 _, loss = self.sess.run([self.optimizer, self.loss], feed_dict=feed_dict)
                 total_loss += loss
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/self.num_users,
+            self.logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/self.num_users,
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
     @timer
     def evaluate(self):

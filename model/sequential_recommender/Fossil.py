@@ -8,9 +8,7 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool, data_generator
-from util.logger import logger
-from util.tool import csr_to_user_dict_bytime, timer,\
-    pad_sequences
+from util.tool import csr_to_user_dict_bytime, timer, pad_sequences
 from util import l2_loss
 from util.data_iterator import DataIterator
 
@@ -114,7 +112,7 @@ class Fossil(SeqAbstractRecommender):
         self._create_optimizer()
 
     def train_model(self):
-        logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluator.metrics_info())
         self.evaluate()
         for epoch in range(1, self.num_epochs+1):
             if self.is_pairwise is True:
@@ -166,11 +164,11 @@ class Fossil(SeqAbstractRecommender):
                     loss, _ = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
                 
-            logger.info("[iter %d : loss : %f, time: %f]" % (epoch, total_loss/num_training_instances,
-                                                             time()-training_start_time))
+            self.logger.info("[iter %d : loss : %f, time: %f]" %
+                             (epoch, total_loss/num_training_instances, time()-training_start_time))
             
             if epoch % self.verbose == 0:
-                logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
+                self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
 
     @timer
     def evaluate(self):

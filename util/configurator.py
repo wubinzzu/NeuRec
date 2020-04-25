@@ -52,7 +52,7 @@ class Configurator(object):
         Raises:
              FileNotFoundError: If `config_file` is not existing.
              SyntaxError: If the format of arguments in commend line is invalid.
-             ValueError: If there are more than one sections but no one section
+             ValueError: If there is more than one section but no one section
                 named `default_section` in ini-style file.
         """
         if not os.path.isfile(config_file):
@@ -68,11 +68,12 @@ class Configurator(object):
 
     def _read_cmd_arg(self):
         cmd_arg = OrderedDict()
-        for arg in sys.argv[1:]:
-            if not arg.startswith("--"):
-                raise SyntaxError("Commend arg must start with '--', but '%s' is not!" % arg)
-            arg_name, arg_value = arg[2:].split("=")
-            cmd_arg[arg_name] = arg_value
+        if "ipykernel_launcher" not in sys.argv[0]:
+            for arg in sys.argv[1:]:
+                if not arg.startswith("--"):
+                    raise SyntaxError("Commend arg must start with '--', but '%s' is not!" % arg)
+                arg_name, arg_value = arg[2:].split("=")
+                cmd_arg[arg_name] = arg_value
 
         return cmd_arg
 

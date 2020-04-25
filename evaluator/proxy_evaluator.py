@@ -30,7 +30,7 @@ class ProxyEvaluator(AbstractEvaluator):
       the ranking performance will be view in groups.
       For example, if `group_view = [10,30,50,100]`, users will be split into
       four groups: `(0, 10]`, `(10, 30]`, `(30, 50]` and `(50, 100]`. And the
-      users whose interacted items more than `100` will be discard.
+      users whose interacted items more than `100` will be discarded.
 
     * **Finally and importantly**, all the functions mentioned above depend on
       `UniEvaluator`, which is implemented by **python** and **cpp**.

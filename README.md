@@ -1,9 +1,10 @@
 # NeuRec
+
 ## An open source neural recommender library
 
 **Main Contributors**: [BinWu](https://github.com/wubinzzu), [ZhongchuanSun](https://github.com/ZhongchuanSun), [XiangnanHe](http://staff.ustc.edu.cn/~hexn/), [XiangWang](https://xiangwang1223.github.io), & [Jonathan Staniforth](https://github.com/jonathanstaniforth)
 
-<b>NeuRec</b> is a comprehensive and flexible Python library for recommender systems that includes a large range of state-of-the-art neural recommender models. This library aims to solve general, social and sequential (i.e. next-item) recommendation tasks, using the [Tensorflow](https://www.tensorflow.org/) library to provide 33 models out of the box. NeuRec is [open source](https://opensource.org) and available under the [MIT license](https://opensource.org/licenses/MIT).
+**NeuRec** is a comprehensive and flexible Python library for recommender systems that includes a large range of state-of-the-art neural recommender models. This library aims to solve general, social and sequential (i.e. next-item) recommendation tasks, using the [Tensorflow](https://www.tensorflow.org/) library to provide 33 models out of the box. NeuRec is [open source](https://opensource.org) and available under the [MIT license](https://opensource.org/licenses/MIT).
 
 ## Features
 
@@ -12,40 +13,40 @@
 * **Flexible configuration** - easily change the configuration settings to your exact requirements;
 * **Easy expansion** - quickly include models or datasets into NeuRec;
 * **Fast execution** - naturally support GPU, with a mutli-thread evaluator;
-* **Detailed documentation** - extensive documentation available as Jupyter notebooks at /docs.
+* **Detailed documentation** - extensive documentation available as Jupyter notebooks in [tutorial.ipynb](./tutorial.ipynb).
 
 ## Architecture
 
 The architecture of NeuRec is shown in the diagram below:
 
-<img src="architecture.jpg" width = "50%" height = "50%"/>
+<img src="./architecture.jpg" width = "50%" height = "50%"/>
 
-## Quick start
+## Quick Start
 
-Start using NeuRec in three steps with pip.
+Firstly, download this repository and unpack the downloaded source to a suitable location.
 
-Firstly, create a properties files to configure NeuRec, including all the necessary settings inside this file:
-
-```bash
-vim neurec.properties
-```
-
-Secondly, install NeuRec using pip:
+Secondly, go to '*./NeuRec*' and compline the evaluator of cpp implementation with the following command line:
 
 ```bash
-pip3 install neurec
+python setup.py build_ext --inplace
 ```
 
-Finally, import NeuRec and run as follows:
+If the compilation is successful, the evaluator of cpp implementation will be called automatically.
+Otherwise, the evaluator of python implementation will be called.
 
-```python
-import neurec
+**Note that the cpp implementation is much faster than python.**
 
-neurec.setup('neurec.properties')
-neurec.run()
+Thirdly, specify dataset and recommender in configuration file *NeuRec.properties*.
+
+Finally, run [main.py](./main.py) in IDE or with command line:
+
+```bash
+python main.py
 ```
 
-> Additional installation methods, including via Docker, are available at **/docs/1. Installation.ipynb**
+## Tutorial
+
+The short introduction to NeuRec is described in [tutorial.ipynb](./tutorial.ipynb)
 
 ## Models
 
@@ -100,4 +101,4 @@ Please let us know if you experience any issues or have suggestions for new feat
 The development of NeuRec is supported by the National Natural Science
 Foundation of China under Grant No. 61772475. This project is also supported by the National Research Foundation, Prime Minister’s Office, Singapore under its IRC@Singapore Funding Initiative.
 
-<img src="https://github.com/wubinzzu/NeuRec/blob/master/next.png" width = "297" height = "100" alt="next" align=center />
+<img src="./next.png" width = "297" height = "100" alt="next" align=center />

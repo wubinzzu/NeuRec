@@ -9,7 +9,7 @@
 ## Features
 
 * **Cross platform** - run on any operating system with the available Docker images;
-* **State-of-the-art** - 31 neural recommender models available out of the box;
+* **State-of-the-art** - 33 neural recommender models available out of the box;
 * **Flexible configuration** - easily change the configuration settings to your exact requirements;
 * **Easy expansion** - quickly include models or datasets into NeuRec;
 * **Fast execution** - naturally support GPU, with a mutli-thread evaluator;

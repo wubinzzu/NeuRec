@@ -56,6 +56,7 @@ def get_map_id(data):
     item2id = pd.Series(data=range(len(unique_item)), index=unique_item)
     return user2id.to_dict(), item2id.to_dict()
 
+
 def split_by_ratio(data, ratio=0.8, by_time=True):
     if by_time:
         data.sort_values(by=["user", "time"], inplace=True)

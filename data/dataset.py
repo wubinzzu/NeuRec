@@ -88,18 +88,11 @@ class Dataset(object):
         test_file = saved_prefix + ".test"
         user_map_file = saved_prefix + ".user2id"
         item_map_file = saved_prefix + ".item2id"
-        neg_item_file = saved_prefix + ".neg"
 
         if self._check_saved_data(splitter, ori_prefix, saved_prefix):
             # load saved data
             train_data = pd.read_csv(train_file, sep=sep, header=None, names=columns)
             test_data = pd.read_csv(test_file, sep=sep, header=None, names=columns)
-
-            all_data = pd.concat([train_data, test_data])
-
-            self.num_users = max(all_data["user"]) + 1
-            self.num_items = max(all_data["item"]) + 1
-            self.num_ratings = len(all_data)
 
             user_map = pd.read_csv(user_map_file, sep=sep, header=None, names=["user", "id"])
             item_map = pd.read_csv(item_map_file, sep=sep, header=None, names=["item", "id"])
@@ -108,6 +101,11 @@ class Dataset(object):
         else:  # split and save data
             by_time = config["by_time"] if file_format == "UIRT" else False
             train_data, test_data = self._split_data(ori_prefix, saved_prefix, columns, by_time, config)
+
+        all_data = pd.concat([train_data, test_data])
+        self.num_users = max(all_data["user"]) + 1
+        self.num_items = max(all_data["item"]) + 1
+        self.num_ratings = len(all_data)
 
         if file_format == "UI":
             train_ratings = [1.0] * len(train_data["user"])
@@ -125,21 +123,13 @@ class Dataset(object):
             self.time_matrix = csr_matrix((train_data["time"], (train_data["user"], train_data["item"])),
                                           shape=(self.num_users, self.num_items))
 
-        if os.path.isfile(neg_item_file) and config["rec.evaluate.neg"] > 0:
-            user_list, item_list = [], []
-            neg_items = pd.read_csv(neg_item_file, sep=sep, header=None)
-            for line in neg_items.values:
-                user_list.extend([line[0]]*(len(line)-1))
-                item_list.extend(line[1:])
-            self.negative_matrix = csr_matrix(([1]*len(user_list), (user_list, item_list)),
-                                              shape=(self.num_users, self.num_items))
+        self.negative_matrix = self._load_test_neg_items(all_data, config, saved_prefix)
 
     def _split_data(self, ori_prefix, saved_prefix, columns, by_time, config):
         splitter = config["splitter"]
         user_min = config["user_min"]
         item_min = config["item_min"]
         sep = config["data.convert.separator"]
-        test_neg = config["rec.evaluate.neg"]
         ratio = config["ratio"]
 
         dir_name = os.path.dirname(saved_prefix)
@@ -181,23 +171,6 @@ class Dataset(object):
         train_data["item"] = train_data["item"].map(self.itemids)
         test_data["item"] = test_data["item"].map(self.itemids)
 
-        all_data = pd.concat([train_data, test_data])
-
-        self.num_users = max(all_data["user"]) + 1
-        self.num_items = max(all_data["item"]) + 1
-        self.num_ratings = len(all_data)
-
-        if test_neg > 0:
-            neg_items = []
-            grouped_user = all_data.groupby(["user"])
-            for user, u_data in grouped_user:
-                line = [user]
-                line.extend(randint_choice(self.num_items, size=test_neg, replace=False, exclusion=u_data["item"]))
-                neg_items.append(line)
-
-            neg_items = pd.DataFrame(neg_items)
-            np.savetxt(saved_prefix + ".neg", neg_items, fmt='%d', delimiter=sep)
-
         # save files
         np.savetxt(saved_prefix+".train", train_data, fmt='%d', delimiter=sep)
         np.savetxt(saved_prefix+".test", test_data, fmt='%d', delimiter=sep)
@@ -207,11 +180,60 @@ class Dataset(object):
         np.savetxt(saved_prefix+".user2id", user2id, fmt='%s', delimiter=sep)
         np.savetxt(saved_prefix+".item2id", item2id, fmt='%s', delimiter=sep)
 
+        # remap test negative items and save to a file
+        neg_item_file = ori_prefix + ".neg"
+        if os.path.isfile(neg_item_file):
+            neg_item_list = []
+            with open(neg_item_file, 'r') as fin:
+                for line in fin.readlines():
+                    line = line.strip().split(sep)
+                    user_items = [self.userids[line[0]]]
+                    user_items.extend([self.itemids[i] for i in line[1:]])
+                    neg_item_list.append(user_items)
+
+            test_neg = len(neg_item_list[0]) - 1
+            np.savetxt("%s.neg%d" % (saved_prefix, test_neg), neg_item_list, fmt='%d', delimiter=sep)
+
+        self.num_users = max(all_data["user"]) + 1
+        self.num_items = max(all_data["item"]) + 1
+        self.num_ratings = len(all_data)
+
         logger = Logger(saved_prefix+".info")
         logger.info(os.path.basename(saved_prefix))
         logger.info(self.__str__())
 
         return train_data, test_data
+
+    def _load_test_neg_items(self, all_data, config, saved_prefix):
+        number_neg = config["rec.evaluate.neg"]
+        sep = config["data.convert.separator"]
+        neg_matrix = None
+        if number_neg > 0:
+            neg_items_file = "%s.neg%d" % (saved_prefix, number_neg)
+            if not os.path.isfile(neg_items_file):
+                # sampling
+                neg_items = []
+                grouped_user = all_data.groupby(["user"])
+                for user, u_data in grouped_user:
+                    line = [user]
+                    line.extend(randint_choice(self.num_items, size=number_neg, replace=False, exclusion=u_data["item"]))
+                    neg_items.append(line)
+
+                neg_items = pd.DataFrame(neg_items)
+                np.savetxt("%s.neg%d" % (saved_prefix, number_neg), neg_items, fmt='%d', delimiter=sep)
+            else:
+                # load file
+                neg_items = pd.read_csv(neg_items_file, sep=sep, header=None)
+
+            user_list, item_list = [], []
+            for line in neg_items.values:
+                user_list.extend([line[0]] * (len(line) - 1))
+                item_list.extend(line[1:])
+
+            neg_matrix = csr_matrix(([1] * len(user_list), (user_list, item_list)),
+                                    shape=(self.num_users, self.num_items))
+
+        return neg_matrix
 
     def __str__(self):
         num_users, num_items = self.num_users, self.num_items

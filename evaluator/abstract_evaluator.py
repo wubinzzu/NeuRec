@@ -1,6 +1,8 @@
 """
 @author: Zhongchuan Sun
 """
+
+
 class AbstractEvaluator(object):
     """Base class for all evaluator.
     """

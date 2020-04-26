@@ -21,8 +21,8 @@ class GroupedEvaluator(AbstractEvaluator):
     users whose interacted items more than `100` will be discard.
     """
     @typeassert(user_train_dict=dict, user_test_dict=dict, group_view=list)
-    def __init__(self, user_train_dict, user_test_dict, metric=None,
-                 group_view=None, top_k=50, batch_size=1024, num_thread=8):
+    def __init__(self, user_train_dict, user_test_dict, user_neg_test=None,
+                 metric=None, group_view=None, top_k=50, batch_size=1024, num_thread=8):
         """Initializes a new `GroupedEvaluator` instance.
 
         Args:
@@ -50,10 +50,10 @@ class GroupedEvaluator(AbstractEvaluator):
         """
         super(GroupedEvaluator, self).__init__()
 
-        if  not isinstance(group_view, list):
+        if not isinstance(group_view, list):
             raise TypeError("The type of 'group_view' must be `list`!")
 
-        self.evaluator = UniEvaluator(user_train_dict, user_test_dict,
+        self.evaluator = UniEvaluator(user_train_dict, user_test_dict, user_neg_test,
                                       metric=metric, top_k=top_k,
                                       batch_size=batch_size,
                                       num_thread=num_thread)

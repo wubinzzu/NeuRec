@@ -264,6 +264,12 @@ class Dataset(object):
         test_dict = csr_to_user_dict(self.test_matrix)
         return test_dict
 
+    def get_user_test_neg_dict(self):
+        test_neg_dict = None
+        if self.negative_matrix is not None:
+            test_neg_dict = csr_to_user_dict(self.negative_matrix)
+        return test_neg_dict
+
     def get_train_interactions(self):
         dok_matrix = self.train_matrix.todok()
         users_list, items_list = [], []

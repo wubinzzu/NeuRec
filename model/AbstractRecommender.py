@@ -24,6 +24,7 @@ class AbstractRecommender(object):
     def __init__(self, dataset, conf):
         self.evaluator = ProxyEvaluator(dataset.get_user_train_dict(),
                                         dataset.get_user_test_dict(),
+                                        dataset.get_user_test_neg_dict(),
                                         metric=conf["metric"],
                                         group_view=conf["group_view"],
                                         top_k=conf["topk"],

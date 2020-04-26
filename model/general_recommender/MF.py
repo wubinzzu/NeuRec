@@ -112,18 +112,18 @@ class MF(AbstractRecommender):
             if epoch % self.verbose == 0:
                 self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
     
-    # @timer
+    @timer
     def evaluate(self):
         self._cur_user_embeddings, self._cur_item_embeddings = self.sess.run([self.user_embeddings, self.item_embeddings])
         return self.evaluator.evaluate(self)
 
-    def predict(self, user_ids, candidate_items_user_ids=None):
-        if candidate_items_user_ids is None:
+    def predict(self, user_ids, candidate_items=None):
+        if candidate_items is None:
             user_embed = self._cur_user_embeddings[user_ids]
             ratings = np.matmul(user_embed, self._cur_item_embeddings.T)
         else:
             ratings = []
-            for user_id, items_by_user_id in zip(user_ids, candidate_items_user_ids):
+            for user_id, items_by_user_id in zip(user_ids, candidate_items):
                 user_embed = self._cur_user_embeddings[user_id]
                 items_embed = self._cur_item_embeddings[items_by_user_id]
                 ratings.append(np.squeeze(np.matmul(user_embed, items_embed.T)))

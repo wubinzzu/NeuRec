@@ -42,19 +42,17 @@ int eval_one_user(float *ratings, int rating_len, const unordered_set<int> &trut
 }
 
 
-void cpp_evaluate_matrix(float *rating_matrix, int rating_len, vector<int> &test_users,
-                         unordered_map<int, unordered_set<int> > &all_truth,
+void cpp_evaluate_matrix(float *rating_matrix, int rating_len, vector<unordered_set<int> > &test_items,
                          vector<int> metric, int top_k, int thread_num, float *results_pt)
 {
     ThreadPool pool(thread_num);
     vector< future< int > > sync_results;
     int metric_num = metric.size();
 
-    for(unsigned int i=0; i<test_users.size(); i++)
+    for(unsigned int i=0; i<test_items.size(); i++)
     {
-        int user = test_users[i];
         auto rating_pt = rating_matrix + i*rating_len;
-        auto &truth = all_truth[user];
+        auto &truth = test_items[i];
         auto r_pt = results_pt + i*top_k*metric_num;
         sync_results.emplace_back(pool.enqueue(eval_one_user, rating_pt, rating_len, truth, metric, top_k, r_pt));
     }

@@ -153,7 +153,6 @@ class Dataset(object):
             test_file = ori_prefix + ".test"
             train_data = pd.read_csv(train_file, sep=sep, header=None, names=columns)
             test_data = pd.read_csv(test_file, sep=sep, header=None, names=columns)
-            all_data = pd.concat([train_data, test_data])
             with open(saved_prefix+".md5", "w") as md5_out:
                 md5_out.writelines(check_md5(train_file))
                 md5_out.writelines(check_md5(test_file))
@@ -161,6 +160,7 @@ class Dataset(object):
             raise ValueError("'%s' is an invalid splitter!" % splitter)
 
         # remap id
+        all_data = pd.concat([train_data, test_data])
         unique_user = all_data["user"].unique()
         self.userids = pd.Series(data=range(len(unique_user)), index=unique_user).to_dict()
         train_data["user"] = train_data["user"].map(self.userids)
@@ -194,9 +194,10 @@ class Dataset(object):
             test_neg = len(neg_item_list[0]) - 1
             np.savetxt("%s.neg%d" % (saved_prefix, test_neg), neg_item_list, fmt='%d', delimiter=sep)
 
-        self.num_users = max(all_data["user"]) + 1
-        self.num_items = max(all_data["item"]) + 1
-        self.num_ratings = len(all_data)
+        all_remapped_data = pd.concat([train_data, test_data])
+        self.num_users = max(all_remapped_data["user"]) + 1
+        self.num_items = max(all_remapped_data["item"]) + 1
+        self.num_ratings = len(all_remapped_data)
 
         logger = Logger(saved_prefix+".info")
         logger.info(os.path.basename(saved_prefix))

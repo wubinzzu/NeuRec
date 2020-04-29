@@ -1,7 +1,5 @@
 import numpy as np
 from model.AbstractRecommender import AbstractRecommender
-import pandas as pd
-import scipy.sparse as sp
 
 
 class Pop(AbstractRecommender):

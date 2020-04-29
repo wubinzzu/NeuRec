@@ -25,6 +25,7 @@ class SRGNN(SeqAbstractRecommender):
         self.lr_dc = config["lr_dc"]
         self.lr_dc_step = config["lr_dc_step"]
         self.nonhybrid = config["nonhybrid"]
+        self.max_seq_len = config["max_seq_len"]
 
         self.num_users, self.num_item = dataset.num_users, dataset.num_items
         self.user_pos_train = dataset.get_user_train_dict(by_time=True)
@@ -33,7 +34,7 @@ class SRGNN(SeqAbstractRecommender):
         self.train_tar = []
         for user, seqs in self.user_pos_train.items():
             for i in range(1, len(seqs)):
-                self.train_seq.append(seqs[:-i])
+                self.train_seq.append(seqs[-i - self.max_seq_len:-i])
                 self.train_tar.append(seqs[-i])
 
         self.sess = sess
@@ -211,7 +212,7 @@ class SRGNN(SeqAbstractRecommender):
         all_ratings = []
         for bat_user in users:
             cur_batch_size = len(bat_user)
-            bat_items = [self.user_pos_train[user] for user in bat_user]
+            bat_items = [self.user_pos_train[user][-self.max_seq_len:] for user in bat_user]
             bat_adj_in, bat_adj_out, bat_alias, bat_items, bat_mask = self._build_session_graph(bat_items)
             if cur_batch_size < self.batch_size:  # padding
                 pad_size = self.batch_size - cur_batch_size

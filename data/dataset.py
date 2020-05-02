@@ -217,7 +217,8 @@ class Dataset(object):
                 grouped_user = all_data.groupby(["user"])
                 for user, u_data in grouped_user:
                     line = [user]
-                    line.extend(randint_choice(self.num_items, size=number_neg, replace=False, exclusion=u_data["item"]))
+                    line.extend(randint_choice(self.num_items, size=number_neg,
+                                               replace=False, exclusion=u_data["item"].tolist()))
                     neg_items.append(line)
 
                 neg_items = pd.DataFrame(neg_items)

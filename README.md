@@ -70,6 +70,7 @@ The list of available models in NeuRec, along with their paper citations, are sh
 | SpectralCF          | Lei Zheng, et al., Spectral Collaborative Filtering. RecSys 2018.                                                               |
 | NGCF                | Xiang Wang, et al., Neural Graph Collaborative Filtering. SIGIR 2019.                                                           |
 | WRMF                | Yifan Hu, et al., Collaborative Filtering for Implicit Feedback Datasets. ICDM 2008.                                            |
+| LightGCN            | Xiangnan He, et al., LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation. SIGIR 2020.               |
 
 | Social Recommender | Paper                                                                                                      |
 |------------------------|------------------------------------------------------------------------------------------------------------|

@@ -38,7 +38,7 @@ class Dataset(object):
 
         saved_path = os.path.join(data_path, "_tmp_"+self.dataset_name)
         saved_prefix = "%s_%s_u%d_i%d" % (self.dataset_name, config["splitter"], config["user_min"], config["item_min"])
-        if config["by_time"]:
+        if "by_time" in config and config["by_time"] is True:
             saved_prefix += "_by_time"
 
         saved_prefix = os.path.join(saved_path, saved_prefix)
@@ -130,7 +130,6 @@ class Dataset(object):
         user_min = config["user_min"]
         item_min = config["item_min"]
         sep = config["data.convert.separator"]
-        ratio = config["ratio"]
 
         dir_name = os.path.dirname(saved_prefix)
         if not os.path.exists(dir_name):
@@ -141,6 +140,7 @@ class Dataset(object):
             all_data = pd.read_csv(rating_file, sep=sep, header=None, names=columns)
             filtered_data = filter_data(all_data, user_min=user_min, item_min=item_min)
             if splitter == "ratio":
+                ratio = config["ratio"]
                 train_data, test_data = split_by_ratio(filtered_data, ratio=ratio, by_time=by_time)
             elif splitter == "loo":
                 train_data, test_data = split_by_loo(filtered_data, by_time=by_time)

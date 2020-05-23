@@ -144,7 +144,7 @@ class FPMCplus(SeqAbstractRecommender):
             training_start_time = time()
       
             if self.is_pairwise is True:
-                for bat_users, bat_items_pos, bat_items_recent, bat_items_neg in data_iter:
+                for bat_users, bat_items_recent, bat_items_pos, bat_items_neg in data_iter:
                     
                     feed_dict = {self.user_input: bat_users, 
                                  self.item_input: bat_items_pos,
@@ -154,7 +154,7 @@ class FPMCplus(SeqAbstractRecommender):
                     loss, _ = self.sess.run((self.loss,self.optimizer), feed_dict=feed_dict)
                     total_loss += loss
             else:
-                for bat_users, bat_items, bat_items_recent, bat_labels in data_iter:
+                for bat_users, bat_items_recent, bat_items, bat_labels in data_iter:
                     
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items,

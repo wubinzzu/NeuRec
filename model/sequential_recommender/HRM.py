@@ -112,7 +112,7 @@ class HRM(SeqAbstractRecommender):
             total_loss = 0.0
             training_start_time = time()
       
-            for bat_users, bat_items, bat_items_recent, bat_labels in data_iter:
+            for bat_users, bat_items_recent, bat_items, bat_labels in data_iter:
                     
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items,

@@ -122,7 +122,7 @@ class TransRec(SeqAbstractRecommender):
             training_start_time = time()
 
             if self.is_pairwise is True:
-                for bat_users, bat_items_pos, bat_items_recent, bat_items_neg in data_iter:
+                for bat_users, bat_items_recent, bat_items_pos, bat_items_neg in data_iter:
                     feed_dict = {self.user_input: bat_users,
                                  self.item_input: bat_items_pos,
                                  self.item_input_recent: bat_items_recent,

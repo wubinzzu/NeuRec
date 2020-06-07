@@ -23,7 +23,9 @@ install:
   - docker pull $DOCKER_IMAGE
 
 script:
-  - chmod 777 /io/travis_linux_steps.sh
+  - pwd
+  - ls
+  - ls /io
   - docker run --rm -e PLAT=$PLAT -e SO_DIR=${SO_DIR} -v `pwd`:/io $DOCKER_IMAGE /io/travis_linux_steps.sh
 
 before_deploy:

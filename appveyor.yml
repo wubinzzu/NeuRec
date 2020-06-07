@@ -11,7 +11,7 @@ after_build:
     7z a .\compiled_pyd_%APPVEYOR_BUILD_NUMBER%.zip ..\compiled_pyd\*
 
 artifacts:
-- path: compiled_pyd-b%APPVEYOR_BUILD_NUMBER%.zip
+- path: compiled_pyd-%APPVEYOR_BUILD_NUMBER%.zip
 
 environment:
   my_variable:
@@ -20,7 +20,7 @@ environment:
 deploy:
   artifact: compiled_pyd_%APPVEYOR_BUILD_NUMBER%.zip
   prerelease: true
-  description: 'Test Release'
+  description: 'Compile cpp code'
   provider: GitHub
   auth_token:
     secure: 8xnAJH3KJgNNa6fghrbQZ4NoYxJLdOkTtqkeGJyL4gG9lR5bHfpKX039qnAIkFPN

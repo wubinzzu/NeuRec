@@ -2,7 +2,7 @@
 
 ## An open source neural recommender library
 
-**Main Contributors**: [BinWu](https://github.com/wubinzzu), [ZhongchuanSun](https://github.com/ZhongchuanSun), [XiangnanHe](http://staff.ustc.edu.cn/~hexn/), [XiangWang](https://xiangwang1223.github.io), & [Jonathan Staniforth](https://github.com/jonathanstaniforth)
+**Main Contributors**: [Bin Wu](https://github.com/wubinzzu), [Zhongchuan Sun](https://github.com/ZhongchuanSun), [Xiangnan He](http://staff.ustc.edu.cn/~hexn/), [Xiang Wang](https://xiangwang1223.github.io), & [Jonathan Staniforth](https://github.com/jonathanstaniforth)
 
 **NeuRec** is a comprehensive and flexible Python library for recommender systems that includes a large range of state-of-the-art neural recommender models. This library aims to solve general, social and sequential (i.e. next-item) recommendation tasks, using the [Tensorflow](https://www.tensorflow.org/) library to provide 33 models out of the box. NeuRec is [open source](https://opensource.org) and available under the [MIT license](https://opensource.org/licenses/MIT).
 

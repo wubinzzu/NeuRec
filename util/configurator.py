@@ -141,6 +141,9 @@ class Configurator(object):
 
         return value
 
+    def __getattr__(self, item):
+        return self[item]
+
     def __contains__(self, o):
         return o in self.lib_arg or o in self.alg_arg or o in self.cmd_arg
 

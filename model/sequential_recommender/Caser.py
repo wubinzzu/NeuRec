@@ -10,7 +10,7 @@ from model.AbstractRecommender import SeqAbstractRecommender
 from util import DataIterator
 from util.tool import csr_to_user_dict_bytime
 import tensorflow as tf
-from util import batch_random_choice
+from util import batch_randint_choice
 from util import pad_sequences
 
 
@@ -179,7 +179,7 @@ class Caser(SeqAbstractRecommender):
         for bat_users, bat_counts in user_count:
             n_neg_items = [c*self.neg_samples for c in bat_counts]
             exclusion = [self.user_pos_train[u] for u in bat_users]
-            bat_neg = batch_random_choice(self.items_num, n_neg_items, replace=True, exclusion=exclusion)
+            bat_neg = batch_randint_choice(self.items_num, n_neg_items, replace=True, exclusion=exclusion)
             for u, neg in zip(bat_users, bat_neg):
                 user_neg_items_dict[u] = neg
 

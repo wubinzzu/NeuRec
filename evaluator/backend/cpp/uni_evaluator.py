@@ -5,7 +5,7 @@ import numpy as np
 from util import DataIterator
 from util import typeassert
 from .cpp_evaluator import CPPEvaluator
-from .apt_tools import float_type, is_ndarray
+from util.cython.tools import float_type, is_ndarray
 from util import pad_sequences
 
 

@@ -5,7 +5,6 @@ from functools import wraps
 import heapq
 import itertools
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 
 def activation_function(act,act_input):
@@ -128,33 +127,6 @@ def randint_choice(high, size=None, replace=True, p=None, exclusion=None):
         p = p / np.sum(p)
     sample = np.random.choice(a, size=size, replace=replace, p=p)
     return sample
-
-
-def batch_random_choice(high, size, replace=True, p=None, exclusion=None):
-    """Return random integers from `0` (inclusive) to `high` (exclusive).
-    :param high: integer
-    :param size: 1-D array_like
-    :param replace: bool
-    :param p: 2-D array_like
-    :param exclusion: a list of 1-D array_like
-    :return: a list of 1-D array_like sample
-    """
-
-    if p is not None and (len(p) != len(size) or len(p[0]) != high):
-        raise ValueError("The shape of 'p' is not compatible with the shapes of 'array' and 'size'!")
-
-    if exclusion is not None and len(exclusion) != len(size):
-        raise ValueError("The shape of 'exclusion' is not compatible with the shape of 'size'!")
-
-    def choice_one(idx):
-        p_tmp = p[idx] if p is not None else None
-        exc = exclusion[idx] if exclusion is not None else None
-        return randint_choice(high, size[idx], replace=replace, p=p_tmp, exclusion=exc)
-
-    with ThreadPoolExecutor() as executor:
-        results = executor.map(choice_one, range(len(size)))
-
-    return [result for result in results]
 
 
 def typeassert(*type_args, **type_kwargs):

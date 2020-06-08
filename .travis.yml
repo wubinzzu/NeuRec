@@ -16,8 +16,9 @@ matrix:
            PLAT=manylinux2014_x86_64
 
 before_install:
-  - export TRAVIS_TAG="$TRAVIS_BUILD_NUMBER"
-  - export SO_DIR="compiled_so_${PLAT}_${TRAVIS_TAG}"
+  - export NEUREC_VER=2.1
+  - export TRAVIS_TAG="linux_compile-${NEUREC_VER}.${TRAVIS_BUILD_NUMBER}"
+  - export SO_DIR="linux_compile-${PLAT}_${NEUREC_VER}.${TRAVIS_BUILD_NUMBER}"
   - chmod 755 travis_linux_steps.sh
 
 install:
@@ -38,6 +39,6 @@ deploy:
   name: $TRAVIS_TAG
   api_key: $GITHUB_TOKEN
   file_glob: true
-  file: ${TRAVIS_TAG}_*compiled_so.tar.gz
+  file: ${SO_DIR}.tar.gz
   skip_cleanup: true
   draft: true

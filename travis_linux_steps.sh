@@ -17,7 +17,7 @@ for PYBIN in /opt/python/*/bin; do
         ${PIP_EXE} install cython
         ${PIP_EXE} install numpy
         ${PYTHON_EXE} setup.py build_ext --inplace clean --all
-#        cp evaluator/backend/cpp/*.so /io/${dir_name}/
+
         find . -path ./${dir_name} -prune -o -name '*.so' -print |xargs tar czf ${dir_name}.tgz
         tar zxvf ${dir_name}.tgz -C ${dir_name}
     fi

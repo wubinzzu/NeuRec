@@ -18,14 +18,12 @@ matrix:
 before_install:
   - export TRAVIS_TAG="$TRAVIS_BUILD_NUMBER"
   - export SO_DIR="compiled_so_${PLAT}_${TRAVIS_TAG}"
+  - chmod 755 travis_linux_steps.sh
 
 install:
   - docker pull $DOCKER_IMAGE
 
 script:
-  - pwd
-  - ls
-  - ls /io
   - docker run --rm -e PLAT=$PLAT -e SO_DIR=${SO_DIR} -v `pwd`:/io $DOCKER_IMAGE /io/travis_linux_steps.sh
 
 before_deploy:

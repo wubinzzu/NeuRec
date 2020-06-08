@@ -8,7 +8,7 @@ build_script:
 - ps: .\appveyor_windows_steps.ps1
 
 after_build:
-    7z a .\win_complie-%version%.%APPVEYOR_BUILD_NUMBER%.zip ..\compiled_pyd\*
+    7z a .\win_complie-2.1.%APPVEYOR_BUILD_NUMBER%.zip ..\compiled_pyd\*
 
 artifacts:
 - path: compiled_pyd_%APPVEYOR_BUILD_NUMBER%.zip
@@ -18,8 +18,8 @@ environment:
     secure: EtPzN/tNyp4noOA6WEC9WmAXJT3sWa7/E9Ba0Wv4Fvu+2KSsaOX3VDtgMyYkJjI9
 
 deploy:
-  release: win_complie-%version%.%APPVEYOR_BUILD_NUMBER%
-  artifact: win_complie-%version%.%APPVEYOR_BUILD_NUMBER%.zip
+  release: win_complie-2.1.%APPVEYOR_BUILD_NUMBER%
+  artifact: win_complie-2.1.%APPVEYOR_BUILD_NUMBER%.zip
   prerelease: true
   description: 'windows compile'
   provider: GitHub

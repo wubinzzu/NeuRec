@@ -26,3 +26,4 @@ deploy:
   auth_token:
     secure: 8xnAJH3KJgNNa6fghrbQZ4NoYxJLdOkTtqkeGJyL4gG9lR5bHfpKX039qnAIkFPN
   draft: true
+

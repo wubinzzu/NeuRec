@@ -41,4 +41,4 @@ deploy:
   file_glob: true
   file: ${SO_DIR}.tar.gz
   skip_cleanup: true
-  draft: true
+#  draft: true

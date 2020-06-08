@@ -21,8 +21,8 @@ deploy:
   release: win_complie-2.1.%APPVEYOR_BUILD_NUMBER%
   artifact: win_complie-2.1.%APPVEYOR_BUILD_NUMBER%.zip
   prerelease: true
-  description: 'windows compile'
+#  description: 'windows compile'
   provider: GitHub
   auth_token:
     secure: 8xnAJH3KJgNNa6fghrbQZ4NoYxJLdOkTtqkeGJyL4gG9lR5bHfpKX039qnAIkFPN
-  draft: true
+#  draft: true

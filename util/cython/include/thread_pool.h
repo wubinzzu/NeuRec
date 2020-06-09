@@ -1,3 +1,7 @@
+/*
+Authors: Jakob Progsch, and Václav Zeman
+From: https://github.com/progschj/ThreadPool/blob/master/ThreadPool.h
+*/
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 

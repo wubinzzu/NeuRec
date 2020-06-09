@@ -11,7 +11,7 @@ from util import DataIterator
 from util.tool import csr_to_user_dict_bytime
 import tensorflow as tf
 from util import inner_product
-from util import batch_random_choice
+from util import batch_randint_choice
 from util import pad_sequences
 
 
@@ -412,7 +412,7 @@ class SASRec(SeqAbstractRecommender):
             bat_pos = [self.user_pos_train[u][1:] for u in bat_users]
             n_neg_items = [len(pos) for pos in bat_pos]
             exclusion = [self.user_pos_train[u] for u in bat_users]
-            bat_neg = batch_random_choice(self.items_num, n_neg_items, replace=True, exclusion=exclusion)
+            bat_neg = batch_randint_choice(self.items_num, n_neg_items, replace=True, exclusion=exclusion)
 
             # padding
             bat_seq = pad_sequences(bat_seq, value=self.items_num, max_len=self.max_len, padding='pre', truncating='pre')

@@ -1,0 +1,44 @@
+language: python
+notifications:
+  email: false
+
+matrix:
+  include:
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2014_i686
+           PLAT=manylinux2014_i686
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2014_x86_64
+           PLAT=manylinux2014_x86_64
+
+before_install:
+  - export NEUREC_VER=2.1
+  - export TRAVIS_TAG="linux_compile-${NEUREC_VER}.${TRAVIS_BUILD_NUMBER}"
+  - export SO_DIR="linux_compile-${PLAT}_${NEUREC_VER}.${TRAVIS_BUILD_NUMBER}"
+  - chmod 755 travis_linux_steps.sh
+
+install:
+  - docker pull $DOCKER_IMAGE
+
+script:
+  - docker run --rm -e PLAT=$PLAT -e SO_DIR=${SO_DIR} -v `pwd`:/io $DOCKER_IMAGE /io/travis_linux_steps.sh
+
+before_deploy:
+  - echo "$TRAVIS_TAG" "$TRAVIS_COMMIT"
+  - git tag "$TRAVIS_TAG" "$TRAVIS_COMMIT"
+  - tar -zcvf "${SO_DIR}.tar.gz" ${SO_DIR}
+
+deploy:
+  provider: releases
+  tag_name: $TRAVIS_TAG
+  target_commitish: $TRAVIS_COMMIT
+  name: $TRAVIS_TAG
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: ${SO_DIR}.tar.gz
+  skip_cleanup: true
+  draft: true

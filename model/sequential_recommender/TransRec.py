@@ -8,7 +8,7 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool
-from util.data_iterator import DataIterator
+from util import DataIterator
 from util.tool import csr_to_user_dict_bytime
 from util import timer
 from util import l2_loss

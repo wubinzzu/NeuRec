@@ -9,7 +9,7 @@ from time import time
 from util import learner, randint_choice, tool
 from model.AbstractRecommender import SocialAbstractRecommender
 from util import timer
-from util.data_iterator import DataIterator
+from util import DataIterator
 from util.tool import csr_to_user_dict
 from util import l2_loss
 

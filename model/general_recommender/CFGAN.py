@@ -12,7 +12,7 @@ from scipy.sparse import csr_matrix
 from util import csr_to_user_dict
 from util import randint_choice
 from util import l2_loss
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class CFGAN(AbstractRecommender):

@@ -10,7 +10,7 @@ from util import learner, tool
 from util import timer
 from util.tool import csr_to_user_dict
 from util import l2_loss
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class DAE(AbstractRecommender):

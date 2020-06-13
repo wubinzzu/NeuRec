@@ -12,7 +12,7 @@ from util.tool import csr_to_user_dict
 import pickle
 from util import l2_loss
 from util import pad_sequences
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class NAIS(AbstractRecommender):

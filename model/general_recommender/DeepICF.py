@@ -11,9 +11,10 @@ from util import learner,data_generator, tool
 from util import timer
 import pickle
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
-from util.tool import csr_to_user_dict, pad_sequences
+from util.tool import csr_to_user_dict
+from util import pad_sequences
 from util import l2_loss
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class DeepICF(AbstractRecommender):

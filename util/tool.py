@@ -60,7 +60,7 @@ def csr_to_user_dict(train_matrix):
     """
     train_dict = {}
     for idx, value in enumerate(train_matrix):
-        if any(value.indices):
+        if len(value.indices) > 0:
             train_dict[idx] = value.indices.copy().tolist()
     return train_dict
 

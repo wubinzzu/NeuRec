@@ -1,13 +1,21 @@
 # distutils: language = c++
+# distutils: extra_compile_args = -std=c++11
 """
 @author: Zhongchuan Sun
 """
 from libcpp.unordered_set cimport unordered_set as cset
 from libcpp.vector cimport vector as cvector
 from libc.stdlib cimport rand, srand
-
-
 ctypedef cset[int] int_set
+
+
+cdef llrand():
+    cdef unsigned long long r = 0
+    cdef int i = 0
+    for i in range(5):
+        r = (r << 15) | (rand() & 0x7FFF)
+    return r & 0xFFFFFFFFFFFFFFFFULL
+
 
 def randint_choice(high, size=1, replace=True, p=None, exclusion=None):
     """Sample random integers from [0, high).
@@ -40,7 +48,7 @@ def randint_choice(high, size=1, replace=True, p=None, exclusion=None):
     cdef int c_replace = replace
     cdef int c_size = size
     while c_size - i:
-        a = rand() % c_high
+        a = llrand() % c_high
         if not omission.count(a):
             c_arr.push_back(a)
             i += 1

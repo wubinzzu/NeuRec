@@ -1,4 +1,5 @@
-from evaluator import ProxyEvaluator
+# from evaluator import ProxyEvaluator
+from reckit.evaluator import ProxyEvaluator
 import pandas as pd
 import numpy as np
 import scipy.sparse as sp

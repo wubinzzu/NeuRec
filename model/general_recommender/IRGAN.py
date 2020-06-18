@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 from util import l2_loss
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class GEN(object):

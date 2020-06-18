@@ -8,9 +8,11 @@ import tensorflow as tf
 import numpy as np
 from time import time
 from util import learner, tool, data_generator
-from util.tool import csr_to_user_dict_bytime, timer, pad_sequences
+from util.tool import csr_to_user_dict_bytime
+from util import timer
+from util import pad_sequences
 from util import l2_loss
-from util.data_iterator import DataIterator
+from util import DataIterator
 
 
 class Fossil(SeqAbstractRecommender):

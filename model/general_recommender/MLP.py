@@ -6,8 +6,7 @@ from model.AbstractRecommender import AbstractRecommender
 import tensorflow as tf
 import numpy as np
 from time import time
-from util import data_generator, learner, tool
-from util.data_iterator import DataIterator
+from util import learner, tool
 from util import l2_loss
 from data import PointwiseSampler, PairwiseSampler
 

@@ -1,5 +1,5 @@
 import numpy as np
-from util.tool import randint_choice
+from util import randint_choice
 
 
 def _get_pairwise_all_likefism_data(dataset):

@@ -23,18 +23,14 @@ The architecture of NeuRec is shown in the diagram below:
 
 ## Quick Start
 
-Firstly, download this repository and unpack the downloaded source to a suitable location.
+Now, NeuRec can be run without compilation.
+The cpp codes are maintained in [RecKit](https://github.com/ZhongchuanSun/reckit).
+You only need to download NeuRec and unpack the downloaded source to a suitable location.
 
-Secondly, go to '*./NeuRec*' and compline the evaluator of cpp implementation with the following command line:
-
+Then, install [RecKit](https://github.com/ZhongchuanSun/reckit):
 ```bash
-python setup.py build_ext --inplace
+pip install reckit
 ```
-
-If the compilation is successful, the evaluator of cpp implementation will be called automatically.
-Otherwise, the evaluator of python implementation will be called.
-
-**Note that the cpp implementation is much faster than python.**
 
 Thirdly, specify dataset and recommender in configuration file *NeuRec.properties*.
 

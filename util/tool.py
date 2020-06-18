@@ -60,7 +60,7 @@ def csr_to_user_dict(train_matrix):
     """
     train_dict = {}
     for idx, value in enumerate(train_matrix):
-        if any(value.indices):
+        if len(value.indices) > 0:
             train_dict[idx] = value.indices.copy().tolist()
     return train_dict
 
@@ -113,104 +113,14 @@ def noise_validator(noise, allowed_noises):
     pass 
 
 
-def randint_choice(high, size=None, replace=True, p=None, exclusion=None):
-    """Return random integers from `0` (inclusive) to `high` (exclusive).
-    """
-    a = np.arange(high)
-    if exclusion is not None:
-        if p is None:
-            p = np.ones_like(a)
-        else:
-            p = np.array(p, copy=True)
-        p = p.flatten()
-        p[exclusion] = 0
-        p = p / np.sum(p)
-    sample = np.random.choice(a, size=size, replace=replace, p=p)
-    return sample
-
-
-def typeassert(*type_args, **type_kwargs):
-    def decorate(func):
-        sig = signature(func)
-        bound_types = sig.bind_partial(*type_args, **type_kwargs).arguments
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            bound_values = sig.bind(*args, **kwargs)
-            for name, value in bound_values.arguments.items():
-                if name in bound_types:
-                    if not isinstance(value, bound_types[name]):
-                        raise TypeError('Argument {} must be {}'.format(name, bound_types[name]))
-            return func(*args, **kwargs)
-        return wrapper
-    return decorate
-
-
 def argmax_top_k(a, top_k=50):
     ele_idx = heapq.nlargest(top_k, zip(a, itertools.count()))
     return np.array([idx for ele, idx in ele_idx], dtype=np.intc)
 
 
-def pad_sequences(sequences, value=0., max_len=None,
-                  padding='post', truncating='post', dtype=np.int32):
-    """Pads sequences to the same length.
-
-    Args:
-        sequences (list): A list of lists, where each element is a sequence.
-        value (int or float): Padding value. Defaults to `0.`.
-        max_len (int or None): Maximum length of all sequences.
-        padding (str): `"pre"` or `"post"`: pad either before or after each
-            sequence. Defaults to `post`.
-        truncating (str): `"pre"` or `"post"`: remove values from sequences
-            larger than `max_len`, either at the beginning or at the end of
-            the sequences. Defaults to `post`.
-        dtype (int or float): Type of the output sequences. Defaults to `np.int32`.
-
-    Returns:
-        np.ndarray: Numpy array with shape `(len(sequences), max_len)`.
-
-    Raises:
-        ValueError: If `padding` or `truncating` is not understood.
-    """
-    if max_len is None:
-        max_len = np.max([len(x) for x in sequences])
-
-    x = np.full([len(sequences), max_len], value, dtype=dtype)
-    for idx, s in enumerate(sequences):
-        if not len(s):
-            continue  # empty list/array was found
-        if truncating == 'pre':
-            trunc = s[-max_len:]
-        elif truncating == 'post':
-            trunc = s[:max_len]
-        else:
-            raise ValueError('Truncating type "%s" not understood' % truncating)
-
-        if padding == 'post':
-            x[idx, :len(trunc)] = trunc
-        elif padding == 'pre':
-            x[idx, -len(trunc):] = trunc
-        else:
-            raise ValueError('Padding type "%s" not understood' % padding)
-    return x
-
-
 def inner_product(a, b, name="inner_product"):
     with tf.name_scope(name=name):
         return tf.reduce_sum(tf.multiply(a, b), axis=-1)
-
-
-def timer(func):
-    """The timer decorator
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print("%s function cost: %fs" % (func.__name__, end_time - start_time))
-        return result
-    return wrapper
 
 
 def l2_loss(*params):

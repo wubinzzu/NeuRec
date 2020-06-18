@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.sparse import csr_matrix
 from util.tool import csr_to_user_dict_bytime, csr_to_user_dict
 from .utils import check_md5
-from util.logger import Logger
+from util import Logger
 from util import randint_choice
 import numpy as np
 from .utils import filter_data, split_by_ratio, split_by_loo

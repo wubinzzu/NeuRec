@@ -61,7 +61,7 @@ class Dataset(object):
         # check md5
         if os.path.isfile(saved_prefix + ".md5"):
             with open(saved_prefix + ".md5", 'r') as md5_fin:
-                saved_md5 = md5_fin.readlines()
+                saved_md5 = [line.strip() for line in md5_fin.readlines()]
             if ori_file_md5 == saved_md5:
                 check_state = True
 
@@ -90,6 +90,7 @@ class Dataset(object):
         item_map_file = saved_prefix + ".item2id"
 
         if self._check_saved_data(splitter, ori_prefix, saved_prefix):
+            print("load saved data...")
             # load saved data
             train_data = pd.read_csv(train_file, sep=sep, header=None, names=columns)
             test_data = pd.read_csv(test_file, sep=sep, header=None, names=columns)
@@ -99,6 +100,7 @@ class Dataset(object):
             self.userids = {user: uid for user, uid in zip(user_map["user"], user_map["id"])}
             self.itemids = {item: iid for item, iid in zip(item_map["item"], item_map["id"])}
         else:  # split and save data
+            print("split and save data...")
             by_time = config["by_time"] if file_format == "UIRT" else False
             train_data, test_data = self._split_data(ori_prefix, saved_prefix, columns, by_time, config)
 
@@ -154,8 +156,8 @@ class Dataset(object):
             train_data = pd.read_csv(train_file, sep=sep, header=None, names=columns)
             test_data = pd.read_csv(test_file, sep=sep, header=None, names=columns)
             with open(saved_prefix+".md5", "w") as md5_out:
-                md5_out.writelines(check_md5(train_file))
-                md5_out.writelines(check_md5(test_file))
+                md5_out.writelines('\n'.join([check_md5(train_file), check_md5(test_file)]))
+                # md5_out.writelines(check_md5(test_file))
         else:
             raise ValueError("'%s' is an invalid splitter!" % splitter)
 

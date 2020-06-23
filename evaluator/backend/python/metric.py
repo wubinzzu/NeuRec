@@ -32,13 +32,11 @@ def recall(rank, ground_truth):
 
 
 def map(rank, ground_truth):
-    # Reference: https://blog.csdn.net/u010138758/article/details/69936041
-    # MAP is equal to MRR when dataset is loo split.
-    # 按照定义, MAP好像没有MAP@N这一说
     pre = precision(rank, ground_truth)
     pre = [pre[idx] if item in ground_truth else 0 for idx, item in enumerate(rank)]
     sum_pre = np.cumsum(pre, dtype=np.float32)
-    relevant_num = np.cumsum([1 if item in ground_truth else 0 for item in rank])
+    # relevant_num = np.cumsum([1 if item in ground_truth else 0 for item in rank])
+    relevant_num = np.cumsum([min(idx+1, len(ground_truth)) for idx, _ in enumerate(rank)])
     result = [p/r_num if r_num!=0 else 0 for p, r_num in zip(sum_pre, relevant_num)]
     return result
 

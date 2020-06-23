@@ -48,6 +48,8 @@ void ap(const vector<int> &rank, const unordered_set<int> &truth, float *result_
     int hits = 0;
     float pre = 0;
     float sum_pre = 0;
+    float denominator = 1;
+    float truth_len = truth.size();
     for(unsigned int i=0; i<rank.size(); i++)
     {
         if(truth.find(rank[i]) != truth.end())
@@ -56,8 +58,9 @@ void ap(const vector<int> &rank, const unordered_set<int> &truth, float *result_
             pre = 1.0*hits / (i+1);
             sum_pre += pre;
         }
-        result_pt[i] = (hits == 0) ? 0.0 : sum_pre/hits;
-        // result_pt[i] = sum_pre/hits;
+//        result_pt[i] = (hits == 0) ? 0.0 : sum_pre/hits;
+        denominator = (truth_len<i+1) ? truth_len : i+1;
+        result_pt[i] = (hits == 0) ? 0.0 : sum_pre/denominator;
     }
 }
 

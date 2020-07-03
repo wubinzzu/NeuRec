@@ -132,7 +132,7 @@ class MLP(AbstractRecommender):
         if candidate_items_userids is not None:
             for u, i in zip(user_ids, candidate_items_userids):
                 users = np.full(len(i), u, dtype=np.int32)
-                feed_dict = {self.user_input: users, self: i}
+                feed_dict = {self.user_input: users, self.item_input: i}
                 ratings.append(self.sess.run(self.output, feed_dict=feed_dict))
         else:
             for u in user_ids:

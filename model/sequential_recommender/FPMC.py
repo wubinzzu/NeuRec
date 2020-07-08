@@ -154,7 +154,7 @@ class FPMC(SeqAbstractRecommender):
         else:
             for user_id, items_by_user_id in zip(user_ids, candidate_items_userids):
                 cand_items = self.train_dict[user_id]
-                item_recent = np.full(len(candidate_items_userids), cand_items[-1], dtype=np.int32)
+                item_recent = np.full(len(items_by_user_id), cand_items[-1], dtype=np.int32)
     
                 users = np.full(len(items_by_user_id), user_id, dtype=np.int32)
                 feed_dict = {self.user_input: users,

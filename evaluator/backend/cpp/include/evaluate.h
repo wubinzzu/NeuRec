@@ -28,14 +28,22 @@ int eval_one_user(float *ratings, int rating_len, const unordered_set<int> &trut
     {
         index[i] = i;
     }
-    vector<int> topk_rank(top_k);
+
+    /**
+    * if there are many zeros in ratings vectors, and the index(es) of truth is (are) in the front of the vector,
+    * 'partial_sort_copy' will put the index(es) of truth before the 'top_k', even if the rating of truth is zero.
+    * This will lead to an invalid ranking list of indexes.
+    * Therefore, we get 2*top_k ranking indexes at sorting phase.
+    */
+    int sort_len = std::min(top_k*2, rating_len);
+    vector<int> topk_rank(sort_len);
     std::partial_sort_copy(index.begin(), index.end(), topk_rank.begin(), topk_rank.end(),
                            [& ratings](int &x1, int &x2)->bool{return ratings[x1]>ratings[x2];});
-
+    vector<int> top_k_cut(topk_rank.begin(), topk_rank.begin()+top_k);
     for(unsigned int i=0; i<metric.size(); i++)
     {
         float *r_pt = result_pt + i*top_k;
-        metric_dict[metric[i]](topk_rank, truth, r_pt);
+        metric_dict[metric[i]](top_k_cut, truth, r_pt);
     }
 
     return 0;

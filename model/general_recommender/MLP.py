@@ -45,7 +45,7 @@ class MLP(AbstractRecommender):
     def _create_variables(self):
         with tf.name_scope("embedding"):  # The embedding initialization is unknown now
             initializer = tool.get_initializer(self.init_method, self.stddev)
-            self.mlp_embedding_user = tf.Variable(initializer([self.num_users, int(self.layers[0]/2)]), 
+            self.mlp_embedding_user = tf.Variable(initializer([self.num_users, int(self.layers[0]/2)]),
                                                   name="mlp_embedding_user", dtype=tf.float32)
             self.mlp_embedding_item = tf.Variable(initializer([self.num_items, int(self.layers[0]/2)]),
                                                   name="mlp_embedding_item", dtype=tf.float32)
@@ -99,7 +99,7 @@ class MLP(AbstractRecommender):
             if self.is_pairwise is True:
                 data_iter = PairwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True, drop_last=False)
             else:
-                data_iter = PointwiseSampler(self.dataset, neg_num=1, batch_size=self.batch_size, shuffle=True, drop_last=False)
+                data_iter = PointwiseSampler(self.dataset, neg_num=self.num_negatives, batch_size=self.batch_size, shuffle=True, drop_last=False)
             
             total_loss = 0.0
             training_start_time = time()
@@ -122,7 +122,7 @@ class MLP(AbstractRecommender):
                                                              time()-training_start_time))
             if epoch % self.verbose == 0:
                 self.logger.info("epoch %d:\t%s" % (epoch, self.evaluate()))
-                
+
     # @timer
     def evaluate(self):
         return self.evaluator.evaluate(self)

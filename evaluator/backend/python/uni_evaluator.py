@@ -133,7 +133,7 @@ class UniEvaluator(AbstractEvaluator):
                 # set the ranking scores of training items to -inf,
                 # then the training items will be sorted at the end of the ranking list.
                 for idx, user in enumerate(batch_users):
-                    if user in self.user_pos_train and len(self.user_pos_train[user])>0:
+                    if user in self.user_pos_train and len(self.user_pos_train[user]) > 0:
                         train_items = self.user_pos_train[user]
                         ranking_score[idx][train_items] = -np.inf
 

@@ -16,12 +16,12 @@ def _get_pairwise_all_likefism_data(dataset):
             for index, i in enumerate(items_by_u):
                 j = negative_items[index]
                 user_input_neg.append(items_by_u)
-                num_idx_neg.append(num_items_by_u)
+                num_idx_neg.append(num_items_by_u+1)
                 item_input_neg.append(j)
                 
                 items_by_u.remove(i)
                 user_input_pos.append(items_by_u)
-                num_idx_pos.append(num_items_by_u-1)
+                num_idx_pos.append(num_items_by_u)
                 item_input_pos.append(i)  
                 
     return user_input_pos, user_input_neg, num_idx_pos, num_idx_neg, item_input_pos, item_input_neg
@@ -42,12 +42,12 @@ def _get_pointwise_all_likefism_data(dataset, num_negatives, train_dict):
                     j = np.random.randint(num_items)
                 user_input.append(items_by_user)
                 item_input.append(j)
-                num_idx.append(size)
+                num_idx.append(size+1)
                 labels.append(0)
             items_by_user.remove(i)
             user_input.append(items_by_user)
             item_input.append(i)
-            num_idx.append(size-1)
+            num_idx.append(size)
             labels.append(1)
     return user_input,num_idx,item_input,labels
 

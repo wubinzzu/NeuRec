@@ -158,10 +158,10 @@ class Compute_Similarity_Euclidean:
 
 
                 if self.normalize:
-                    item_distance /=  sumOfSquared[columnIndex] * sumOfSquared
+                    item_distance = item_distance / (sumOfSquared[columnIndex] * sumOfSquared)
 
                 if self.normalize_avg_row:
-                    item_distance /= self.n_rows
+                    item_distance = item_distance / self.n_rows
 
                 item_distance = np.sqrt(item_distance)
 
@@ -574,6 +574,7 @@ class ItemKNN(AbstractRecommender):
 
     def train_model(self):
         self.logger.info(self.evaluator.metrics_info())
+        self.logger.info(self.evaluate())
 
     @timer
     def evaluate(self):

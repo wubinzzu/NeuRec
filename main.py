@@ -1,45 +1,64 @@
+from reckit import Configurator
+from importlib.util import find_spec
+from importlib import import_module
+from reckit import typeassert
 import os
-import random
-import numpy as np
-import tensorflow as tf
-import importlib
-from data.dataset import Dataset
-from util import Configurator, tool
 
 
-np.random.seed(2018)
-random.seed(2018)
-tf.set_random_seed(2017)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+@typeassert(recommender=str, platform=str)
+def find_recommender(recommender, platform="pytorch"):
+    model_dirs = set(os.listdir("model"))
+    model_dirs.remove("base")
+
+    module = None
+    if platform == "pytorch":
+        platforms = ["pytorch", "tensorflow"]
+    elif platform == "tensorflow":
+        platforms = ["tensorflow", "pytorch"]
+    else:
+        raise ValueError("unrecognized platform: '%s'." % platform)
+
+    for platform in platforms:
+        if module is not None:
+            break
+        for tdir in model_dirs:
+            spec_path = ".".join(["model", tdir, platform, recommender])
+            if find_spec(spec_path):
+                module = import_module(spec_path)
+                break
+
+    if module is None:
+        raise ImportError("Recommender: {} not found".format(recommender))
+
+    if hasattr(module, recommender):
+        Recommender = getattr(module, recommender)
+    else:
+        raise ImportError("Import '%s' failed from '%s'!" % (recommender, module.__file__))
+    return Recommender
+
+
+def main():
+    config = Configurator()
+    config.add_config("NeuRec.ini", section="NeuRec")
+    config.parse_cmd()
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(config["gpu_id"])
+
+    Recommender = find_recommender(config.recommender, platform=config.platform)
+
+    rs_path = Recommender.__module__
+    if "pytorch" in rs_path:
+        platform = "pytorch"
+    elif "tensorflow" in rs_path:
+        platform = "tensorflow"
+    else:
+        raise ImportError("unrecognized platform")
+
+    model_cfg = os.path.join("conf", platform, config.recommender+".ini")
+    config.add_config(model_cfg, section="hyperparameters", used_as_summary=True)
+
+    recommender = Recommender(config)
+    recommender.train_model()
+
 
 if __name__ == "__main__":
-    conf = Configurator("NeuRec.properties", default_section="hyperparameters")
-    gpu_id = str(conf["gpu_id"])
-    os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
-
-    recommender = conf["recommender"]
-    # num_thread = int(conf["rec.number.thread"])
-
-    # if Tool.get_available_gpus(gpu_id):
-    #     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
-    dataset = Dataset(conf)
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    config.gpu_options.per_process_gpu_memory_fraction = conf["gpu_mem"]
-    with tf.Session(config=config) as sess:
-        if importlib.util.find_spec("model.general_recommender." + recommender) is not None:
-            my_module = importlib.import_module("model.general_recommender." + recommender)
-            
-        elif importlib.util.find_spec("model.social_recommender." + recommender) is not None:
-            
-            my_module = importlib.import_module("model.social_recommender." + recommender)
-            
-        else:
-            my_module = importlib.import_module("model.sequential_recommender." + recommender)
-        
-        MyClass = getattr(my_module, recommender)
-        model = MyClass(sess, dataset, conf)
-
-        model.build_graph()
-        sess.run(tf.global_variables_initializer())
-        model.train_model()
+    main()

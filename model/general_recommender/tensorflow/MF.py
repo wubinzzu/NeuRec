@@ -1,0 +1,120 @@
+"""
+Paper: BPR: Bayesian Personalized Ranking from Implicit Feedback
+Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
+"""
+
+__author__ = "Zhongchuan Sun"
+__email__ = "zhongchuansun@gmail.com"
+
+__all__ = ["MF"]
+
+import tensorflow as tf
+from model.base import AbstractRecommender
+from util.tensorflow_util import inner_product, l2_loss
+from util.tensorflow_util import pairwise_loss, pointwise_loss
+from util.tensorflow_util import get_variable
+from util.common_util import Reduction
+from data import PairwiseSampler, PointwiseSampler
+
+
+class MF(AbstractRecommender):
+    def __init__(self, config):
+        super(MF, self).__init__(config)
+        self.factors_num = config["factors_num"]
+        self.lr = config["lr"]
+        self.reg = config["reg"]
+        self.epochs = config["epochs"]
+        self.batch_size = config["batch_size"]
+        self.param_init = config["param_init"]
+        self.is_pairwise = config["is_pairwise"]
+        self.loss_func = config["loss_func"]
+
+        self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
+
+        tf_config = tf.ConfigProto()
+        tf_config.gpu_options.allow_growth = True
+        tf_config.gpu_options.per_process_gpu_memory_fraction = config["gpu_mem"]
+        self.sess = tf.Session(config=tf_config)
+        self._build_model()
+        self.sess.run(tf.global_variables_initializer())
+
+    def _create_variable(self):
+        self.user_ph = tf.placeholder(tf.int32, [None], name="user")
+        self.pos_item_ph = tf.placeholder(tf.int32, [None], name="pos_item")
+        self.neg_item_ph = tf.placeholder(tf.int32, [None], name="neg_item")
+        self.label_ph = tf.placeholder(tf.float32, [None], name="label")
+
+        # embedding layers
+        self.user_embeddings = get_variable([self.num_users, self.factors_num],
+                                            init_method=self.param_init, name="user_embedding")
+        self.item_embeddings = get_variable([self.num_items, self.factors_num],
+                                            init_method=self.param_init, name="item_embedding")
+        self.item_biases = get_variable([self.num_items], init_method="zeros", name="item_bias")
+
+    def _build_model(self):
+        self._create_variable()
+        user_emb = tf.nn.embedding_lookup(self.user_embeddings, self.user_ph)
+        pos_item_emb = tf.nn.embedding_lookup(self.item_embeddings, self.pos_item_ph)
+        neg_item_emb = tf.nn.embedding_lookup(self.item_embeddings, self.neg_item_ph)
+        pos_bias = tf.gather(self.item_biases, self.pos_item_ph)
+        neg_bias = tf.gather(self.item_biases, self.neg_item_ph)
+
+        yi_hat = inner_product(user_emb, pos_item_emb) + pos_bias
+        yj_hat = inner_product(user_emb, neg_item_emb) + neg_bias
+
+        # reg loss
+        if self.is_pairwise:
+            model_loss = pairwise_loss(self.loss_func, yi_hat-yj_hat, reduction=Reduction.SUM)
+            reg_loss = l2_loss(user_emb, pos_item_emb, pos_bias, neg_item_emb, neg_bias)
+        else:
+            model_loss = pointwise_loss(self.loss_func, yi_hat, self.label_ph, reduction=Reduction.SUM)
+            reg_loss = l2_loss(user_emb, pos_item_emb, pos_bias)
+
+        self.final_loss = model_loss + self.reg * reg_loss
+
+        self.update = tf.train.AdamOptimizer(self.lr).minimize(self.final_loss, name="update")
+
+        # for evaluation
+        u_emb = tf.nn.embedding_lookup(self.user_embeddings, self.user_ph)
+        self.batch_ratings = tf.matmul(u_emb, self.item_embeddings, transpose_b=True) + self.item_biases
+
+    def train_model(self):
+        if self.is_pairwise:
+            self._train_pairwise()
+        else:
+            self._train_pointwise()
+
+    def _train_pairwise(self):
+        data_iter = PairwiseSampler(self.dataset.train_data, num_neg=1,
+                                    batch_size=self.batch_size,
+                                    shuffle=True, drop_last=False)
+        self.logger.info(self.evaluator.metrics_info())
+        for epoch in range(self.epochs):
+            for bat_users, bat_pos_items, bat_neg_items in data_iter:
+                feed = {self.user_ph: bat_users,
+                        self.pos_item_ph: bat_pos_items,
+                        self.neg_item_ph: bat_neg_items}
+                self.sess.run(self.update, feed_dict=feed)
+            result = self.evaluate_model()
+            self.logger.info("epoch %d:\t%s" % (epoch, result))
+
+    def _train_pointwise(self):
+        data_iter = PointwiseSampler(self.dataset.train_data, num_neg=1,
+                                     batch_size=self.batch_size,
+                                     shuffle=True, drop_last=False)
+        self.logger.info(self.evaluator.metrics_info())
+        for epoch in range(self.epochs):
+            for bat_users, bat_items, bat_labels in data_iter:
+                feed = {self.user_ph: bat_users,
+                        self.pos_item_ph: bat_items,
+                        self.label_ph: bat_labels}
+                self.sess.run(self.update, feed_dict=feed)
+            result = self.evaluate_model()
+            self.logger.info("epoch %d:\t%s" % (epoch, result))
+
+    def evaluate_model(self):
+        return self.evaluator.evaluate(self)
+
+    def predict(self, users, neg_items=None):
+        all_ratings = self.sess.run(self.batch_ratings, feed_dict={self.user_ph: users})
+        return all_ratings

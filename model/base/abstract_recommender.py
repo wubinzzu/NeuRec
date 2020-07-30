@@ -3,7 +3,6 @@ __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["AbstractRecommender"]
 
-import reckit
 from reckit import Logger
 from reckit import Configurator
 from reckit import Evaluator
@@ -18,8 +17,8 @@ def _create_logger(config, data_name):
     # create a logger
     timestamp = time.time()
     model_name = config.recommender
-    param_str = "%s_%s_%s" % (data_name, model_name, config.summarize())
-    run_id = "%s_%.8f" % (param_str[:150], timestamp)
+    param_str = f"{data_name}_{model_name}_{config.summarize()}"
+    run_id = f"{param_str[:150]}_{timestamp:.8f}"
 
     log_dir = os.path.join("log", data_name, model_name)
     logger_name = os.path.join(log_dir, run_id + ".log")
@@ -51,15 +50,15 @@ class AbstractRecommender(object):
         else:
             model_name = self.__class__.__name__
         data_name = dataset.data_name
-        param_str = "%s_%s_%s" % (data_name, model_name, config.summarize())
-        run_id = "%s_%.8f" % (param_str[:150], timestamp)
+        param_str = f"{data_name}_{model_name}_{config.summarize()}"
+        run_id = f"{param_str[:150]}_{timestamp:.8f}"
 
         log_dir = os.path.join("log", data_name, self.__class__.__name__)
         logger_name = os.path.join(log_dir, run_id + ".log")
         logger = Logger(logger_name)
 
-        logger.info("my pid: %d" % os.getpid())
-        logger.info("model: %s" % self.__class__.__module__)
+        logger.info(f"my pid: {os.getpid()}")
+        logger.info(f"model: {self.__class__.__module__}")
         logger.info(self.dataset)
         logger.info(config)
 

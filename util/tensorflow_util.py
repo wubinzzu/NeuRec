@@ -1,7 +1,8 @@
 __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
-__all__ = ["inner_product", "l2_loss", "get_variable",
+__all__ = ["inner_product", "euclidean_distance", "l2_distance",
+           "l2_loss", "get_variable",
            "square_loss", "sigmoid_cross_entropy", "pointwise_loss",
            "log_sigmoid", "bpr_loss", "hinge", "pairwise_loss"]
 
@@ -108,9 +109,15 @@ def pairwise_loss(loss, y_diff, reduction=Reduction.SUM):
     return losses[loss](y_diff, reduction=reduction)
 
 
-def inner_product(a, b, name="inner_product"):
-    with tf.name_scope(name=name):
-        return tf.reduce_sum(tf.multiply(a, b), axis=-1)
+def inner_product(a, b):
+    return tf.reduce_sum(tf.multiply(a, b), axis=-1)
+
+
+def euclidean_distance(a, b):
+    return tf.norm(a - b, ord='euclidean', axis=-1)
+
+
+l2_distance = euclidean_distance
 
 
 def l2_loss(*params):

@@ -1,8 +1,3 @@
-"""
-Paper: BPR: Bayesian Personalized Ranking from Implicit Feedback
-Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
-"""
-
 __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
@@ -11,7 +6,7 @@ __all__ = ["MF"]
 from model.base import AbstractRecommender
 import torch
 import torch.nn as nn
-from util.pytorch_util import inner_product, l2_loss, bpr_loss
+from util.pytorch_util import inner_product, l2_loss
 from util.pytorch_util import pairwise_loss, pointwise_loss
 from util.common_util import Reduction
 from data import PairwiseSampler, PointwiseSampler
@@ -46,15 +41,15 @@ class _MF(nn.Module):
 
     def predict(self, user_ids):
         user_embs = self.user_embeddings(user_ids)
-        ratings = torch.matmul(user_embs, self.item_embeddings.weight.data.T)
-        ratings += torch.squeeze(self.item_biases.weight.data)
+        ratings = torch.matmul(user_embs, self.item_embeddings.weight.T)
+        ratings += torch.squeeze(self.item_biases.weight)
         return ratings
 
 
 class MF(AbstractRecommender):
     def __init__(self, config):
         super(MF, self).__init__(config)
-        self.factors_num = config["factors_num"]
+        self.embedding_size = config["embedding_size"]
         self.lr = config["lr"]
         self.reg = config["reg"]
         self.epochs = config["epochs"]
@@ -66,7 +61,7 @@ class MF(AbstractRecommender):
         self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        self.mf = _MF(self.num_users, self.num_items, self.factors_num, self.device)
+        self.mf = _MF(self.num_users, self.num_items, self.embedding_size, self.device)
         self.mf.reset_parameters(self.param_init)
         self.optimizer = torch.optim.Adam(self.mf.parameters(), lr=self.lr)
 

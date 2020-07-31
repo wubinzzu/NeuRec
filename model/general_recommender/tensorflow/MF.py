@@ -1,8 +1,3 @@
-"""
-Paper: BPR: Bayesian Personalized Ranking from Implicit Feedback
-Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
-"""
-
 __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
@@ -20,7 +15,7 @@ from data import PairwiseSampler, PointwiseSampler
 class MF(AbstractRecommender):
     def __init__(self, config):
         super(MF, self).__init__(config)
-        self.factors_num = config["factors_num"]
+        self.embedding_size = config["embedding_size"]
         self.lr = config["lr"]
         self.reg = config["reg"]
         self.epochs = config["epochs"]
@@ -45,9 +40,9 @@ class MF(AbstractRecommender):
         self.label_ph = tf.placeholder(tf.float32, [None], name="label")
 
         # embedding layers
-        self.user_embeddings = get_variable([self.num_users, self.factors_num],
+        self.user_embeddings = get_variable([self.num_users, self.embedding_size],
                                             init_method=self.param_init, name="user_embedding")
-        self.item_embeddings = get_variable([self.num_items, self.factors_num],
+        self.item_embeddings = get_variable([self.num_items, self.embedding_size],
                                             init_method=self.param_init, name="item_embedding")
         self.item_biases = get_variable([self.num_items], init_method="zeros", name="item_bias")
 
@@ -63,16 +58,16 @@ class MF(AbstractRecommender):
         yj_hat = inner_product(user_emb, neg_item_emb) + neg_bias
 
         # reg loss
+        reg_loss = l2_loss(user_emb, pos_item_emb, pos_bias)
         if self.is_pairwise:
             model_loss = pairwise_loss(self.loss_func, yi_hat-yj_hat, reduction=Reduction.SUM)
-            reg_loss = l2_loss(user_emb, pos_item_emb, pos_bias, neg_item_emb, neg_bias)
+            reg_loss += l2_loss(neg_item_emb, neg_bias)
         else:
             model_loss = pointwise_loss(self.loss_func, yi_hat, self.label_ph, reduction=Reduction.SUM)
-            reg_loss = l2_loss(user_emb, pos_item_emb, pos_bias)
 
-        self.final_loss = model_loss + self.reg * reg_loss
+        final_loss = model_loss + self.reg * reg_loss
 
-        self.update = tf.train.AdamOptimizer(self.lr).minimize(self.final_loss, name="update")
+        self.train_opt = tf.train.AdamOptimizer(self.lr).minimize(final_loss, name="train_opt")
 
         # for evaluation
         u_emb = tf.nn.embedding_lookup(self.user_embeddings, self.user_ph)
@@ -94,7 +89,7 @@ class MF(AbstractRecommender):
                 feed = {self.user_ph: bat_users,
                         self.pos_item_ph: bat_pos_items,
                         self.neg_item_ph: bat_neg_items}
-                self.sess.run(self.update, feed_dict=feed)
+                self.sess.run(self.train_opt, feed_dict=feed)
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
 
@@ -108,7 +103,7 @@ class MF(AbstractRecommender):
                 feed = {self.user_ph: bat_users,
                         self.pos_item_ph: bat_items,
                         self.label_ph: bat_labels}
-                self.sess.run(self.update, feed_dict=feed)
+                self.sess.run(self.train_opt, feed_dict=feed)
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
 

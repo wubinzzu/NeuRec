@@ -47,11 +47,11 @@ The list of available models in NeuRec, along with their paper citations, are sh
 
 | General Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|
-| BPRMF     |   ![√][check_mark]   | ![√][check_mark]  | Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.    |
+| BPRMF     |   ![√][check_mark]   | ![√][check_mark]  | [Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.](https://dl.acm.org/doi/10.5555/1795114.1795167)    |
 
 | Sequential Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|
-|      |     |      |      |
+| TransRec |  ![√][check_mark] | ![√][check_mark]  | [Ruining He et al., Translation-based Recommendation. RecSys 2017](https://dl.acm.org/doi/10.1145/3109859.3109882)  |
 
 | Social Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|

@@ -47,11 +47,12 @@ The list of available models in NeuRec, along with their paper citations, are sh
 
 | General Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|
-| BPRMF     |   ![√][check_mark]   | ![√][check_mark]  | [Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.](https://dl.acm.org/doi/10.5555/1795114.1795167)    |
+| BPRMF     |   [![√][check_mark]](./model/general_recommender/pytorch/MF.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/MF.py)  | [Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.](https://dl.acm.org/doi/10.5555/1795114.1795167)    |
 
 | Sequential Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|
-| TransRec |  ![√][check_mark] | ![√][check_mark]  | [Ruining He et al., Translation-based Recommendation. RecSys 2017](https://dl.acm.org/doi/10.1145/3109859.3109882)  |
+| TransRec |  [![√][check_mark]](./model/sequential_recommender/pytorch/TransRec.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/TransRec.py)  | [Ruining He et al., Translation-based Recommendation. RecSys 2017](https://dl.acm.org/doi/10.1145/3109859.3109882)  |
+|   FPMC   |  [![√][check_mark]](./model/sequential_recommender/pytorch/FPMC.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/FPMC.py)  | [Steffen Rendle et al., Factorizing Personalized Markov Chains for Next-Basket Recommendation. WWW 2010](https://dl.acm.org/doi/10.1145/1772690.1772773)  |
 
 | Social Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|

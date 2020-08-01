@@ -1,3 +1,8 @@
+"""
+Paper: BPR: Bayesian Personalized Ranking from Implicit Feedback
+Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
+"""
+
 __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 

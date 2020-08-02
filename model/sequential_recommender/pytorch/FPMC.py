@@ -16,28 +16,29 @@ import numpy as np
 from util.pytorch import pairwise_loss, pointwise_loss
 from util.pytorch import inner_product, l2_loss
 from util.common import Reduction
-from util.pytorch import init_variable
+from util.pytorch import get_initializer
 from data import TimeOrderPairwiseSampler, TimeOrderPointwiseSampler
 
 
 class _FPMC(nn.Module):
-    def __init__(self, num_users, num_items, embed_dim, device):
+    def __init__(self, num_users, num_items, embed_dim):
         super(_FPMC, self).__init__()
 
         # user and item embeddings
-        self.UI_embeddings = nn.Embedding(num_users, embed_dim).to(device)
-        self.IU_embeddings = nn.Embedding(num_items, embed_dim).to(device)
-        self.IL_embeddings = nn.Embedding(num_items, embed_dim).to(device)
-        self.LI_embeddings = nn.Embedding(num_items, embed_dim).to(device)
+        self.UI_embeddings = nn.Embedding(num_users, embed_dim)
+        self.IU_embeddings = nn.Embedding(num_items, embed_dim)
+        self.IL_embeddings = nn.Embedding(num_items, embed_dim)
+        self.LI_embeddings = nn.Embedding(num_items, embed_dim)
 
         # weight initialization
         self.reset_parameters("uniform")
 
     def reset_parameters(self, init_method):
-        init_variable(self.UI_embeddings.weight, init_method)
-        init_variable(self.IU_embeddings.weight, init_method)
-        init_variable(self.IL_embeddings.weight, init_method)
-        init_variable(self.LI_embeddings.weight, init_method)
+        init = get_initializer(init_method)
+        init(self.UI_embeddings.weight)
+        init(self.IU_embeddings.weight)
+        init(self.IL_embeddings.weight)
+        init(self.LI_embeddings.weight)
 
     def forward(self, user_ids, last_items, pre_items):
         ui_emb = self.UI_embeddings(user_ids)  # b*d
@@ -63,7 +64,7 @@ class FPMC(AbstractRecommender):
         super(FPMC, self).__init__(config)
         self.lr = config["lr"]
         self.reg = config["reg"]
-        self.embedding_size = config["embedding_size"]
+        self.emb_size = config["embedding_size"]
         self.batch_size = config["batch_size"]
         self.epochs = config["epochs"]
 
@@ -75,7 +76,7 @@ class FPMC(AbstractRecommender):
         self.user_pos_dict = self.dataset.train_data.to_user_dict(by_time=True)
 
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.fpmc = _FPMC(self.num_users, self.num_items, self.embedding_size, self.device)
+        self.fpmc = _FPMC(self.num_users, self.num_items, self.emb_size).to(self.device)
         self.fpmc.reset_parameters(self.param_init)
         self.optimizer = torch.optim.Adam(self.fpmc.parameters(), lr=self.lr)
 
@@ -94,10 +95,10 @@ class FPMC(AbstractRecommender):
         for epoch in range(self.epochs):
             self.fpmc.train()
             for bat_users, bat_last_items, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).type(torch.LongTensor).to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).type(torch.LongTensor).to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).type(torch.LongTensor).to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).type(torch.LongTensor).to(self.device)
+                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
+                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
+                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
+                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
                 yui = self.fpmc(bat_users, bat_last_items, bat_pos_items)
                 yuj = self.fpmc(bat_users, bat_last_items, bat_neg_items)
 
@@ -125,10 +126,10 @@ class FPMC(AbstractRecommender):
         for epoch in range(self.epochs):
             self.fpmc.train()
             for bat_users, bat_last_items, bat_items, bat_labels in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).type(torch.LongTensor).to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).type(torch.LongTensor).to(self.device)
-                bat_items = torch.from_numpy(np.array(bat_items)).type(torch.LongTensor).to(self.device)
-                bat_labels = torch.from_numpy(np.array(bat_labels)).type(torch.float32).to(self.device)
+                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
+                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
+                bat_items = torch.from_numpy(np.array(bat_items)).long().to(self.device)
+                bat_labels = torch.from_numpy(np.array(bat_labels)).float().to(self.device)
                 yui = self.fpmc(bat_users, bat_last_items, bat_items)
 
                 loss = pointwise_loss(self.loss_func, yui, bat_labels, reduction=Reduction.SUM)
@@ -148,8 +149,8 @@ class FPMC(AbstractRecommender):
         self.fpmc.eval()
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
+    def predict(self, users):
         last_items = [self.user_pos_dict[u][-1] for u in users]
-        users = torch.from_numpy(np.array(users)).type(torch.LongTensor).to(self.device)
-        last_items = torch.from_numpy(np.array(last_items)).type(torch.LongTensor).to(self.device)
+        users = torch.from_numpy(np.array(users)).long().to(self.device)
+        last_items = torch.from_numpy(np.array(last_items)).long().to(self.device)
         return self.fpmc.predict(users, last_items).cpu().detach().numpy()

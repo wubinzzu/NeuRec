@@ -13,7 +13,7 @@ import tensorflow as tf
 from model.base import AbstractRecommender
 from util.tensorflow import l2_loss, inner_product
 from util.tensorflow import pairwise_loss, pointwise_loss
-from util.tensorflow import get_variable
+from util.tensorflow import get_initializer
 from util.common import Reduction
 from data import TimeOrderPairwiseSampler, TimeOrderPointwiseSampler
 
@@ -23,7 +23,7 @@ class FPMC(AbstractRecommender):
         super(FPMC, self).__init__(config)
         self.lr = config["lr"]
         self.reg = config["reg"]
-        self.embedding_size = config["embedding_size"]
+        self.emb_size = config["embedding_size"]
         self.batch_size = config["batch_size"]
         self.epochs = config["epochs"]
 
@@ -49,14 +49,11 @@ class FPMC(AbstractRecommender):
         self.neg_item_ph = tf.placeholder(tf.int32, [None], name="item_neg")  # the negative item
         self.labels_ph = tf.placeholder(tf.int32, [None], name="label")  # the label
 
-        self.UI_embeddings = get_variable([self.num_users, self.embedding_size],
-                                          init_method=self.param_init, name="UI_embeddings")
-        self.IU_embeddings = get_variable([self.num_items, self.embedding_size],
-                                          init_method=self.param_init, name="IU_embeddings")
-        self.IL_embeddings = get_variable([self.num_items, self.embedding_size],
-                                          init_method=self.param_init, name="IL_embeddings")
-        self.LI_embeddings = get_variable([self.num_items, self.embedding_size],
-                                          init_method=self.param_init, name="LI_embeddings")
+        init = get_initializer(self.param_init)
+        self.UI_embeddings = tf.Variable(init([self.num_users, self.emb_size]), name="UI_embeddings")
+        self.IU_embeddings = tf.Variable(init([self.num_items, self.emb_size]), name="IU_embeddings")
+        self.IL_embeddings = tf.Variable(init([self.num_items, self.emb_size]), name="IL_embeddings")
+        self.LI_embeddings = tf.Variable(init([self.num_items, self.emb_size]), name="LI_embeddings")
 
     def _build_model(self):
         self._create_variable()

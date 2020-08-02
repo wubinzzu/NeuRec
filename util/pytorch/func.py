@@ -2,7 +2,7 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["inner_product", "euclidean_distance", "l2_distance",
-           "init_variable"]
+           "get_initializer"]
 
 import torch
 from torch import nn
@@ -10,26 +10,6 @@ from functools import partial
 from collections import OrderedDict
 from reckit import typeassert
 from util.common import InitArg
-
-
-@typeassert(init_method=str)
-def init_variable(varibale, init_method):
-    initializers = OrderedDict()
-    initializers["normal"] = partial(nn.init.normal_, mean=InitArg.MEAN, std=InitArg.STDDEV)
-    initializers["truncated_normal"] = partial(truncated_normal_, mean=InitArg.MEAN, std=InitArg.STDDEV)
-    initializers["uniform"] = partial(nn.init.uniform_, a=InitArg.MIN_VAL, b=InitArg.MAX_VAL)
-    initializers["he_normal"] = nn.init.kaiming_normal_
-    initializers["he_uniform"] = nn.init.kaiming_uniform_
-    initializers["xavier_normal"] = nn.init.xavier_normal_
-    initializers["xavier_uniform"] = nn.init.xavier_uniform_
-    initializers["zeros"] = nn.init.zeros_
-    initializers["ones"] = nn.init.ones_
-
-    if init_method not in initializers:
-        init_list = ', '.join(initializers.keys())
-        raise ValueError(f"'init_method' is invalid, and must be one of '{init_list}'")
-
-    initializers[init_method](varibale)
 
 
 def truncated_normal_(tensor, mean=0.0, std=1.0):
@@ -41,6 +21,26 @@ def truncated_normal_(tensor, mean=0.0, std=1.0):
     tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
     tensor.data.mul_(std).add_(mean)
     return tensor
+
+
+_initializers = OrderedDict()
+_initializers["normal"] = partial(nn.init.normal_, mean=InitArg.MEAN, std=InitArg.STDDEV)
+_initializers["truncated_normal"] = partial(truncated_normal_, mean=InitArg.MEAN, std=InitArg.STDDEV)
+_initializers["uniform"] = partial(nn.init.uniform_, a=InitArg.MIN_VAL, b=InitArg.MAX_VAL)
+_initializers["he_normal"] = nn.init.kaiming_normal_
+_initializers["he_uniform"] = nn.init.kaiming_uniform_
+_initializers["xavier_normal"] = nn.init.xavier_normal_
+_initializers["xavier_uniform"] = nn.init.xavier_uniform_
+_initializers["zeros"] = nn.init.zeros_
+_initializers["ones"] = nn.init.ones_
+
+
+@typeassert(init_method=str)
+def get_initializer(init_method):
+    if init_method not in _initializers:
+        init_list = ', '.join(_initializers.keys())
+        raise ValueError(f"'init_method' is invalid, and must be one of '{init_list}'")
+    return _initializers[init_method]
 
 
 def inner_product(a, b):

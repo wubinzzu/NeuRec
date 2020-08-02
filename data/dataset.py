@@ -11,6 +11,7 @@ import numpy as np
 from reckit import typeassert
 from collections import OrderedDict
 from copy import deepcopy
+from reckit import pad_sequences
 
 _USER = "user"
 _ITEM = "item"
@@ -37,8 +38,7 @@ class Interaction(object):
             self.num_items = num_items if num_items is not None else max(data[_ITEM]) + 1
             self.num_ratings = len(data)
 
-        self._buffer_user_train = OrderedDict()
-        self._buffer_user_train_byt = OrderedDict()
+        self._buffer = dict()
 
     def get_interactions(self):
         if self._data.empty:
@@ -78,10 +78,10 @@ class Interaction(object):
             raise ValueError("This dataset do not have timestamp.")
 
         # read from buffer
-        if by_time is True and len(self._buffer_user_train_byt) > 0:
-            return deepcopy(self._buffer_user_train_byt)
-        if by_time is False and len(self._buffer_user_train) > 0:
-            return deepcopy(self._buffer_user_train)
+        if by_time is True and "user_dict_byt" in self._buffer:
+            return deepcopy(self._buffer["user_dict_byt"])
+        if by_time is False and "user_dict" in self._buffer:
+            return deepcopy(self._buffer["user_dict"])
 
         user_dict = OrderedDict()
         user_grouped = self._data.groupby(_USER)
@@ -92,14 +92,40 @@ class Interaction(object):
 
         # write to buffer
         if by_time is True:
-            self._buffer_user_train_byt = deepcopy(user_dict)
+            self._buffer["user_dict_byt"] = deepcopy(user_dict)
         else:
-            self._buffer_user_train = deepcopy(user_dict)
+            self._buffer["user_dict"] = deepcopy(user_dict)
         return user_dict
 
+    def to_truncated_seq_dict(self, max_len, pad_value=0, padding='post', truncating='post'):
+        """Get the truncated item sequences of each user.
+
+        Args:
+            max_len (int or None): Maximum length of all sequences.
+            pad_value: Padding value. Defaults to `0.`.
+            padding (str): `"pre"` or `"post"`: pad either before or after each
+                sequence. Defaults to `post`.
+            truncating (str): `"pre"` or `"post"`: remove values from sequences
+                larger than `max_len`, either at the beginning or at the end of
+                the sequences. Defaults to `post`.
+
+        Returns:
+            OrderedDict: key is user and value is truncated item sequences.
+
+        """
+        user_seq_dict = self.to_user_dict(by_time=True)
+        if max_len is None:
+            max_len = max([len(seqs) for seqs in user_seq_dict.values()])
+        item_seq_list = [item_seq[-max_len:] for item_seq in user_seq_dict.values()]
+        item_seq_arr = pad_sequences(item_seq_list, value=pad_value, max_len=max_len,
+                                     padding=padding, truncating=truncating, dtype=np.int32)
+
+        seq_dict = OrderedDict([(user, item_seq) for user, item_seq in
+                                zip(user_seq_dict.keys(), item_seq_arr)])
+        return seq_dict
+
     def _clean_buffer(self):
-        self._buffer_user_train = OrderedDict()
-        self._buffer_user_train_byt = OrderedDict()
+        self._buffer.clear()
 
     def update(self, other):
         """Update this object with the union of itself and other.

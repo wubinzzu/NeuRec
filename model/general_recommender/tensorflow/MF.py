@@ -12,7 +12,7 @@ import tensorflow as tf
 from model.base import AbstractRecommender
 from util.tensorflow import inner_product, l2_loss
 from util.tensorflow import pairwise_loss, pointwise_loss
-from util.tensorflow import get_variable
+from util.tensorflow import get_initializer
 from util.common import Reduction
 from data import PairwiseSampler, PointwiseSampler
 
@@ -20,7 +20,7 @@ from data import PairwiseSampler, PointwiseSampler
 class MF(AbstractRecommender):
     def __init__(self, config):
         super(MF, self).__init__(config)
-        self.embedding_size = config["embedding_size"]
+        self.emb_size = config["embedding_size"]
         self.lr = config["lr"]
         self.reg = config["reg"]
         self.epochs = config["epochs"]
@@ -45,11 +45,13 @@ class MF(AbstractRecommender):
         self.label_ph = tf.placeholder(tf.float32, [None], name="label")
 
         # embedding layers
-        self.user_embeddings = get_variable([self.num_users, self.embedding_size],
-                                            init_method=self.param_init, name="user_embedding")
-        self.item_embeddings = get_variable([self.num_items, self.embedding_size],
-                                            init_method=self.param_init, name="item_embedding")
-        self.item_biases = get_variable([self.num_items], init_method="zeros", name="item_bias")
+        init = get_initializer(self.param_init)
+        zero_init = get_initializer("zeros")
+        self.user_embeddings = tf.Variable(init([self.num_users, self.emb_size]),
+                                           name="user_embedding")
+        self.item_embeddings = tf.Variable(init([self.num_items, self.emb_size]),
+                                           name="item_embedding")
+        self.item_biases = tf.Variable(zero_init([self.num_items]), name="item_bias")
 
     def _build_model(self):
         self._create_variable()

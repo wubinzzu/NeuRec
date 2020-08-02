@@ -4,7 +4,7 @@ __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["l2_loss",
            "square_loss", "sigmoid_cross_entropy", "pointwise_loss",
-           "log_sigmoid", "bpr_loss", "hinge", "pairwise_loss"]
+           "bpr_loss", "hinge", "pairwise_loss"]
 
 import tensorflow as tf
 from reckit import typeassert
@@ -52,16 +52,13 @@ def pointwise_loss(loss, y_pre, y_true, reduction=Reduction.SUM):
     return losses[loss](y_pre, y_true, reduction=reduction)
 
 
-def log_sigmoid(y_diff, reduction=Reduction.SUM):
+def bpr_loss(y_diff, reduction=Reduction.SUM):
     """bpr loss
     """
     Reduction.validate(reduction)
 
     loss = -tf.log_sigmoid(y_diff)
     return _reduce_loss(loss, reduction)
-
-
-bpr_loss = log_sigmoid
 
 
 def hinge(y_diff, reduction=Reduction.SUM):
@@ -75,7 +72,6 @@ def pairwise_loss(loss, y_diff, reduction=Reduction.SUM):
     Reduction.validate(reduction)
 
     losses = OrderedDict()
-    losses["log_sigmoid"] = log_sigmoid
     losses["bpr"] = bpr_loss
     losses["hinge"] = hinge
     losses["square"] = partial(square_loss, y_true=1.0)
@@ -87,7 +83,7 @@ def pairwise_loss(loss, y_diff, reduction=Reduction.SUM):
     return losses[loss](y_diff, reduction=reduction)
 
 
-def l2_loss(*params):
+def l2_loss(*weights):
     """L2 loss
 
     Compute  the L2 norm of tensors without the `sqrt`:
@@ -98,4 +94,4 @@ def l2_loss(*params):
         *weights: Variable length weight list.
 
     """
-    return tf.add_n([tf.nn.l2_loss(w) for w in params])
+    return tf.add_n([tf.nn.l2_loss(w) for w in weights])

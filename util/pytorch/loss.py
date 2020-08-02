@@ -3,7 +3,7 @@ __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["l2_loss",
            "square_loss", "sigmoid_cross_entropy", "pointwise_loss",
-           "log_sigmoid", "bpr_loss", "hinge", "pairwise_loss"]
+           "bpr_loss", "hinge", "pairwise_loss"]
 
 import torch
 import torch.nn.functional as F
@@ -30,14 +30,13 @@ def square_loss(y_pre, y_true, reduction=Reduction.SUM):
     if isinstance(y_true, (float, int)):
         y_true = y_pre.new_full(y_pre.size(), y_true)
 
-    loss = F.mse_loss(input=y_pre, target=y_true, reduce=False)
+    loss = F.mse_loss(input=y_pre, target=y_true, reduction="none")
     return _reduce_loss(loss, reduction)
 
 
 def sigmoid_cross_entropy(y_pre, y_true, reduction=Reduction.SUM):
     Reduction.validate(reduction)
-    y_pre = F.sigmoid(y_pre)
-    loss = F.binary_cross_entropy(input=y_pre, target=y_true, reduce=False)
+    loss = F.binary_cross_entropy_with_logits(input=y_pre, target=y_true, reduction="none")
     return _reduce_loss(loss, reduction)
 
 
@@ -56,15 +55,13 @@ def pointwise_loss(loss, y_pre, y_true, reduction=Reduction.SUM):
     return losses[loss](y_pre, y_true, reduction=reduction)
 
 
-def log_sigmoid(y_diff, reduction=Reduction.SUM):
+def bpr_loss(y_diff, reduction=Reduction.SUM):
     """bpr loss
     """
     Reduction.validate(reduction)
-    loss = F.softplus(-y_diff)
+    loss = -F.logsigmoid(y_diff)
+    # loss = F.softplus(-y_diff)
     return _reduce_loss(loss, reduction)
-
-
-bpr_loss = log_sigmoid
 
 
 def hinge(y_diff, reduction=Reduction.SUM):
@@ -79,7 +76,6 @@ def pairwise_loss(loss, y_diff, reduction=Reduction.SUM):
     Reduction.validate(reduction)
 
     losses = OrderedDict()
-    losses["log_sigmoid"] = log_sigmoid
     losses["bpr"] = bpr_loss
     losses["hinge"] = hinge
     losses["square"] = partial(square_loss, y_true=1.0)

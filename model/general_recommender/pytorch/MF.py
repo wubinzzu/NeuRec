@@ -16,26 +16,28 @@ from util.pytorch import pairwise_loss, pointwise_loss
 from util.common import Reduction
 from data import PairwiseSampler, PointwiseSampler
 import numpy as np
-from util.pytorch import init_variable
+from util.pytorch import get_initializer
 
 
 class _MF(nn.Module):
-    def __init__(self, num_users, num_items, embed_dim, device):
+    def __init__(self, num_users, num_items, embed_dim):
         super(_MF, self).__init__()
 
         # user and item embeddings
-        self.user_embeddings = nn.Embedding(num_users, embed_dim).to(device)
-        self.item_embeddings = nn.Embedding(num_items, embed_dim).to(device)
+        self.user_embeddings = nn.Embedding(num_users, embed_dim)
+        self.item_embeddings = nn.Embedding(num_items, embed_dim)
 
-        self.item_biases = nn.Embedding(num_items, 1).to(device)
+        self.item_biases = nn.Embedding(num_items, 1)
 
         # weight initialization
         self.reset_parameters("uniform")
 
     def reset_parameters(self, init_method):
-        init_variable(self.user_embeddings.weight, init_method)
-        init_variable(self.item_embeddings.weight, init_method)
-        init_variable(self.item_biases.weight, "zeros")
+        init = get_initializer(init_method)
+        zero_init = get_initializer("zeros")
+        init(self.user_embeddings.weight)
+        init(self.item_embeddings.weight)
+        zero_init(self.item_biases.weight)
 
     def forward(self, user_ids, item_ids):
         user_embs = self.user_embeddings(user_ids)
@@ -54,7 +56,7 @@ class _MF(nn.Module):
 class MF(AbstractRecommender):
     def __init__(self, config):
         super(MF, self).__init__(config)
-        self.embedding_size = config["embedding_size"]
+        self.emb_size = config["embedding_size"]
         self.lr = config["lr"]
         self.reg = config["reg"]
         self.epochs = config["epochs"]
@@ -66,7 +68,7 @@ class MF(AbstractRecommender):
         self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-        self.mf = _MF(self.num_users, self.num_items, self.embedding_size, self.device)
+        self.mf = _MF(self.num_users, self.num_items, self.emb_size).to(self.device)
         self.mf.reset_parameters(self.param_init)
         self.optimizer = torch.optim.Adam(self.mf.parameters(), lr=self.lr)
 
@@ -84,9 +86,9 @@ class MF(AbstractRecommender):
         for epoch in range(self.epochs):
             self.mf.train()
             for bat_users, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).type(torch.LongTensor).to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).type(torch.LongTensor).to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).type(torch.LongTensor).to(self.device)
+                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
+                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
+                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
                 yui = self.mf(bat_users, bat_pos_items)
                 yuj = self.mf(bat_users, bat_neg_items)
 
@@ -111,9 +113,9 @@ class MF(AbstractRecommender):
         for epoch in range(self.epochs):
             self.mf.train()
             for bat_users, bat_items, bat_labels in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).type(torch.LongTensor).to(self.device)
-                bat_items = torch.from_numpy(np.array(bat_items)).type(torch.LongTensor).to(self.device)
-                bat_labels = torch.from_numpy(np.array(bat_labels)).type(torch.float32).to(self.device)
+                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
+                bat_items = torch.from_numpy(np.array(bat_items)).long().to(self.device)
+                bat_labels = torch.from_numpy(np.array(bat_labels)).float().to(self.device)
                 yui = self.mf(bat_users, bat_items)
                 loss = pointwise_loss(self.loss_func, yui, bat_labels, reduction=Reduction.SUM)
                 reg_loss = l2_loss(self.mf.user_embeddings(bat_users),
@@ -131,5 +133,5 @@ class MF(AbstractRecommender):
         return self.evaluator.evaluate(self)
 
     def predict(self, users, neg_items=None):
-        users = torch.from_numpy(np.array(users)).type(torch.LongTensor).to(self.device)
+        users = torch.from_numpy(np.array(users)).long().to(self.device)
         return self.mf.predict(users).cpu().detach().numpy()

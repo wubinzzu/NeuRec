@@ -10,10 +10,10 @@ __all__ = ["MF"]
 
 import tensorflow as tf
 from model.base import AbstractRecommender
-from util.tensorflow_util import inner_product, l2_loss
-from util.tensorflow_util import pairwise_loss, pointwise_loss
-from util.tensorflow_util import get_variable
-from util.common_util import Reduction
+from util.tensorflow import inner_product, l2_loss
+from util.tensorflow import pairwise_loss, pointwise_loss
+from util.tensorflow import get_variable
+from util.common import Reduction
 from data import PairwiseSampler, PointwiseSampler
 
 

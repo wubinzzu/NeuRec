@@ -11,10 +11,10 @@ __all__ = ["FPMC"]
 
 import tensorflow as tf
 from model.base import AbstractRecommender
-from util.tensorflow_util import l2_loss, inner_product
-from util.tensorflow_util import pairwise_loss, pointwise_loss
-from util.tensorflow_util import get_variable
-from util.common_util import Reduction
+from util.tensorflow import l2_loss, inner_product
+from util.tensorflow import pairwise_loss, pointwise_loss
+from util.tensorflow import get_variable
+from util.common import Reduction
 from data import TimeOrderPairwiseSampler, TimeOrderPointwiseSampler
 
 

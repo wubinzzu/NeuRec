@@ -13,10 +13,10 @@ from model.base import AbstractRecommender
 import torch
 import torch.nn as nn
 import numpy as np
-from util.pytorch_util import pairwise_loss, pointwise_loss
-from util.pytorch_util import inner_product, l2_loss
-from util.common_util import Reduction
-from util.pytorch_util import init_variable
+from util.pytorch import pairwise_loss, pointwise_loss
+from util.pytorch import inner_product, l2_loss
+from util.common import Reduction
+from util.pytorch import init_variable
 from data import TimeOrderPairwiseSampler, TimeOrderPointwiseSampler
 
 

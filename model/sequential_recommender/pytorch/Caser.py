@@ -1,3 +1,9 @@
+"""
+Paper: Personalized Top-N Sequential Recommendation via Convolutional Sequence Embedding
+Author: Jiaxi Tang, and Ke Wang
+Reference: https://github.com/graytowne/caser_pytorch
+"""
+
 __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 

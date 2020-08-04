@@ -95,10 +95,10 @@ class FPMC(AbstractRecommender):
         for epoch in range(self.epochs):
             self.fpmc.train()
             for bat_users, bat_last_items, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_last_items = torch.from_numpy(bat_last_items).long().to(self.device)
+                bat_pos_items = torch.from_numpy(bat_pos_items).long().to(self.device)
+                bat_neg_items = torch.from_numpy(bat_neg_items).long().to(self.device)
                 yui = self.fpmc(bat_users, bat_last_items, bat_pos_items)
                 yuj = self.fpmc(bat_users, bat_last_items, bat_neg_items)
 
@@ -126,10 +126,10 @@ class FPMC(AbstractRecommender):
         for epoch in range(self.epochs):
             self.fpmc.train()
             for bat_users, bat_last_items, bat_items, bat_labels in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
-                bat_items = torch.from_numpy(np.array(bat_items)).long().to(self.device)
-                bat_labels = torch.from_numpy(np.array(bat_labels)).float().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_last_items = torch.from_numpy(bat_last_items).long().to(self.device)
+                bat_items = torch.from_numpy(bat_items).long().to(self.device)
+                bat_labels = torch.from_numpy(bat_labels).float().to(self.device)
                 yui = self.fpmc(bat_users, bat_last_items, bat_items)
 
                 loss = pointwise_loss(self.loss_func, yui, bat_labels, reduction=Reduction.SUM)
@@ -151,6 +151,6 @@ class FPMC(AbstractRecommender):
 
     def predict(self, users):
         last_items = [self.user_pos_dict[u][-1] for u in users]
-        users = torch.from_numpy(np.array(users)).long().to(self.device)
-        last_items = torch.from_numpy(np.array(last_items)).long().to(self.device)
+        users = torch.from_numpy(np.asarray(users)).long().to(self.device)
+        last_items = torch.from_numpy(np.asarray(last_items)).long().to(self.device)
         return self.fpmc.predict(users, last_items).cpu().detach().numpy()

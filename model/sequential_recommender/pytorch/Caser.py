@@ -21,9 +21,10 @@ from data import TimeOrderPairwiseSampler
 
 
 class _Caser(nn.Module):
-    def __init__(self, num_users, num_items, dims, config):
+    def __init__(self, num_users, num_items, dims, config, item_pad_idx=None):
         super(_Caser, self).__init__()
         self.args = config
+        self._pad_idx = item_pad_idx
 
         # init args
         L = config["seq_L"]
@@ -34,7 +35,7 @@ class _Caser(nn.Module):
 
         # user and item embeddings
         self.user_embeddings = nn.Embedding(num_users, dims)
-        self.item_embeddings = nn.Embedding(num_items, dims)
+        self.item_embeddings = nn.Embedding(num_items, dims, padding_idx=item_pad_idx)
 
         # vertical conv layer
         self.conv_v = nn.Conv2d(1, self.n_v, (L, 1))
@@ -50,8 +51,8 @@ class _Caser(nn.Module):
         # W1, b1 can be encoded with nn.Linear
         self.fc1 = nn.Linear(fc1_dim_in, dims)
         # W2, b2 are encoded with nn.Embedding, as we don't need to compute scores for all items
-        self.W2 = nn.Embedding(num_items, dims+dims)
-        self.b2 = nn.Embedding(num_items, 1)
+        self.W2 = nn.Embedding(num_items, dims+dims, padding_idx=item_pad_idx)
+        self.b2 = nn.Embedding(num_items, 1, padding_idx=item_pad_idx)
         # dropout
         self.dropout = nn.Dropout(config["dropout"])
 
@@ -61,10 +62,14 @@ class _Caser(nn.Module):
         # weight initialization
         init = get_initializer(init_method)
         zero_init = get_initializer("zeros")
+
         init(self.user_embeddings.weight)
         init(self.item_embeddings.weight)
         init(self.W2.weight)
         zero_init(self.b2.weight)
+        if self._pad_idx is not None:
+            zero_init(self.item_embeddings.weight[self._pad_idx])
+            zero_init(self.W2.weight[self._pad_idx])
 
     def _forward_user(self, user_var, seq_var):
         # Embedding Look-up
@@ -149,10 +154,10 @@ class Caser(AbstractRecommender):
         for epoch in range(self.epochs):
             self.caser.train()
             for bat_users, bat_item_seqs, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_item_seqs = torch.from_numpy(np.array(bat_item_seqs)).long().to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_item_seqs = torch.from_numpy(bat_item_seqs).long().to(self.device)
+                bat_pos_items = torch.from_numpy(bat_pos_items).long().to(self.device)
+                bat_neg_items = torch.from_numpy(bat_neg_items).long().to(self.device)
                 bat_items = torch.cat([bat_pos_items, bat_neg_items], dim=1)
                 bat_ratings = self.caser(bat_users.unsqueeze(dim=1), bat_item_seqs, bat_items)
 
@@ -175,7 +180,7 @@ class Caser(AbstractRecommender):
 
     def predict(self, users):
         bat_seq = [self.user_truncated_seq[u] for u in users]
-        bat_seq = torch.from_numpy(np.array(bat_seq)).long().to(self.device)
-        users = torch.from_numpy(np.array(users)).long().to(self.device)
+        bat_seq = torch.from_numpy(np.asarray(bat_seq)).long().to(self.device)
+        users = torch.from_numpy(np.asarray(users)).long().to(self.device)
         all_ratings = self.caser.predict(users, bat_seq)
         return all_ratings.cpu().detach().numpy()

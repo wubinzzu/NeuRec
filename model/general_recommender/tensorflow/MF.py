@@ -12,7 +12,7 @@ import tensorflow as tf
 from model.base import AbstractRecommender
 from util.tensorflow import inner_product, l2_loss
 from util.tensorflow import pairwise_loss, pointwise_loss
-from util.tensorflow import get_initializer
+from util.tensorflow import get_initializer, get_session
 from util.common import Reduction
 from data import PairwiseSampler, PointwiseSampler
 
@@ -31,12 +31,8 @@ class MF(AbstractRecommender):
 
         self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
 
-        tf_config = tf.ConfigProto()
-        tf_config.gpu_options.allow_growth = True
-        tf_config.gpu_options.per_process_gpu_memory_fraction = config["gpu_mem"]
-        self.sess = tf.Session(config=tf_config)
         self._build_model()
-        self.sess.run(tf.global_variables_initializer())
+        self.sess = get_session(config["gpu_mem"])
 
     def _create_variable(self):
         self.user_ph = tf.placeholder(tf.int32, [None], name="user")
@@ -117,6 +113,6 @@ class MF(AbstractRecommender):
     def evaluate_model(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
+    def predict(self, users):
         all_ratings = self.sess.run(self.batch_ratings, feed_dict={self.user_ph: users})
         return all_ratings

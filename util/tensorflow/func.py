@@ -2,7 +2,7 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["inner_product", "euclidean_distance", "l2_distance",
-           "get_initializer"]
+           "get_initializer", "get_session"]
 
 import tensorflow as tf
 from reckit import typeassert
@@ -38,3 +38,13 @@ def euclidean_distance(a, b):
 
 
 l2_distance = euclidean_distance
+
+
+def get_session(gpu_memory_fraction=None):
+    tf_config = tf.ConfigProto()
+    tf_config.gpu_options.allow_growth = True
+    if gpu_memory_fraction is not None:
+        tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
+    sess = tf.Session(config=tf_config)
+    sess.run(tf.global_variables_initializer())
+    return sess

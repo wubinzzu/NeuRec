@@ -8,6 +8,7 @@ from reckit import Configurator
 from reckit import Evaluator
 from reckit import typeassert
 from data import Dataset
+import abc
 import time
 import os
 
@@ -64,8 +65,10 @@ class AbstractRecommender(object):
 
         return logger
 
+    @abc.abstractmethod
     def train_model(self):
-        raise NotImplementedError
+        pass
 
+    @abc.abstractmethod
     def predict(self, users):
-        raise NotImplementedError
+        pass

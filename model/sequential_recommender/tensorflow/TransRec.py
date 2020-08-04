@@ -14,7 +14,7 @@ import tensorflow as tf
 from model.base import AbstractRecommender
 from util.tensorflow import l2_loss, l2_distance
 from util.tensorflow import pairwise_loss, pointwise_loss
-from util.tensorflow import get_initializer
+from util.tensorflow import get_initializer, get_session
 from util.common import Reduction
 from data import TimeOrderPairwiseSampler, TimeOrderPointwiseSampler
 
@@ -36,12 +36,8 @@ class TransRec(AbstractRecommender):
 
         self.user_pos_dict = self.dataset.train_data.to_user_dict(by_time=True)
 
-        tf_config = tf.ConfigProto()
-        tf_config.gpu_options.allow_growth = True
-        tf_config.gpu_options.per_process_gpu_memory_fraction = config["gpu_mem"]
-        self.sess = tf.Session(config=tf_config)
         self._build_model()
-        self.sess.run(tf.global_variables_initializer())
+        self.sess = get_session(config["gpu_mem"])
 
     def _create_variable(self):
         self.user_ph = tf.placeholder(tf.int32, [None], name="user")
@@ -131,7 +127,7 @@ class TransRec(AbstractRecommender):
     def evaluate_model(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
+    def predict(self, users):
         last_items = [self.user_pos_dict[u][-1] for u in users]
         feed_dict = {self.user_ph: users, self.last_item_ph: last_items}
         all_ratings = self.sess.run(self.batch_ratings, feed_dict=feed_dict)

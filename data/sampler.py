@@ -2,7 +2,8 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["PointwiseSampler", "PairwiseSampler",
-           "TimeOrderPointwiseSampler", "TimeOrderPairwiseSampler"]
+           "TimeOrderPointwiseSampler", "TimeOrderPairwiseSampler",
+           "FISMPointwiseSampler", "FISMPairwiseSampler"]
 
 from reckit import DataIterator
 from reckit import randint_choice
@@ -11,7 +12,6 @@ from reckit import pad_sequences
 from collections import Iterable
 from collections import OrderedDict
 from data import Interaction
-
 import numpy as np
 
 
@@ -154,7 +154,7 @@ class PointwiseSampler(Sampler):
                                  shuffle=self.shuffle, drop_last=self.drop_last)
 
         for bat_users, bat_items, bat_labels in data_iter:
-            yield bat_users, bat_items, bat_labels
+            yield np.asarray(bat_users), np.asarray(bat_items), np.asarray(bat_labels)
 
     def __len__(self):
         n_sample = len(self.all_users)
@@ -214,7 +214,7 @@ class PairwiseSampler(Sampler):
                                  batch_size=self.batch_size,
                                  shuffle=self.shuffle, drop_last=self.drop_last)
         for bat_users, bat_pos_items, bat_neg_items in data_iter:
-            yield bat_users, bat_pos_items, bat_neg_items
+            yield np.asarray(bat_users), np.asarray(bat_pos_items), np.asarray(bat_neg_items)
 
     def __len__(self):
         n_sample = len(self.all_users)
@@ -302,7 +302,8 @@ class TimeOrderPointwiseSampler(Sampler):
                                  batch_size=self.batch_size, shuffle=self.shuffle, drop_last=self.drop_last)
 
         for bat_users, bat_item_seqs, bat_next_items, bat_labels in data_iter:
-            yield bat_users, bat_item_seqs, bat_next_items, bat_labels
+            yield np.asarray(bat_users), np.asarray(bat_item_seqs), \
+                  np.asarray(bat_next_items), np.asarray(bat_labels)
 
     def __len__(self):
         n_sample = len(self.all_users)
@@ -381,7 +382,8 @@ class TimeOrderPairwiseSampler(Sampler):
                                  batch_size=self.batch_size, shuffle=self.shuffle, drop_last=self.drop_last)
 
         for bat_users, bat_item_seqs, bat_pos_items, bat_neg_items in data_iter:
-            yield bat_users, bat_item_seqs, bat_pos_items, bat_neg_items
+            yield np.asarray(bat_users), np.asarray(bat_item_seqs), \
+                  np.asarray(bat_pos_items), np.asarray(bat_neg_items)
 
     def __len__(self):
         n_sample = len(self.all_users)
@@ -389,3 +391,58 @@ class TimeOrderPairwiseSampler(Sampler):
             return n_sample // self.batch_size
         else:
             return (n_sample + self.batch_size - 1) // self.batch_size
+
+
+class FISMPointwiseSampler(Sampler):
+    @typeassert(dataset=Interaction, pad=int, batch_size=int, shuffle=bool, drop_last=bool)
+    def __init__(self, dataset, pad, batch_size=1024, shuffle=True, drop_last=False):
+        super(FISMPointwiseSampler, self).__init__()
+        self.pad_value = pad
+        self.user_pos_dict = dataset.to_user_dict()
+        self.point_iter = PointwiseSampler(dataset, batch_size=batch_size,
+                                           shuffle=shuffle, drop_last=drop_last)
+
+    def __iter__(self):
+        for bat_users, bat_items, bat_labels in self.point_iter:
+            bat_his_items = []
+            bat_his_len = []
+            for user, pos_item in zip(bat_users, bat_items):
+                his_items = self.user_pos_dict[user]
+                his_len = len(his_items) - 1 if len(his_items) - 1 > 0 else 1
+                bat_his_len.append(his_len)
+                bat_his_items.append(np.where(his_items == pos_item, self.pad_value, his_items))
+            bat_his_items = pad_sequences(bat_his_items, value=self.pad_value, max_len=None,
+                                          padding='post', truncating='post', dtype=np.int32)
+            yield np.asarray(bat_users), np.asarray(bat_his_items), np.asarray(bat_his_len), \
+                  np.asarray(bat_items), np.asarray(bat_labels)
+
+    def __len__(self):
+        return len(self.point_iter)
+
+
+class FISMPairwiseSampler(Sampler):
+    @typeassert(dataset=Interaction, pad=int, batch_size=int, shuffle=bool, drop_last=bool)
+    def __init__(self, dataset, pad, batch_size=1024, shuffle=True, drop_last=False):
+        super(FISMPairwiseSampler, self).__init__()
+        self.pad_value = pad
+        self.user_pos_dict = dataset.to_user_dict()
+        self.pair_iter = PairwiseSampler(dataset, batch_size=batch_size,
+                                         shuffle=shuffle, drop_last=drop_last)
+
+    def __iter__(self):
+        for bat_users, bat_pos_items, bat_neg_items in self.pair_iter:
+            bat_his_items = []
+            bat_his_len = []
+            for user, pos_item in zip(bat_users, bat_pos_items):
+                his_items = self.user_pos_dict[user]
+                his_len = len(his_items)-1 if len(his_items)-1 > 0 else 1
+                bat_his_len.append(his_len)
+                flag = his_items == pos_item
+                bat_his_items.append(np.where(flag, self.pad_value, his_items))
+            bat_his_items = pad_sequences(bat_his_items, value=self.pad_value, max_len=None,
+                                          padding='post', truncating='post', dtype=np.int32)
+            yield np.asarray(bat_users), np.asarray(bat_his_items), np.asarray(bat_his_len), \
+                  np.asarray(bat_pos_items), np.asarray(bat_neg_items)
+
+    def __len__(self):
+        return len(self.pair_iter)

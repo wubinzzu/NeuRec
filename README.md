@@ -48,6 +48,7 @@ The list of available models in NeuRec, along with their paper citations, are sh
 | General Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|
 | BPRMF     |   [![√][check_mark]](./model/general_recommender/pytorch/MF.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/MF.py)  | [Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.](https://dl.acm.org/doi/10.5555/1795114.1795167)    |
+|  FISM    |   [![√][check_mark]](./model/general_recommender/pytorch/FISM.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/FISM.py)  | [Santosh Kabbur et al., FISM: Factored Item Similarity Models for Top-N Recommender Systems. KDD 2013.](https://dl.acm.org/doi/10.1145/2487575.2487589)    |
 
 | Sequential Recommender | PyTorch | TensorFlow | Paper                                                                   |
 |---|:-:|:-:|---|

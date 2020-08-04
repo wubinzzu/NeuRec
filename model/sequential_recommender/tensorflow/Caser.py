@@ -12,7 +12,7 @@ __all__ = ["Caser"]
 import tensorflow as tf
 from model.base import AbstractRecommender
 from util.tensorflow import sigmoid_cross_entropy
-from util.tensorflow import get_initializer
+from util.tensorflow import get_initializer, get_session
 from util.common import Reduction
 from data import TimeOrderPairwiseSampler
 
@@ -37,18 +37,13 @@ class Caser(AbstractRecommender):
 
         self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
         self.pad_idx = self.num_items
-        self.num_items += 1
 
         self.user_truncated_seq = self.dataset.train_data.to_truncated_seq_dict(self.seq_L,
                                                                                 pad_value=self.pad_idx,
                                                                                 padding='pre', truncating='pre')
 
-        tf_config = tf.ConfigProto()
-        tf_config.gpu_options.allow_growth = True
-        tf_config.gpu_options.per_process_gpu_memory_fraction = config["gpu_mem"]
-        self.sess = tf.Session(config=tf_config)
         self._build_model()
-        self.sess.run(tf.global_variables_initializer())
+        self.sess = get_session(config["gpu_mem"])
 
     def _create_variable(self):
         self.user_ph = tf.placeholder(tf.int32, [None], name="user")
@@ -59,15 +54,17 @@ class Caser(AbstractRecommender):
 
         l2_regularizer = tf.contrib.layers.l2_regularizer(self.l2_reg)
         initializer = get_initializer(self.param_init)
+        zero_init = get_initializer("zeros")
         self.user_embeddings = tf.get_variable('user_embeddings', dtype=tf.float32,
                                                initializer=initializer,
                                                shape=[self.num_users, self.emb_size],
                                                regularizer=l2_regularizer)
-
-        self.seq_item_embeddings = tf.get_variable('seq_item_embeddings', dtype=tf.float32,
-                                                   initializer=initializer,
-                                                   shape=[self.num_items, self.emb_size],
-                                                   regularizer=l2_regularizer)
+        zero_pad = tf.Variable(zero_init([1, self.emb_size]), trainable=False, dtype=tf.float32, name="pad1")
+        seq_item_embeddings = tf.get_variable('seq_item_embeddings', dtype=tf.float32,
+                                              initializer=initializer,
+                                              shape=[self.num_items, self.emb_size],
+                                              regularizer=l2_regularizer)
+        self.seq_item_embeddings = tf.concat([seq_item_embeddings, zero_pad], axis=0)
 
         self.conv_v = tf.layers.Conv2D(self.nv, [self.seq_L, 1])
         self.conv_h = [tf.layers.Conv2D(self.nh, [i, self.emb_size], activation="relu")
@@ -77,10 +74,12 @@ class Caser(AbstractRecommender):
         self.dropout_ly = tf.layers.Dropout(self.dropout)
 
         # predication embedding
-        self.item_embeddings = tf.get_variable('item_embeddings', dtype=tf.float32,
-                                               initializer=initializer,
-                                               shape=[self.num_items, self.emb_size * 2],
-                                               regularizer=l2_regularizer)
+        zero_pad = tf.Variable(zero_init([1, self.emb_size*2]), trainable=False, dtype=tf.float32, name="pad2")
+        item_embeddings = tf.get_variable('item_embeddings', dtype=tf.float32,
+                                          initializer=initializer,
+                                          shape=[self.num_items, self.emb_size*2],
+                                          regularizer=l2_regularizer)
+        self.item_embeddings = tf.concat([item_embeddings, zero_pad], axis=0)
         self.item_biases = tf.get_variable('item_biases', dtype=tf.float32, shape=[self.num_items],
                                            initializer=tf.initializers.zeros(),
                                            regularizer=l2_regularizer)
@@ -162,7 +161,7 @@ class Caser(AbstractRecommender):
     def evaluate_model(self):
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
+    def predict(self, users):
         bat_seq = [self.user_truncated_seq[u] for u in users]
         feed = {self.user_ph: users,
                 self.item_seq_ph: bat_seq,

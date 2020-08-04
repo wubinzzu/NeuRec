@@ -86,9 +86,9 @@ class MF(AbstractRecommender):
         for epoch in range(self.epochs):
             self.mf.train()
             for bat_users, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_pos_items = torch.from_numpy(bat_pos_items).long().to(self.device)
+                bat_neg_items = torch.from_numpy(bat_neg_items).long().to(self.device)
                 yui = self.mf(bat_users, bat_pos_items)
                 yuj = self.mf(bat_users, bat_neg_items)
 
@@ -113,9 +113,9 @@ class MF(AbstractRecommender):
         for epoch in range(self.epochs):
             self.mf.train()
             for bat_users, bat_items, bat_labels in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_items = torch.from_numpy(np.array(bat_items)).long().to(self.device)
-                bat_labels = torch.from_numpy(np.array(bat_labels)).float().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_items = torch.from_numpy(bat_items).long().to(self.device)
+                bat_labels = torch.from_numpy(bat_labels).float().to(self.device)
                 yui = self.mf(bat_users, bat_items)
                 loss = pointwise_loss(self.loss_func, yui, bat_labels, reduction=Reduction.SUM)
                 reg_loss = l2_loss(self.mf.user_embeddings(bat_users),
@@ -132,6 +132,6 @@ class MF(AbstractRecommender):
         self.mf.eval()
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
-        users = torch.from_numpy(np.array(users)).long().to(self.device)
+    def predict(self, users):
+        users = torch.from_numpy(np.asarray(users)).long().to(self.device)
         return self.mf.predict(users).cpu().detach().numpy()

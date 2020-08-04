@@ -102,10 +102,10 @@ class TransRec(AbstractRecommender):
         for epoch in range(self.epochs):
             self.transrec.train()
             for bat_users, bat_last_items, bat_pos_items, bat_neg_items in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
-                bat_pos_items = torch.from_numpy(np.array(bat_pos_items)).long().to(self.device)
-                bat_neg_items = torch.from_numpy(np.array(bat_neg_items)).long().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_last_items = torch.from_numpy(bat_last_items).long().to(self.device)
+                bat_pos_items = torch.from_numpy(bat_pos_items).long().to(self.device)
+                bat_neg_items = torch.from_numpy(bat_neg_items).long().to(self.device)
                 yui = self.transrec(bat_users, bat_last_items, bat_pos_items)
                 yuj = self.transrec(bat_users, bat_last_items, bat_neg_items)
 
@@ -134,10 +134,10 @@ class TransRec(AbstractRecommender):
         for epoch in range(self.epochs):
             self.transrec.train()
             for bat_users, bat_last_items, bat_items, bat_labels in data_iter:
-                bat_users = torch.from_numpy(np.array(bat_users)).long().to(self.device)
-                bat_last_items = torch.from_numpy(np.array(bat_last_items)).long().to(self.device)
-                bat_items = torch.from_numpy(np.array(bat_items)).long().to(self.device)
-                bat_labels = torch.from_numpy(np.array(bat_labels)).float().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
+                bat_last_items = torch.from_numpy(bat_last_items).long().to(self.device)
+                bat_items = torch.from_numpy(bat_items).long().to(self.device)
+                bat_labels = torch.from_numpy(bat_labels).float().to(self.device)
                 yui = self.transrec(bat_users, bat_last_items, bat_items)
 
                 loss = pointwise_loss(self.loss_func, yui, bat_labels, reduction=Reduction.SUM)
@@ -158,8 +158,8 @@ class TransRec(AbstractRecommender):
         self.transrec.eval()
         return self.evaluator.evaluate(self)
 
-    def predict(self, users, neg_items=None):
+    def predict(self, users):
         last_items = [self.user_pos_dict[u][-1] for u in users]
-        users = torch.from_numpy(np.array(users)).long().to(self.device)
-        last_items = torch.from_numpy(np.array(last_items)).long().to(self.device)
+        users = torch.from_numpy(np.asarray(users)).long().to(self.device)
+        last_items = torch.from_numpy(np.asarray(last_items)).long().to(self.device)
         return self.transrec.predict(users, last_items).cpu().detach().numpy()

@@ -31,9 +31,9 @@ class _FPMC(nn.Module):
         self.LI_embeddings = nn.Embedding(num_items, embed_dim)
 
         # weight initialization
-        self.reset_parameters("uniform")
+        self.reset_parameters()
 
-    def reset_parameters(self, init_method):
+    def reset_parameters(self, init_method="uniform"):
         init = get_initializer(init_method)
         init(self.UI_embeddings.weight)
         init(self.IU_embeddings.weight)

@@ -2,7 +2,7 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["inner_product", "euclidean_distance", "l2_distance",
-           "get_initializer"]
+           "get_initializer", "sp_mat_to_sp_tensor"]
 
 import torch
 from torch import nn
@@ -10,6 +10,7 @@ from functools import partial
 from collections import OrderedDict
 from reckit import typeassert
 from util.common import InitArg
+import numpy as np
 
 
 def truncated_normal_(tensor, mean=0.0, std=1.0):
@@ -53,3 +54,9 @@ def euclidean_distance(a, b):
 
 
 l2_distance = euclidean_distance
+
+
+def sp_mat_to_sp_tensor(sp_mat):
+    coo = sp_mat.tocoo().astype(np.float32)
+    indices = torch.from_numpy(np.asarray([coo.row, coo.col]))
+    return torch.sparse_coo_tensor(indices, coo.data, coo.shape).coalesce()

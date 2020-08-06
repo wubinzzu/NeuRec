@@ -34,9 +34,9 @@ class _TransRec(nn.Module):
         self.item_biases = nn.Embedding(num_items, 1)
 
         # weight initialization
-        self.reset_parameters("uniform")
+        self.reset_parameters()
 
-    def reset_parameters(self, init_method):
+    def reset_parameters(self, init_method="uniform"):
         init = get_initializer(init_method)
         zero_init = get_initializer("zeros")
 

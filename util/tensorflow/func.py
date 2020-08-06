@@ -2,12 +2,13 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["inner_product", "euclidean_distance", "l2_distance",
-           "get_initializer", "get_session"]
+           "get_initializer", "get_session", "sp_mat_to_sp_tensor"]
 
 import tensorflow as tf
 from reckit import typeassert
 from collections import OrderedDict
 from util.common import InitArg
+import numpy as np
 
 _initializers = OrderedDict()
 _initializers["normal"] = tf.initializers.random_normal(mean=InitArg.MEAN, stddev=InitArg.STDDEV)
@@ -48,3 +49,10 @@ def get_session(gpu_memory_fraction=None):
     sess = tf.Session(config=tf_config)
     sess.run(tf.global_variables_initializer())
     return sess
+
+
+def sp_mat_to_sp_tensor(sp_mat):
+    coo = sp_mat.tocoo().astype(np.float32)
+    indices = np.asarray([coo.row, coo.col]).transpose()
+    return tf.SparseTensor(indices, coo.data, coo.shape)
+

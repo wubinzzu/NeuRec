@@ -66,7 +66,7 @@ def main():
     config.add_config("NeuRec.ini", section="NeuRec")
     config.parse_cmd()
     os.environ['CUDA_VISIBLE_DEVICES'] = str(config["gpu_id"])
-
+    _set_random_seed(config["seed"])
     Recommender = find_recommender(config.recommender, platform=config.platform)
 
     model_cfg = os.path.join("conf", config.recommender+".ini")
@@ -77,5 +77,4 @@ def main():
 
 
 if __name__ == "__main__":
-    _set_random_seed()
     main()

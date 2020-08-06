@@ -56,9 +56,9 @@ class _Caser(nn.Module):
         # dropout
         self.dropout = nn.Dropout(config["dropout"])
 
-        self.reset_parameters("uniform")
+        self.reset_parameters()
 
-    def reset_parameters(self, init_method):
+    def reset_parameters(self, init_method="uniform"):
         # weight initialization
         init = get_initializer(init_method)
         zero_init = get_initializer("zeros")

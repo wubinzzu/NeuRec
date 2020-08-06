@@ -40,13 +40,14 @@ class Interaction(object):
 
         self._buffer = dict()
 
-    def get_interactions(self):
+    def to_user_item_pairs(self):
         if self._data.empty:
             warnings.warn("self._data is empty.")
-            return None, None
-        users_np = self._data[_USER].to_numpy(copy=True)
-        items_np = self._data[_ITEM].to_numpy(copy=True)
-        return users_np, items_np
+            return None
+        # users_np = self._data[_USER].to_numpy(copy=True, dtype=np.int32)
+        # items_np = self._data[_ITEM].to_numpy(copy=True, dtype=np.int32)
+        ui_pairs = self._data[[_USER, _ITEM]].to_numpy(copy=True, dtype=np.int32)
+        return ui_pairs
 
     def to_csr_matrix(self):
         if self._data.empty:

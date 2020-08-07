@@ -2,7 +2,8 @@ __author__ = "Zhongchuan Sun"
 __email__ = "zhongchuansun@gmail.com"
 
 __all__ = ["inner_product", "euclidean_distance", "l2_distance",
-           "get_initializer", "get_session", "sp_mat_to_sp_tensor"]
+           "get_initializer", "get_session",
+           "sp_mat_to_sp_tensor", "dropout_sparse"]
 
 import tensorflow as tf
 from reckit import typeassert
@@ -56,3 +57,14 @@ def sp_mat_to_sp_tensor(sp_mat):
     indices = np.asarray([coo.row, coo.col]).transpose()
     return tf.SparseTensor(indices, coo.data, coo.shape)
 
+
+def dropout_sparse(tf_sp_mat, keep_prob):
+    """Dropout for sparse tensors.
+    """
+    noise_shape = tf_sp_mat.values.shape
+
+    random_tensor = tf.random_uniform(noise_shape) + keep_prob
+    dropout_mask = tf.cast(tf.floor(random_tensor), dtype=tf.bool)
+    pre_out = tf.sparse_retain(tf_sp_mat, dropout_mask)
+    scale = 1.0 / keep_prob
+    return pre_out * scale

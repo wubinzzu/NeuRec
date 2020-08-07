@@ -42,25 +42,27 @@ python main.py
 ## Models
 
 [check_mark]:./doc/img/check_mark.svg
+[tensorflow_logo]:./doc/img/tensorflow_logo.svg
+[pytorch_logo]:./doc/img/pytorch_logo.svg
 
 The list of available models in NeuRec, along with their paper citations, are shown below:
 
-| General Recommender | PyTorch | TensorFlow | Paper                                                                   |
+| General Recommender | ![PyTorch][pytorch_logo] | ![TensorFlow][tensorflow_logo] | Paper                                                                   |
 |---|:-:|:-:|---|
 | BPRMF     |   [![√][check_mark]](./model/general_recommender/pytorch/MF.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/MF.py)  | [Steffen Rendle et al., BPR: Bayesian Personalized Ranking from Implicit Feedback. UAI 2009.](https://dl.acm.org/doi/10.5555/1795114.1795167)    |
 |  FISM    |   [![√][check_mark]](./model/general_recommender/pytorch/FISM.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/FISM.py)  | [Santosh Kabbur et al., FISM: Factored Item Similarity Models for Top-N Recommender Systems. KDD 2013.](https://dl.acm.org/doi/10.1145/2487575.2487589)    |
 | LightGCN |   [![√][check_mark]](./model/general_recommender/pytorch/LightGCN.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/LightGCN.py)  | [Xiangnan He et al., LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation. SIGIR 2020.](https://dl.acm.org/doi/10.1145/3397271.3401063)    |
 | NGCF |   [![√][check_mark]](./model/general_recommender/pytorch/NGCF.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/NGCF.py)  | [Xiang Wang et al., Neural Graph Collaborative Filtering. SIGIR 2019.](https://dl.acm.org/doi/10.1145/3331184.3331267)    |
 
-| Sequential Recommender | PyTorch | TensorFlow | Paper                                                                   |
+| Sequential Recommender | ![PyTorch][pytorch_logo] | ![TensorFlow][tensorflow_logo] | Paper                                                                   |
 |---|:-:|:-:|---|
 | TransRec |  [![√][check_mark]](./model/sequential_recommender/pytorch/TransRec.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/TransRec.py)  | [Ruining He et al., Translation-based Recommendation. RecSys 2017](https://dl.acm.org/doi/10.1145/3109859.3109882)  |
 |   FPMC   |  [![√][check_mark]](./model/sequential_recommender/pytorch/FPMC.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/FPMC.py)  | [Steffen Rendle et al., Factorizing Personalized Markov Chains for Next-Basket Recommendation. WWW 2010](https://dl.acm.org/doi/10.1145/1772690.1772773)  |
 |   Caser  |  [![√][check_mark]](./model/sequential_recommender/pytorch/Caser.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/Caser.py)  | [Jiaxi Tang et al., Personalized Top-N Sequential Recommendation via Convolutional Sequence Embedding. WSDM 2018](https://dl.acm.org/doi/10.1145/3159652.3159656)  |
 
-| Social Recommender | PyTorch | TensorFlow | Paper                                                                   |
+<!-- | Social Recommender | ![PyTorch][pytorch_logo] | ![TensorFlow][tensorflow_logo] | Paper                                                                   |
 |---|:-:|:-:|---|
-|      |     |      |      |
+|      |     |      |      | -->
 
 ## Contributions
 

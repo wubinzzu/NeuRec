@@ -16,7 +16,6 @@ from util.tensorflow import pairwise_loss, pointwise_loss
 from util.tensorflow import get_initializer, get_session
 from util.common import Reduction
 from data import PairwiseSampler, PointwiseSampler
-from data.sampler2 import PairwiseSampler2 as PairwiseSampler
 import numpy as np
 from reckit import timer
 import scipy.sparse as sp

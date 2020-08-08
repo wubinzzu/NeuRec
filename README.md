@@ -59,6 +59,7 @@ The list of available models in NeuRec, along with their paper citations, are sh
 | TransRec |  [![√][check_mark]](./model/sequential_recommender/pytorch/TransRec.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/TransRec.py)  | [Ruining He et al., Translation-based Recommendation. RecSys 2017](https://dl.acm.org/doi/10.1145/3109859.3109882)  |
 |   FPMC   |  [![√][check_mark]](./model/sequential_recommender/pytorch/FPMC.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/FPMC.py)  | [Steffen Rendle et al., Factorizing Personalized Markov Chains for Next-Basket Recommendation. WWW 2010](https://dl.acm.org/doi/10.1145/1772690.1772773)  |
 |   Caser  |  [![√][check_mark]](./model/sequential_recommender/pytorch/Caser.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/Caser.py)  | [Jiaxi Tang et al., Personalized Top-N Sequential Recommendation via Convolutional Sequence Embedding. WSDM 2018](https://dl.acm.org/doi/10.1145/3159652.3159656)  |
+|   HGN  |  [![√][check_mark]](./model/sequential_recommender/pytorch/HGN.py) | [![√][check_mark]](./model/sequential_recommender/tensorflow/HGN.py)  | [Chen Ma et al., Hierarchical Gating Networks for Sequential Recommendation. KDD 2019](https://dl.acm.org/doi/10.1145/3292500.3330984)  |
 
 <!-- | Social Recommender | ![PyTorch][pytorch_logo] | ![TensorFlow][tensorflow_logo] | Paper                                                                   |
 |---|:-:|:-:|---|

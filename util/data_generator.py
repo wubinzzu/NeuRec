@@ -33,7 +33,7 @@ def _get_pointwise_all_likefism_data(dataset, num_negatives, train_dict):
     for u in range(num_users):
         items_by_user = train_dict[u].copy()
         items_set = set(items_by_user)
-        size = len(items_by_user)   
+        size = len(items_by_user)
         for i in items_by_user:
             # negative instances
             for _ in range(num_negatives):
@@ -44,11 +44,13 @@ def _get_pointwise_all_likefism_data(dataset, num_negatives, train_dict):
                 item_input.append(j)
                 num_idx.append(size+1)
                 labels.append(0)
+            index = items_by_user.index(i)
             items_by_user.remove(i)
-            user_input.append(items_by_user)
+            user_input.append(items_by_user[:])
             item_input.append(i)
             num_idx.append(size)
             labels.append(1)
+            items_by_user.insert(index, i)
     return user_input,num_idx,item_input,labels
 
 def _get_pairwise_all_likefossil_data(dataset, high_order, train_dict):

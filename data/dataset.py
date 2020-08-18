@@ -98,6 +98,24 @@ class Interaction(object):
             self._buffer["user_dict"] = deepcopy(user_dict)
         return user_dict
 
+    def to_item_dict(self):
+        if self._data.empty:
+            warnings.warn("self._data is empty.")
+            return None
+
+        # read from buffer
+        if "item_dict" in self._buffer:
+            return deepcopy(self._buffer["item_dict"])
+
+        item_dict = OrderedDict()
+        item_grouped = self._data.groupby(_ITEM)
+        for item, item_data in item_grouped:
+            item_dict[item] = item_data[_USER].to_numpy(dtype=np.int32)
+
+        # write to buffer
+        self._buffer["item_dict"] = deepcopy(item_dict)
+        return item_dict
+
     def to_truncated_seq_dict(self, max_len, pad_value=0, padding='post', truncating='post'):
         """Get the truncated item sequences of each user.
 

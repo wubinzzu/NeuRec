@@ -53,6 +53,7 @@ The list of available models in NeuRec, along with their paper citations, are sh
 |  FISM    |   [![√][check_mark]](./model/general_recommender/pytorch/FISM.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/FISM.py)  | [Santosh Kabbur et al., FISM: Factored Item Similarity Models for Top-N Recommender Systems. KDD 2013.](https://dl.acm.org/doi/10.1145/2487575.2487589)    |
 | LightGCN |   [![√][check_mark]](./model/general_recommender/pytorch/LightGCN.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/LightGCN.py)  | [Xiangnan He et al., LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation. SIGIR 2020.](https://dl.acm.org/doi/10.1145/3397271.3401063)    |
 | NGCF |   [![√][check_mark]](./model/general_recommender/pytorch/NGCF.py)   | [![√][check_mark]](./model/general_recommender/tensorflow/NGCF.py)  | [Xiang Wang et al., Neural Graph Collaborative Filtering. SIGIR 2019.](https://dl.acm.org/doi/10.1145/3331184.3331267)    |
+| CDAE |   [![√][check_mark]](./model/general_recommender/pytorch/CDAE.py)   |   | [Yao Wu et al., Collaborative Denoising Auto-Encoder for Top-N Recommender Systems. WSDM 2016.](https://dl.acm.org/doi/10.1145/2835776.2835837)    |
 
 | Sequential Recommender | ![PyTorch][pytorch_logo] | ![TensorFlow][tensorflow_logo] | Paper                                                                   |
 |---|:-:|:-:|---|

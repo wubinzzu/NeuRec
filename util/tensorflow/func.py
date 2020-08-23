@@ -58,11 +58,9 @@ def sp_mat_to_sp_tensor(sp_mat):
     return tf.SparseTensor(indices, coo.data, coo.shape)
 
 
-def dropout_sparse(tf_sp_mat, keep_prob):
+def dropout_sparse(tf_sp_mat, keep_prob, noise_shape):
     """Dropout for sparse tensors.
     """
-    noise_shape = tf_sp_mat.values.shape
-
     random_tensor = tf.random_uniform(noise_shape) + keep_prob
     dropout_mask = tf.cast(tf.floor(random_tensor), dtype=tf.bool)
     pre_out = tf.sparse_retain(tf_sp_mat, dropout_mask)

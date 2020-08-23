@@ -61,6 +61,7 @@ class _CDAE(nn.Module):
 
         ratings = inner_product(hidden, de_item_embs) + de_bias
 
+        # reg loss
         bat_items = torch.unique(bat_items, sorted=False)
         reg_loss = l2_loss(self.en_embeddings(bat_items), self.en_offset,
                            self.user_embeddings(user_ids),
@@ -136,19 +137,24 @@ class CDAE(AbstractRecommender):
                                                replace=True, exclusion=pos_items)
                     neg_items = np.unique(neg_items)
                     bat_sp_mat[idx, neg_items] = 1
-                    bat_items.extend(pos_items)
-                    bat_labels.extend([1.0]*len(pos_items))
-                    bat_items.extend(neg_items)
-                    bat_labels.extend([0.0]*len(neg_items))
 
-                    bat_idx.extend([idx]*(len(pos_items)+len(neg_items)))
+                    bat_items.append(pos_items)
+                    bat_labels.append(np.ones_like(pos_items, dtype=np.float32))
+                    bat_items.append(neg_items)
+                    bat_labels.append(np.zeros_like(neg_items, dtype=np.float32))
+                    bat_idx.append(np.full(len(pos_items)+len(neg_items), idx, dtype=np.int32))
+
+                bat_items = np.concatenate(bat_items)
+                bat_labels = np.concatenate(bat_labels)
+                bat_idx = np.concatenate(bat_idx)
+                bat_users = np.asarray(bat_users)
 
                 bat_sp_mat = sp_mat_to_sp_tensor(bat_sp_mat).to(self.device)
-                bat_items = torch.from_numpy(np.asarray(bat_items)).long().to(self.device)
-                bat_labels = torch.from_numpy(np.asarray(bat_labels)).float().to(self.device)
+                bat_items = torch.from_numpy(bat_items).long().to(self.device)
+                bat_labels = torch.from_numpy(bat_labels).float().to(self.device)
 
-                bat_idx = torch.from_numpy(np.asarray(bat_idx)).long().to(self.device)
-                bat_users = torch.from_numpy(np.asarray(bat_users)).long().to(self.device)
+                bat_idx = torch.from_numpy(bat_idx).long().to(self.device)
+                bat_users = torch.from_numpy(bat_users).long().to(self.device)
 
                 hat_y, reg_loss = self.cdae(bat_users, bat_idx, bat_sp_mat, bat_items)
 

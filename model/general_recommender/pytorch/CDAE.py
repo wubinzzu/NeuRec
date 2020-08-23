@@ -11,12 +11,15 @@ __all__ = ["CDAE"]
 from model.base import AbstractRecommender
 import torch
 import torch.nn as nn
-from util.pytorch import l2_loss
+import torch.nn.functional as F
+import torch.sparse as torch_sp
+from util.pytorch import l2_loss, inner_product
 from util.pytorch import pointwise_loss
 from util.common import Reduction
 from reckit import DataIterator, randint_choice
 import numpy as np
 from util.pytorch import get_initializer
+from util.pytorch import sp_mat_to_sp_tensor, dropout_sparse
 
 
 class _CDAE(nn.Module):
@@ -30,7 +33,7 @@ class _CDAE(nn.Module):
         self.de_bias = nn.Embedding(num_items, 1)
         self.user_embeddings = nn.Embedding(num_users, embed_dim)
 
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = dropout
         self.hidden_act = hidden_act
 
         # weight initialization
@@ -48,42 +51,40 @@ class _CDAE(nn.Module):
 
         init(self.user_embeddings.weight)
 
-    def forward(self, user_id, item_ids):
-        hidden, reg_loss = self._encoding(user_id, item_ids)  # (1,d)
+    def forward(self, user_ids, bat_idx, sp_item_mat, bat_items):
+        hidden = self._encoding(user_ids, sp_item_mat)  # (b,d)
 
         # decoding
-        de_item_embs = self.de_embeddings(item_ids)  # (l,d)
-        ratings = hidden.matmul(de_item_embs.T).flatten()  # (1,d)x(d,l)->(1,l)->(l)
+        de_item_embs = self.de_embeddings(bat_items)  # (l,d)
+        de_bias = self.de_bias(bat_items).squeeze()
+        hidden = F.embedding(bat_idx, hidden)  # (l,d)
 
-        de_bias = self.de_bias(item_ids).flatten()
-        ratings += de_bias  # add bias
+        ratings = inner_product(hidden, de_item_embs) + de_bias
 
-        reg_loss += l2_loss(de_bias, de_item_embs)
+        bat_items = torch.unique(bat_items, sorted=False)
+        reg_loss = l2_loss(self.en_embeddings(bat_items), self.en_offset,
+                           self.user_embeddings(user_ids),
+                           self.de_embeddings(bat_items), self.de_bias(bat_items))
 
         return ratings, reg_loss
 
-    def _encoding(self, user_id, item_ids):
-        ones = item_ids.new_ones(item_ids.shape, dtype=torch.float)
-        corruption = self.dropout(ones).view([-1, 1])  # (l,1), noise
+    def _encoding(self, user_ids, sp_item_mat):
 
-        en_item_embs = self.en_embeddings(item_ids)  # (l,d)
-        hidden = en_item_embs.T.matmul(corruption).flatten()  # (d,l)x(l,1)->(d,1)->(d,)
+        corruption = dropout_sparse(sp_item_mat, 1-self.dropout, self.training)
 
-        user_embs = self.user_embeddings(user_id).flatten()  # (d,)
+        en_item_embs = self.en_embeddings.weight  # (n,d)
+        hidden = torch_sp.mm(corruption, en_item_embs)  # (b,n)x(n,d)->(b,d)
+
+        user_embs = self.user_embeddings(user_ids)  # (b,d)
         hidden += user_embs  # add user vector
-        hidden += self.en_offset  # add bias
+        hidden += self.en_offset.view([1, -1])  # add bias
         hidden = self.hidden_act(hidden)  # hidden activate, z_u
+        return hidden  # (b,d)
 
-        # reg_loss
-        weights = torch.mul(corruption.bool().float(), en_item_embs)
-        reg_loss = l2_loss(weights, self.en_offset)
-
-        return hidden.view([1, -1]), reg_loss  # (1,d)
-
-    def predict(self, user_id, item_ids):
-        user_emb, _ = self._encoding(user_id, item_ids)
-        ratings = user_emb.matmul(self.de_embeddings.weight.T).flatten()
-        ratings += self.de_bias.weight.flatten()
+    def predict(self, user_ids, sp_item_mat):
+        user_emb = self._encoding(user_ids, sp_item_mat)  # (b,d)
+        ratings = user_emb.matmul(self.de_embeddings.weight.T)  # (b,d)x(d,n)->(b,n)
+        ratings += self.de_bias.weight.view([1, -1])
         return ratings
 
 
@@ -98,9 +99,11 @@ class CDAE(AbstractRecommender):
         self.loss_func = config["loss_func"]
         self.num_neg = config["num_neg"]
         self.epochs = config["epochs"]
+        self.batch_size = config["batch_size"]
         self.param_init = config["param_init"]
 
-        self.user_pos_train = self.dataset.train_data.to_user_dict()
+        self.train_csr_mat = self.dataset.train_data.to_csr_matrix()
+        self.train_csr_mat.data[:] = 1.0
         self.num_users, self.num_items = self.dataset.num_users, self.dataset.num_items
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -116,27 +119,38 @@ class CDAE(AbstractRecommender):
         self.optimizer = torch.optim.Adam(self.cdae.parameters(), lr=self.lr)
 
     def train_model(self):
-        # result = self.evaluate_model()
-        train_users = list(self.user_pos_train.keys())
-        user_iter = DataIterator(train_users, batch_size=1, shuffle=True)
+        train_users = [user for user in range(self.num_users) if self.train_csr_mat[user].nnz]
+        user_iter = DataIterator(train_users, batch_size=self.batch_size, shuffle=True, drop_last=False)
 
         self.logger.info(self.evaluator.metrics_info())
         for epoch in range(self.epochs):
             self.cdae.train()
-            for user in user_iter:
-                user = user[0]
-                pos_items = self.user_pos_train[user]
-                neg_items = randint_choice(self.num_items, size=len(pos_items)*self.num_neg,
-                                           replace=True, exclusion=pos_items)
-                pos_items = torch.from_numpy(pos_items).long().to(self.device)
-                neg_items = torch.from_numpy(neg_items).long().to(self.device)
-                pos_labels = torch.ones_like(pos_items).float().to(self.device)
-                neg_labels = torch.zeros_like(neg_items).float().to(self.device)
+            for bat_users in user_iter:
+                bat_sp_mat = self.train_csr_mat[bat_users]
+                bat_items = []
+                bat_labels = []
+                bat_idx = []  # used to decoder
+                for idx, _ in enumerate(bat_users):
+                    pos_items = bat_sp_mat[idx].indices
+                    neg_items = randint_choice(self.num_items, size=bat_sp_mat[idx].nnz*self.num_neg,
+                                               replace=True, exclusion=pos_items)
+                    neg_items = np.unique(neg_items)
+                    bat_sp_mat[idx, neg_items] = 1
+                    bat_items.extend(pos_items)
+                    bat_labels.extend([1.0]*len(pos_items))
+                    bat_items.extend(neg_items)
+                    bat_labels.extend([0.0]*len(neg_items))
 
-                bat_items = torch.cat([pos_items, neg_items])
-                bat_labels = torch.cat([pos_labels, neg_labels])
-                user = torch.scalar_tensor(user).long().to(self.device)
-                hat_y, reg_loss = self.cdae(user, bat_items)
+                    bat_idx.extend([idx]*(len(pos_items)+len(neg_items)))
+
+                bat_sp_mat = sp_mat_to_sp_tensor(bat_sp_mat).to(self.device)
+                bat_items = torch.from_numpy(np.asarray(bat_items)).long().to(self.device)
+                bat_labels = torch.from_numpy(np.asarray(bat_labels)).float().to(self.device)
+
+                bat_idx = torch.from_numpy(np.asarray(bat_idx)).long().to(self.device)
+                bat_users = torch.from_numpy(np.asarray(bat_users)).long().to(self.device)
+
+                hat_y, reg_loss = self.cdae(bat_users, bat_idx, bat_sp_mat, bat_items)
 
                 loss = pointwise_loss(self.loss_func, hat_y, bat_labels, reduction=Reduction.SUM)
 
@@ -152,11 +166,7 @@ class CDAE(AbstractRecommender):
         return self.evaluator.evaluate(self)
 
     def predict(self, users):
-        all_ratings = []
-        for user in users:
-            pos_items = self.user_pos_train[user]
-            pos_items = torch.from_numpy(pos_items).long().to(self.device)
-            user = torch.scalar_tensor(user).long().to(self.device)
-            ratings = self.cdae.predict(user, pos_items).cpu().detach().numpy()
-            all_ratings.append(ratings)
-        return np.asarray(all_ratings)
+        user_ids = torch.from_numpy(np.asarray(users)).long().to(self.device)
+        sp_item_mat = sp_mat_to_sp_tensor(self.train_csr_mat[users]).to(self.device)
+        ratings = self.cdae.predict(user_ids, sp_item_mat).cpu().detach().numpy()
+        return ratings

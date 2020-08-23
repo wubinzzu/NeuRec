@@ -24,7 +24,7 @@ import numpy as np
 from reckit import timer
 import scipy.sparse as sp
 from util.common import normalize_adj_matrix
-from util.pytorch import sp_mat_to_sp_tensor
+from util.pytorch import sp_mat_to_sp_tensor, dropout_sparse
 
 
 class _NGCF(nn.Module):
@@ -83,7 +83,7 @@ class _NGCF(nn.Module):
     def _forward_gcn(self):
         norm_adj = self.norm_adj
         if self.node_dropout_flag is True:
-            norm_adj = torch.dropout(norm_adj, self.node_dropout, self.training)
+            norm_adj = dropout_sparse(norm_adj, 1-self.node_dropout, self.training)
 
         ego_embeddings = torch.cat([self.user_embeddings.weight,
                                     self.item_embeddings.weight], dim=0)

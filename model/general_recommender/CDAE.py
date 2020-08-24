@@ -9,9 +9,9 @@ from util import timer
 from util import l2_loss, inner_product
 from util.data_iterator import DataIterator
 from util.tool import dropout_sparse
-# from util import randint_choice
+from util import randint_choice
 # >> pip install reckit
-from reckit import randint_choice
+# from reckit import randint_choice
 
 
 class CDAE(AbstractRecommender):

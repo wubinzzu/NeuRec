@@ -144,7 +144,7 @@ class NGCF(AbstractRecommender):
         norm_adj = sp_mat_to_sp_tensor(norm_adj)
 
         if self.node_dropout_flag is True:
-            norm_adj = dropout_sparse(norm_adj, 1-self.node_dropout_ph, norm_adj.values.shape)
+            norm_adj = dropout_sparse(norm_adj, 1-self.node_dropout_ph, norm_adj.values.shape[0].value)
 
         ego_embeddings = tf.concat([self.weights['user_embedding'],
                                     self.weights['item_embedding']], axis=0)

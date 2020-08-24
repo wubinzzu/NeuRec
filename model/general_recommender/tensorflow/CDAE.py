@@ -55,7 +55,7 @@ class CDAE(AbstractRecommender):
         self.labels_ph = tf.placeholder(tf.float32, [None], name="labels")
         self.remap_idx_ph = tf.placeholder(tf.int32, [None], name="remap_idx")
         self.dropout_ph = tf.placeholder(tf.float32, name="dropout")
-        self.noise_shape_ph = tf.placeholder(tf.int32, [1], name="noise_shape")
+        self.noise_shape_ph = tf.placeholder(tf.int32, name="noise_shape")
 
         # embedding layers
         init = get_initializer(self.param_init)
@@ -139,7 +139,7 @@ class CDAE(AbstractRecommender):
                         self.sp_mat_ph: (indices, coo.data, coo.shape),
                         self.labels_ph: bat_labels,
                         self.dropout_ph: self.dropout,
-                        self.noise_shape_ph: [bat_sp_mat.nnz]}
+                        self.noise_shape_ph: bat_sp_mat.nnz}
                 self.sess.run(self.train_opt, feed_dict=feed)
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
@@ -157,6 +157,6 @@ class CDAE(AbstractRecommender):
         feed = {self.users_ph: users,
                 self.sp_mat_ph: (indices, coo.data, coo.shape),
                 self.dropout_ph: 0.0,
-                self.noise_shape_ph: [sp_mat.nnz]}
+                self.noise_shape_ph: sp_mat.nnz}
         all_ratings = self.sess.run(self.batch_ratings, feed_dict=feed)
         return all_ratings

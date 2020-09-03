@@ -1,6 +1,7 @@
 """
 Paper: Variational Autoencoders for Collaborative Filtering
 Author: Dawen Liang, Rahul G. Krishnan, Matthew D. Hoffman, and Tony Jebara
+Reference: https://github.com/dawenl/vae_cf
 """
 
 __author__ = "Bin Wu"

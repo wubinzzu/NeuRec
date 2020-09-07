@@ -31,13 +31,17 @@ Secondly, install [RecKit](https://github.com/ZhongchuanSun/reckit):
 pip install reckit
 ```
 
-Thirdly, specify dataset and recommender in configuration file *NeuRec.ini*.
+Thirdly, optionally run [preprocess.py](./preprocess.py) to preprocess dataset.
+
+Then, specify dataset and recommender in configuration file [NeuRec.ini](./NeuRec.ini).
 
 Finally, run [main.py](./main.py) in IDE or with command line:
 
 ```bash
 python main.py
 ```
+
+More details are available in [tutorial.ipynb](doc/tutorial.ipynb).
 
 ## Dependencies
 

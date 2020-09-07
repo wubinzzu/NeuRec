@@ -41,7 +41,7 @@ Finally, run [main.py](./main.py) in IDE or with command line:
 python main.py
 ```
 
-More details are available in [tutorial.ipynb](doc/tutorial.ipynb).
+More details are available in [tutorial.ipynb](tutorial.ipynb).
 
 ## Dependencies
 

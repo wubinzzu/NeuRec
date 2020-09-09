@@ -54,7 +54,7 @@ class Interaction(object):
             warnings.warn("self._data is empty.")
             return None
         users, items = self._data[_USER].to_numpy(), self._data[_ITEM].to_numpy()
-        ratings = self._data[_RATING].to_numpy() if _RATING in self._data else np.ones(len(users), dtype=np.float32)
+        ratings = np.ones(len(users), dtype=np.float32)
         csr_mat = sp.csr_matrix((ratings, (users, items)), shape=(self.num_users, self.num_items))
         return csr_mat
 

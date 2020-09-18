@@ -295,7 +295,7 @@ class TimeOrderPointwiseSampler(Sampler):
         neg_next_items = _sampling_negative_items(self.user_n_pos, self.num_neg*self.len_next,
                                                   self.num_items, self.user_pos_dict)
         neg_item_split = np.hsplit(neg_next_items, self.num_neg)
-        neg_next_items = np.vstack(neg_item_split)
+        neg_next_items = np.vstack(neg_item_split).squeeze()
         all_next_items = np.concatenate([self.pos_next_items, neg_next_items])
 
         data_iter = DataIterator(self.all_users, self.all_item_seqs, all_next_items, self.all_labels,

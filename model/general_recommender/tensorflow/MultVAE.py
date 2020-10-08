@@ -151,6 +151,7 @@ class MultVAE(AbstractRecommender):
                              self.anneal_ph: anneal,
                              self.is_training_ph: 1}
                 self.sess.run(self.train_opt, feed_dict=feed_dict)
+                update_count += 1
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
 

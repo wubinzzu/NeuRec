@@ -163,6 +163,7 @@ class MultVAE(AbstractRecommender):
                 self.optimizer.zero_grad()
                 neg_elbo.backward()
                 self.optimizer.step()
+                update_count += 1
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
 

@@ -75,7 +75,9 @@ class Dataset(object):
     def _load_data(self, config):
         format_dict = {"UIRT": ["user", "item", "rating", "time"],
                        "UIR": ["user", "item", "rating"],
-                       "UI": ["user", "item"]}
+                       "UI": ["user", "item"],
+                       "UIT": ["user", "item", "time"]
+                       }
         file_format = config["data.column.format"]
         if file_format not in format_dict:
             raise ValueError("'%s' is an invalid data column format!" % file_format)
@@ -101,7 +103,7 @@ class Dataset(object):
             self.itemids = {item: iid for item, iid in zip(item_map["item"], item_map["id"])}
         else:  # split and save data
             print("split and save data...")
-            by_time = config["by_time"] if file_format == "UIRT" else False
+            by_time = config["by_time"] if file_format in {"UIRT", "UIT"} else False
             train_data, test_data = self._split_data(ori_prefix, saved_prefix, columns, by_time, config)
 
         all_data = pd.concat([train_data, test_data])
@@ -109,7 +111,7 @@ class Dataset(object):
         self.num_items = max(all_data["item"]) + 1
         self.num_ratings = len(all_data)
 
-        if file_format == "UI":
+        if file_format in {"UI", "UIT"}:
             train_ratings = [1.0] * len(train_data["user"])
             test_ratings = [1.0] * len(test_data["user"])
         else:
@@ -121,7 +123,7 @@ class Dataset(object):
         self.test_matrix = csr_matrix((test_ratings, (test_data["user"], test_data["item"])),
                                       shape=(self.num_users, self.num_items))
 
-        if file_format == "UIRT":
+        if file_format in {"UIRT", "UIT"}:
             self.time_matrix = csr_matrix((train_data["time"], (train_data["user"], train_data["item"])),
                                           shape=(self.num_users, self.num_items))
 
